@@ -7,7 +7,7 @@ import streamlit as st    # interface web
 from notabourse.formats import date, dollars, nombre, pct   # noqa: F401  (formats des nombres, repris par les pages)
 
 SITE = Path(__file__).resolve().parents[1]                                    # dossier site
-URL_ISSUES = "https://github.com/OWNER/notabourse/issues"                    # à remplacer quand le dépôt existera (étape d)
+URL_ISSUES = "https://github.com/mathysblot3-blip/notabourse/issues"         # dépôt public du site [M] 19/10/2026
 
 
 @st.cache_data
