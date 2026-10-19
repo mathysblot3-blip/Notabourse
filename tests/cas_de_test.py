@@ -15,7 +15,9 @@ import numpy as np    # calcul numérique
 import pandas as pd   # tableaux de données
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))                  # dossier site
-from notabourse.calcul import ratios_et_croissances  # noqa: E402
+from notabourse.calcul import charger_reference, noter_hors_indice, ratios_et_croissances  # noqa: E402
+from notabourse.classement import charger_correspondance_yahoo  # noqa: E402
+from notabourse.note import etoiles  # noqa: E402
 from notabourse.garde_fou import exclusions, notes_garde_fou  # noqa: E402
 from notabourse.sources import marche_sp500tr  # noqa: E402
 
@@ -40,15 +42,32 @@ def f(v, chiffres=3):
 
 D = pd.Timestamp.today().normalize()                                          # aujourd'hui
 marche = marche_sp500tr((D - pd.DateOffset(years=3)).strftime("%Y-%m-%d"))   # S&P 500 TR, lu une seule fois
-lignes, croissances = [], {}
+correspondance = charger_correspondance_yahoo()                                # table industrie Yahoo (étape b)
+reference = None
+if (Path(__file__).resolve().parents[1] / "reference" / "reference.parquet").exists():
+    reference, croissances_ref = charger_reference()                          # membres du S&P 500
+lignes, croissances, notes = [], {}, {}
 for symbole, cik, provisoire in CAS:
     print(symbole, flush=True)
-    ligne, cr = ratios_et_croissances(symbole, D, "direct", cik=cik, marche=marche)
+    ligne, cr = ratios_et_croissances(symbole, D, "direct", cik=cik, correspondance=correspondance, marche=marche)
     if provisoire is not None and ligne["groupe"] is None:                     # pas encore de table Yahoo
         ligne["groupe"], ligne["secteur"], ligne["sous_secteur"] = provisoire
         ligne["origine_classement"] = "provisoire (étape b)"
     lignes.append(ligne)
     croissances[symbole] = {k: len(t) for k, t in cr.items()}                 # nombre de croissances par série
+    if reference is not None:
+        if symbole in reference.index:                                        # membre : note de la référence
+            m = reference.loc[symbole]
+            notes[symbole] = {"origine": "référence (membre)", **{k: m[k + "_aff"] for k in ["Q1", "G1", "R2", "M1"]},
+                              "S": m["S_aff"], "M": m["M_aff"], "note": m["note_aff"], "regle": m["regle"],
+                              "rech": m["note_sur_100"], "date_ref": m["date"]}
+        else:                                                                 # hors indice : comparée aux membres
+            r = noter_hors_indice(ligne, cr, reference.drop(index=symbole, errors="ignore"), croissances_ref)
+            n, nr = r.get("notes", {}), r.get("notes_recherche", {})
+            notes[symbole] = {"origine": "calcul contre les membres", **{k: n.get(k) for k in ["Q1", "G1", "R2", "M1"]},
+                              "S": n.get("S"), "M": n.get("M"), "note": n.get("note_sur_100"),
+                              "regle": "recherche" if pd.notna(nr.get("note_sur_100")) else "affichage",
+                              "rech": nr.get("note_sur_100"), "date_ref": reference["date"].iloc[0]}
 t = pd.DataFrame(lignes).set_index("cik")
 v = notes_garde_fou(t)                                                        # voyants de -1 à +1
 e = exclusions(t)                                                             # conditions d'exclusion
@@ -70,6 +89,15 @@ l4 = [f"| {s} | {f(v.loc[s, 'trésorerie'], 2)} | {f(v.loc[s, 'endettement'], 2)
       f"{f(v.loc[s, 'fonds propres / actif'], 2)} | {f(e.loc[s, 'garde_fou'], 2)} | {oui(e.loc[s, 'benefices_ok'])} | "
       f"{oui(e.loc[s, 'fonds_propres_ok'])} | {oui(e.loc[s, 'gardee'])} |" for s in t.index]
 sep = lambda ent: "|" + "---|" * (ent.count("|") - 1)
+ent5 = "| Société | Origine | Rentabilité | Croissance | Bilan | Dynamique | S | M | Note sur 100 | Étoiles | Règle | Note de recherche |"
+l5 = [f"| {s} | {n['origine']} | {f(n['Q1'], 3)} | {f(n['G1'], 3)} | {f(n['R2'], 3)} | {f(n['M1'], 3)} | {f(n['S'], 3)} | "
+      f"{f(n['M'], 3)} | {f(n['note'], 3)} | {f(etoiles(n['note']))} | {n['regle']} | {f(n['rech'], 3)} |"
+      for s, n in notes.items()]
+if notes:                                                                     # tableau des notes
+    date_ref = f(next(iter(notes.values()))["date_ref"])
+    bloc_notes = "\n".join([f"## 5. Notes (référence S&P 500 du {date_ref})", "", ent5, sep(ent5)] + l5)
+else:
+    bloc_notes = "## 5. Notes\n\nRéférence S&P 500 absente : à construire (étape b)."
 texte = f"""# Cas de test : ratios, garde-fou, exclusions (généré par `tests/cas_de_test.py` le {D.strftime('%d/%m/%Y')})
 
 Données Yahoo Finance du jour, mode direct. Notes finales : après la référence S&P 500 (étape b).
@@ -97,6 +125,8 @@ Données Yahoo Finance du jour, mode direct. Notes finales : après la référen
 {ent4}
 {sep(ent4)}
 {chr(10).join(l4)}
+
+{bloc_notes}
 """
 (Path(__file__).resolve().parent / "cas_de_test.md").write_text(texte, encoding="utf-8")
 print("Tableau : tests/cas_de_test.md", flush=True)

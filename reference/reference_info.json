@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-19",
+  "mode": "direct",
+  "membres_liste": 500,
+  "membres_notes": 496,
+  "membres_dans_reference": 500,
+  "reprises": 0,
+  "echecs_sans_valeur": [],
+  "echecs": {},
+  "groupes": {
+    "NF": 411,
+    "FIN": 62,
+    "REIT": 27
+  }
+}

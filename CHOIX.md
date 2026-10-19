@@ -121,3 +121,18 @@ Ordre de repli de gauche à droite (« → ») ; « 0 si absent » reprend la r�
 
 Détail des comparaisons avec la recherche : dépôt de recherche, `resultats/controle_main_site.md` (non publié : il contient
 des ratios de recherche).
+
+## 10. Référence S&P 500 (étape b, 19/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Membres : page Wikipédia « List of S&P 500 companies » (symbole, CIK) | [M] cahier des charges |
+| Une ligne par société (CIK) ; pour les sociétés à plusieurs catégories d'actions, la première listée par Wikipédia (catégorie A : GOOGL, FOXA, NWSA) ; les autres catégories (GOOG, FOX, NWS) renvoient vers elle | [R] conception_v2 §2.1 (une ligne par CIK) ; mêmes catégories que la recherche au 31/08/2026 [T] |
+| Membres notés entre eux avec le calcul de la recherche ; affichage dès 2 composantes pour ceux que la recherche ne note pas (4 scissions récentes au 19/10/2026) | [R] et [M] |
+| Fichiers publics : ratios, taux de croissance, notes et voyants seulement, aucun montant de comptes | [M] 19/10/2026 |
+| Échecs de téléchargement : valeurs de la semaine précédente (2 semaines au plus), arrêt si plus de 10 % d'échecs | [P] P6, validée avec le plan |
+| Table industrie Yahoo → groupe, secteur, sous-secteur : majorité des membres de l'industrie ; en cas d'égalité ou sans membre, un code SIC représentatif classé par les fonctions de la recherche (`reference/construire_correspondance.py`, détail dans `reference/correspondance_yahoo.md`) ; Credit Services : financière, banque (SIC 6141) ; promotion et immobilier diversifié : industrie (SIC 6552, 6500) ; Financial Data & Stock Exchanges : financière, autres (majorité). Table figée | [M] 19/10/2026 |
+
+Contrôle (19/10/2026) : 500 sociétés, dont 411 industrielles, 62 financières et 27 foncières, la même répartition que la
+recherche au 31/08/2026 ; 90 membres exclus (recherche au 31/08/2026 : 92), dont 49 pour pertes et 36 pour fonds
+propres négatifs.

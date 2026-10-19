@@ -78,6 +78,18 @@ def ratios_et_croissances(symbole, D, mode="direct", cik=None, table_cik=None, c
     return ligne, croissances
 
 
+def charger_reference(dossier=None):
+    """Référence S&P 500 (reference.parquet) et croissances de ses membres (croissances.parquet).
+    Renvoie (tableau des membres indexé par symbole, dict « série -> tableau des croissances »)."""
+    from pathlib import Path                                                  # chemins de fichiers
+    dossier = Path(dossier) if dossier else Path(__file__).resolve().parents[1] / "reference"
+    ref = pd.read_parquet(dossier / "reference.parquet").set_index("cik", drop=False)
+    longues = pd.read_parquet(dossier / "croissances.parquet")
+    tables = {k: t.drop(columns="serie").dropna(axis=1, how="all").reset_index(drop=True)
+              for k, t in longues.groupby("serie")}                           # une table par série
+    return ref, tables
+
+
 def croissances_groupe(tables, groupe_de_cik, D):
     """Seconde moitié des calculs PERS et GS, pour toutes les sociétés des tables (CHOIX.md §7).
     tables : dict « nom de série -> tableau des croissances de toutes les sociétés ». Renvoie un tableau

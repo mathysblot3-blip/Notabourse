@@ -1,0 +1,146 @@
+secteur_yahoo,industrie_yahoo,groupe,secteur,sous_secteur,niveau,nb_membres,part_majoritaire,egalite,desaccords
+Basic Materials,Specialty Chemicals,NF,Chems,Chems,membres,9,0.89,False,SHW (NF / Shops / Shops)
+Basic Materials,Gold,NF,Other,Other,membres,1,1.0,False,
+Basic Materials,Copper,NF,Other,Other,membres,1,1.0,False,
+Basic Materials,Building Materials,NF,Other,Other,membres,3,0.67,False,CRH (NF / Manuf / Manuf)
+Basic Materials,Steel,NF,Manuf,Manuf,membres,2,1.0,False,
+Basic Materials,Agricultural Inputs,NF,Chems,Chems,membres,2,1.0,False,
+Basic Materials,Other Industrial Metals & Mining,NF,Other,Other,SIC représentatif 1000,0,,False,
+Basic Materials,Chemicals,NF,Chems,Chems,membres,1,1.0,False,
+Basic Materials,Other Precious Metals & Mining,NF,Other,Other,SIC représentatif 1040,0,,False,
+Basic Materials,Aluminum,NF,Manuf,Manuf,SIC représentatif 3334,0,,False,
+Basic Materials,Lumber & Wood Production,NF,Other,Other,SIC représentatif 2400,0,,False,
+Basic Materials,Silver,NF,Other,Other,SIC représentatif 1044,0,,False,
+Basic Materials,Coking Coal,NF,Enrgy,Enrgy,SIC représentatif 1220,0,,False,
+Basic Materials,Paper & Paper Products,NF,Manuf,Manuf,SIC représentatif 2621,0,,False,
+Communication Services,Internet Content & Information,NF,BusEq,BusEq,membres,3,1.0,False,
+Communication Services,Telecom Services,NF,Telcm,Telcm,membres,6,1.0,False,
+Communication Services,Entertainment,NF,Other,Other,membres,7,0.57,False,"FOXA (NF / Telcm / Telcm), NWSA (NF / NoDur / NoDur), SKYD (NF / Telcm / Telcm)"
+Communication Services,Advertising Agencies,NF,Other,Other,SIC représentatif 7311,2,0.5,True,OMC (NF / Other / Other)
+Communication Services,Electronic Gaming & Multimedia,NF,BusEq,BusEq,membres,1,1.0,False,
+Communication Services,Publishing,NF,NoDur,NoDur,SIC représentatif 2711,0,,False,
+Communication Services,Broadcasting,NF,Telcm,Telcm,SIC représentatif 4833,0,,False,
+Consumer Cyclical,Internet Retail,NF,Other,Other,membres,3,0.67,False,AMZN (NF / Shops / Shops)
+Consumer Cyclical,Auto Manufacturers,NF,Durbl,Durbl,membres,3,1.0,False,
+Consumer Cyclical,Restaurants,NF,Shops,Shops,membres,6,1.0,False,
+Consumer Cyclical,Travel Services,NF,Other,Other,membres,6,1.0,False,
+Consumer Cyclical,Home Improvement Retail,NF,Shops,Shops,membres,2,1.0,False,
+Consumer Cyclical,Apparel Retail,NF,Shops,Shops,membres,3,0.67,False,LULU (NF / NoDur / NoDur)
+Consumer Cyclical,Auto Parts,NF,Shops,Shops,membres,4,0.75,False,APTV (NF / Durbl / Durbl)
+Consumer Cyclical,Lodging,NF,Other,Other,membres,2,1.0,False,
+Consumer Cyclical,Specialty Retail,NF,Shops,Shops,membres,5,1.0,False,
+Consumer Cyclical,Packaging & Containers,NF,Manuf,Manuf,membres,6,0.83,False,AMCR (NF / Durbl / Durbl)
+Consumer Cyclical,Auto & Truck Dealerships,NF,Shops,Shops,membres,1,1.0,False,
+Consumer Cyclical,Residential Construction,NF,Other,Other,membres,4,1.0,False,
+Consumer Cyclical,Footwear & Accessories,NF,Manuf,Manuf,membres,2,1.0,False,
+Consumer Cyclical,Resorts & Casinos,NF,Other,Other,membres,3,1.0,False,
+Consumer Cyclical,Leisure,NF,NoDur,NoDur,membres,1,1.0,False,
+Consumer Cyclical,Apparel Manufacturing,NF,NoDur,NoDur,membres,1,1.0,False,
+Consumer Cyclical,"Furnishings, Fixtures & Appliances",NF,Durbl,Durbl,SIC représentatif 2510,0,,False,
+Consumer Cyclical,Gambling,NF,Other,Other,SIC représentatif 7990,0,,False,
+Consumer Cyclical,Personal Services,NF,Other,Other,membres,1,1.0,False,
+Consumer Cyclical,Luxury Goods,NF,NoDur,NoDur,membres,1,1.0,False,
+Consumer Cyclical,Recreational Vehicles,NF,Durbl,Durbl,SIC représentatif 3716,0,,False,
+Consumer Cyclical,Department Stores,NF,Shops,Shops,SIC représentatif 5311,0,,False,
+Consumer Cyclical,Textile Manufacturing,NF,NoDur,NoDur,SIC représentatif 2200,0,,False,
+Consumer Defensive,Discount Stores,NF,Shops,Shops,membres,5,1.0,False,
+Consumer Defensive,Beverages - Non-Alcoholic,NF,NoDur,NoDur,membres,4,1.0,False,
+Consumer Defensive,Household & Personal Products,NF,Chems,Chems,membres,7,0.86,False,KMB (NF / Manuf / Manuf)
+Consumer Defensive,Tobacco,NF,NoDur,NoDur,membres,2,1.0,False,
+Consumer Defensive,Packaged Foods,NF,NoDur,NoDur,membres,5,1.0,False,
+Consumer Defensive,Confectioners,NF,NoDur,NoDur,membres,2,1.0,False,
+Consumer Defensive,Food Distribution,NF,Shops,Shops,membres,1,1.0,False,
+Consumer Defensive,Farm Products,NF,NoDur,NoDur,membres,3,1.0,False,
+Consumer Defensive,Grocery Stores,NF,Shops,Shops,membres,1,1.0,False,
+Consumer Defensive,Education & Training Services,NF,Other,Other,SIC représentatif 8200,0,,False,
+Consumer Defensive,Beverages - Brewers,NF,NoDur,NoDur,membres,1,1.0,False,
+Consumer Defensive,Beverages - Wineries & Distilleries,NF,NoDur,NoDur,membres,1,1.0,False,
+Energy,Oil & Gas Integrated,NF,Enrgy,Enrgy,membres,2,1.0,False,
+Energy,Oil & Gas Midstream,NF,Utils,Utils,membres,4,1.0,False,
+Energy,Oil & Gas E&P,NF,Enrgy,Enrgy,membres,9,0.89,False,TPL (NF / Other / Other)
+Energy,Oil & Gas Refining & Marketing,NF,Enrgy,Enrgy,membres,3,1.0,False,
+Energy,Oil & Gas Equipment & Services,NF,Enrgy,Enrgy,membres,3,0.67,False,BKR (NF / Manuf / Manuf)
+Energy,Uranium,NF,Other,Other,SIC représentatif 1094,0,,False,
+Energy,Oil & Gas Drilling,NF,Enrgy,Enrgy,SIC représentatif 1381,0,,False,
+Energy,Thermal Coal,NF,Enrgy,Enrgy,SIC représentatif 1220,0,,False,
+Financial Services,Banks - Diversified,FIN,FIN,banques,membres,5,1.0,False,
+Financial Services,Credit Services,FIN,FIN,banques,SIC représentatif 6141,6,0.5,True,"MA (NF / Other / Other), PYPL (NF / Other / Other), V (NF / Other / Other)"
+Financial Services,Asset Management,FIN,FIN,autres,membres,13,0.77,False,"NTRS (FIN / FIN / banques), PFG (FIN / FIN / assurances), STT (FIN / FIN / banques)"
+Financial Services,Insurance - Diversified,FIN,FIN,assurances,membres,4,1.0,False,
+Financial Services,Capital Markets,FIN,FIN,autres,membres,5,1.0,False,
+Financial Services,Banks - Regional,FIN,FIN,banques,membres,9,1.0,False,
+Financial Services,Insurance - Property & Casualty,FIN,FIN,assurances,membres,8,1.0,False,
+Financial Services,Financial Data & Stock Exchanges,FIN,FIN,autres,membres,9,0.44,False,"COIN (FIN / FIN / banques), FDS (NF / BusEq / BusEq), MCO (NF / Other / Other), MSCI (NF / Other / Other), SPGI (NF / Other / Other)"
+Financial Services,Insurance Brokers,NF,Other,Other,membres,6,1.0,False,
+Financial Services,Insurance - Life,FIN,FIN,assurances,membres,4,1.0,False,
+Financial Services,Shell Companies,NF,NoDur,NoDur,membres,1,1.0,False,
+Financial Services,Insurance - Specialty,FIN,FIN,assurances,SIC représentatif 6351,0,,False,
+Financial Services,Insurance - Reinsurance,FIN,FIN,assurances,membres,1,1.0,False,
+Financial Services,Mortgage Finance,FIN,FIN,banques,SIC représentatif 6162,0,,False,
+Financial Services,Financial Conglomerates,FIN,FIN,banques,SIC représentatif 6199,0,,False,
+Healthcare,Drug Manufacturers - General,NF,Hlth,Hlth,membres,9,1.0,False,
+Healthcare,Biotechnology,NF,Hlth,Hlth,membres,5,0.8,False,INCY (NF / Other / Other)
+Healthcare,Diagnostics & Research,NF,BusEq,BusEq,membres,12,0.58,False,"CRL (NF / Other / Other), IDXX (NF / Hlth / Hlth), IQV (NF / Other / Other), LH (NF / Hlth / Hlth), DGX (NF / Hlth / Hlth)"
+Healthcare,Medical Devices,NF,Hlth,Hlth,membres,10,1.0,False,
+Healthcare,Healthcare Plans,FIN,FIN,assurances,membres,6,0.83,False,CVS (NF / Shops / Shops)
+Healthcare,Medical Instruments & Supplies,NF,Hlth,Hlth,membres,8,1.0,False,
+Healthcare,Medical Distribution,NF,Shops,Shops,membres,4,1.0,False,
+Healthcare,Medical Care Facilities,NF,Hlth,Hlth,membres,3,1.0,False,
+Healthcare,Drug Manufacturers - Specialty & Generic,NF,Hlth,Hlth,membres,2,1.0,False,
+Healthcare,Health Information Services,NF,BusEq,BusEq,membres,1,1.0,False,
+Healthcare,Pharmaceutical Retailers,NF,Shops,Shops,SIC représentatif 5912,0,,False,
+Industrials,Aerospace & Defense,NF,Manuf,Manuf,membres,13,0.85,False,"LHX (NF / BusEq / BusEq), NOC (NF / BusEq / BusEq)"
+Industrials,Specialty Industrial Machinery,NF,Manuf,Manuf,membres,17,0.82,False,"AOS (NF / Durbl / Durbl), AME (NF / BusEq / BusEq), ROK (NF / BusEq / BusEq)"
+Industrials,Farm & Heavy Construction Machinery,NF,Manuf,Manuf,membres,3,0.67,False,PCAR (NF / Durbl / Durbl)
+Industrials,Railroads,NF,Other,Other,membres,4,0.75,False,WAB (NF / Manuf / Manuf)
+Industrials,Engineering & Construction,NF,Other,Other,membres,4,1.0,False,
+Industrials,Building Products & Equipment,NF,Manuf,Manuf,membres,5,0.8,False,TT (NF / BusEq / BusEq)
+Industrials,Specialty Business Services,NF,Other,Other,SIC représentatif 7389,3,0.33,True,"CPRT (NF / Shops / Shops), GPN (NF / Other / Other)"
+Industrials,Industrial Distribution,NF,Shops,Shops,membres,3,1.0,False,
+Industrials,Electrical Equipment & Parts,NF,BusEq,BusEq,membres,3,0.67,False,BE (NF / Manuf / Manuf)
+Industrials,Integrated Freight & Logistics,NF,Other,Other,membres,6,1.0,False,
+Industrials,Waste Management,NF,Other,Other,membres,2,1.0,False,
+Industrials,Conglomerates,NF,Manuf,Manuf,SIC représentatif 3600,2,0.5,True,HON (NF / Manuf / Manuf)
+Industrials,Rental & Leasing Services,NF,Other,Other,membres,1,1.0,False,
+Industrials,Airlines,NF,Other,Other,membres,3,1.0,False,
+Industrials,Trucking,NF,Other,Other,membres,1,1.0,False,
+Industrials,Tools & Accessories,NF,Manuf,Manuf,membres,2,1.0,False,
+Industrials,Metal Fabrication,NF,Manuf,Manuf,SIC représentatif 3440,0,,False,
+Industrials,Consulting Services,NF,Other,Other,SIC représentatif 8742,2,0.5,True,VRSK (NF / BusEq / BusEq)
+Industrials,Marine Shipping,NF,Other,Other,SIC représentatif 4400,0,,False,
+Industrials,Security & Protection Services,NF,Other,Other,membres,1,1.0,False,
+Industrials,Pollution & Treatment Controls,NF,BusEq,BusEq,membres,1,1.0,False,
+Industrials,Staffing & Employment Services,NF,Other,Other,SIC représentatif 7363,0,,False,
+Industrials,Airports & Air Services,NF,Other,Other,SIC représentatif 4581,0,,False,
+Industrials,Business Equipment & Supplies,NF,BusEq,BusEq,SIC représentatif 3579,0,,False,
+Industrials,Infrastructure Operations,NF,Other,Other,SIC représentatif 1600,0,,False,
+Real Estate,REIT - Specialty,REIT,REIT,REIT,membres,7,1.0,False,
+Real Estate,REIT - Healthcare Facilities,REIT,REIT,REIT,membres,3,1.0,False,
+Real Estate,REIT - Industrial,REIT,REIT,REIT,membres,3,1.0,False,
+Real Estate,REIT - Retail,REIT,REIT,REIT,membres,5,1.0,False,
+Real Estate,REIT - Residential,REIT,REIT,REIT,membres,6,0.83,False,INVH (NF / Other / Other)
+Real Estate,Real Estate Services,NF,Other,Other,membres,2,1.0,False,
+Real Estate,REIT - Diversified,REIT,REIT,REIT,membres,1,1.0,False,
+Real Estate,REIT - Mortgage,REIT,REIT,REIT,SIC représentatif 6798,0,,False,
+Real Estate,REIT - Office,REIT,REIT,REIT,membres,2,1.0,False,
+Real Estate,REIT - Hotel & Motel,REIT,REIT,REIT,membres,1,1.0,False,
+Real Estate,Real Estate - Development,NF,Other,Other,SIC représentatif 6552,0,,False,
+Real Estate,Real Estate - Diversified,NF,Other,Other,SIC représentatif 6500,0,,False,
+Technology,Semiconductors,NF,BusEq,BusEq,membres,14,1.0,False,
+Technology,Software - Infrastructure,NF,BusEq,BusEq,membres,16,0.88,False,"AKAM (NF / Other / Other), CPAY (NF / Other / Other)"
+Technology,Consumer Electronics,NF,BusEq,BusEq,membres,1,1.0,False,
+Technology,Software - Application,NF,BusEq,BusEq,membres,15,0.8,False,"FICO (NF / Other / Other), PAYX (NF / Other / Other), UBER (NF / Other / Other)"
+Technology,Computer Hardware,NF,BusEq,BusEq,membres,8,1.0,False,
+Technology,Semiconductor Equipment & Materials,NF,BusEq,BusEq,membres,5,0.8,False,LRCX (NF / Manuf / Manuf)
+Technology,Communication Equipment,NF,BusEq,BusEq,membres,6,0.83,False,ZBRA (NF / Manuf / Manuf)
+Technology,Information Technology Services,NF,BusEq,BusEq,SIC représentatif 7370,9,0.44,True,"CDW (NF / Shops / Shops), CTSH (NF / BusEq / BusEq), IBM (NF / BusEq / BusEq), JKHY (NF / BusEq / BusEq), LDOS (NF / BusEq / BusEq)"
+Technology,Electronic Components,NF,BusEq,BusEq,membres,5,0.6,False,"GLW (NF / Manuf / Manuf), TEL (NF / Shops / Shops)"
+Technology,Scientific & Technical Instruments,NF,BusEq,BusEq,membres,6,1.0,False,
+Technology,Electronics & Computer Distribution,NF,Shops,Shops,SIC représentatif 5045,0,,False,
+Technology,Solar,NF,BusEq,BusEq,membres,1,1.0,False,
+Utilities,Utilities - Regulated Electric,NF,Utils,Utils,membres,23,1.0,False,
+Utilities,Utilities - Independent Power Producers,NF,Utils,Utils,membres,3,1.0,False,
+Utilities,Utilities - Diversified,NF,Utils,Utils,SIC représentatif 4931,2,0.5,True,SRE (NF / Utils / Utils)
+Utilities,Utilities - Regulated Gas,NF,Utils,Utils,membres,2,1.0,False,
+Utilities,Utilities - Renewable,NF,Utils,Utils,SIC représentatif 4911,0,,False,
+Utilities,Utilities - Regulated Water,NF,Utils,Utils,membres,1,1.0,False,

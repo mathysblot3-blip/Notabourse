@@ -57,6 +57,22 @@ Lance les tests automatiques (sans Internet) : chaque point vert est un test ré
 ```
 Calcule les ratios des sociétés du cahier des charges avec les données Yahoo du jour et écrit `tests/cas_de_test.md`.
 
+## Construire la référence S&P 500
+
+```powershell
+.\.venv\Scripts\python.exe reference\construire_reference.py
+```
+Télécharge les données des ~500 membres du S&P 500 (liste de Wikipédia), calcule leurs ratios et leurs notes entre eux,
+et écrit `reference/reference.parquet` (ratios dérivés seulement), `reference/croissances.parquet` et
+`reference/membres_sp500.csv`. Environ 40 minutes ; si le calcul est interrompu, le relancer reprend où il s'était
+arrêté (cache dans `cache/`). Le robot de GitHub le relancera chaque semaine (étape f).
+
+```powershell
+.\.venv\Scripts\python.exe reference\construire_correspondance.py
+```
+Construit `reference/correspondance_yahoo.csv` (industrie Yahoo vers groupe et secteur, pour les sociétés qui ne
+déposent pas à la SEC) et la liste des cas à trancher `reference/correspondance_yahoo.md`. Lancé une fois, puis figé.
+
 ## Sources des données
 
 Yahoo Finance (bibliothèque yfinance, non officielle, sans garantie), SEC (codes SIC et dates de dépôt), Wikipédia (liste
