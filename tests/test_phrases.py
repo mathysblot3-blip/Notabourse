@@ -154,3 +154,13 @@ def test_rang_affiche_redonne_la_note_de_rentabilite():
             continue
         refaite = 100 * min(1, max(0, (c["detail"][0]["centile"] / 100 - 0.05) / 0.90))
         assert refaite == pytest.approx(c["note"], abs=1e-9)
+
+
+# --- Page Méthode : mêmes parties en français et en anglais ------------------------------------------------------------
+def test_page_methode_meme_structure_dans_les_deux_langues():
+    pages = {lg: (SITE / "traductions" / f"methode_{lg}.md").read_text(encoding="utf-8") for lg in ("fr", "en")}
+    titres = {lg: [l for l in p.splitlines() if l.startswith("### ")] for lg, p in pages.items()}
+    lignes_tableau = {lg: sum(l.startswith("|") for l in p.splitlines()) for lg, p in pages.items()}
+    assert len(titres["fr"]) == len(titres["en"]) == 9                       # « En bref » + 8 parties
+    assert lignes_tableau["fr"] == lignes_tableau["en"]
+    assert "—" not in pages["fr"] + pages["en"]                               # règle de rédaction : pas de tiret cadratin

@@ -155,3 +155,13 @@ Affichage seulement : rien dans cette partie ne change la note ni l'exclusion.
 | Rang « mieux que … % de son groupe » de la rentabilité et des fonds propres des financières : calculé sur l'écart à la moyenne du secteur, comme la note (il redonne la note de rentabilité à 10⁻¹⁴ près sur les 463 membres notés) | [P] |
 | Menus « Le calcul en détail » : ce que mesure la partie, le calcul étape par étape avec les chiffres de la société (note : S, moyenne et écart-type des S du groupe, M, centile, échelle des étoiles ; croissance : régularité et niveau ; dynamique : écart moyen, écart-type, t ou ampleur du retard ; santé : formule des voyants et leurs seuils) | [M] 19/10/2026 |
 | Zone orange élargie à l'affichage : un voyant est montré orange dès le seuil du point de vigilance (dettes 60 %, EBITDA moins de 4 fois les intérêts, flux d'exploitation négatif, financières 6 % de fonds propres), rouge seulement au rouge de la formule ; la moyenne est montrée orange si un voyant l'est ; l'étiquette « Point de vigilance » passe en orange. La formule et l'exclusion ne changent pas. Référence du 19/10 : 65 voyants montrés orange | [M] 19/10/2026 |
+
+## 12. Page Méthode (étape d, 19/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Contenu : la note, les quatre parties, le garde-fou, la comparaison au S&P 500, les adaptations aux données Yahoo, les limites ; sans chiffres de performance du backtest | [M] cahier des charges §5 |
+| Résultat du test d'acceptation et tableau des écarts à la recherche | [M] plan validé (étape d) |
+| Limites : l'échec de la première formule sur le test réservé et le fait que la formule actuelle a été construite en connaissant cette période, dit sans chiffre | [P], brouillon à valider |
+| Sources : articles cités par la recherche pour chaque partie et vérifiés dans son corpus (`conception_v2.md`, `rapport.md`) | [R] |
+| Texte en Markdown (`traductions/methode_fr.md`, `methode_en.md`), modifiable sans toucher au code | [P] |
