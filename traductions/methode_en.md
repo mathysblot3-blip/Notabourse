@@ -66,6 +66,8 @@ equity. This orange is a display warning only: it changes neither the score nor 
 - Accounts, prices and market values: **Yahoo Finance**, converted into dollars. Ratios are computed item by item as in
   the research.
 - Last 12 months: the last 4 published quarters, otherwise the last fiscal year (companies reporting half-yearly).
+- The website counts searches (date and company searched) to see what interests visitors; it records nothing about
+  the visitor.
 - S&P 500 members are scored against each other **every week**; their page comes from that calculation. Any other
   company is computed on request, then compared with these members as if it were added to its group, without changing
   their scores.

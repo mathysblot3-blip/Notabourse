@@ -165,3 +165,13 @@ Affichage seulement : rien dans cette partie ne change la note ni l'exclusion.
 | Limites : l'échec de la première formule sur le test réservé et le fait que la formule actuelle a été construite en connaissant cette période, dit sans chiffre | [P], brouillon à valider |
 | Sources : articles cités par la recherche pour chaque partie et vérifiés dans son corpus (`conception_v2.md`, `rapport.md`) | [R] |
 | Texte en Markdown (`traductions/methode_fr.md`, `methode_en.md`), modifiable sans toucher au code | [P] |
+
+## 13. Compteur des recherches (étape e, 19/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Table Supabase `recherches` : date, symbole, nom ; aucune donnée sur le visiteur | [M] cahier des charges (date, symbole, nom) |
+| Clé publique avec la règle « insertion seule » : ni lecture, ni modification, ni effacement avec cette clé | [P] P7, validée avec le plan |
+| Compteur visible par Mathys seul (tableau de bord Supabase), pas affiché sur le site | [M] 19/10/2026 |
+| Une ligne par société et par visite (pas à chaque clic), envoi en arrière-plan, silence en cas de panne | [P] |
+| Requête directe à l'API de Supabase avec `requests` (déjà installé), sans bibliothèque de plus | [P] |

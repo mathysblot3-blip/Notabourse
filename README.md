@@ -10,11 +10,13 @@ Réalisé par Mathys Blot. État : en construction (étape d sur g : interface).
 
 | Fichier ou dossier | Rôle |
 |---|---|
-| `notabourse/` | Le calcul, sans interface : données (`sources.py`), classement (`classement.py`), ratios (`ratios.py`), composantes (`composantes.py`), garde-fou (`garde_fou.py`), note (`note.py`), enchaînement (`calcul.py`), constantes (`constantes.py`), contenu de la fiche (`fiche.py`), phrases simples (`phrases.py`), mise en forme des nombres (`formats.py`) |
+| `notabourse/` | Le calcul, sans interface : données (`sources.py`), classement (`classement.py`), ratios (`ratios.py`), composantes (`composantes.py`), garde-fou (`garde_fou.py`), note (`note.py`), enchaînement (`calcul.py`), constantes (`constantes.py`), contenu de la fiche (`fiche.py`), phrases simples (`phrases.py`), mise en forme des nombres (`formats.py`), compteur des recherches (`compteur.py`) |
 | `app.py`, `vues/`, `traductions/` | L'interface : navigation (`app.py`), page de recherche et fiche (`vues/recherche.py`), page Méthode (`vues/methode.py`), textes en français et en anglais (`traductions/`, dont la page Méthode : `methode_fr.md` et `methode_en.md`, à corriger directement) |
 | `reference/` | Fichiers de référence du S&P 500 (`ff12_sic.csv` : table des 12 secteurs de Fama et French) |
 | `tests/` | Tests automatiques (`test_calcul.py` pour les calculs, `test_phrases.py` pour les phrases et les textes) et cas de test lus sur Internet (`cas_de_test.py`, résultat dans `cas_de_test.md`) |
+| `supabase/` | Scripts SQL du compteur des recherches : création de la table (`creer_table.sql`), lecture (`lire_compteur.sql`) |
 | `CHOIX.md` | Tous les choix de conception, avec leur nature (repris de la recherche, avis de Mathys, proposé, résultat de test) |
+| `pytest.ini` | Réglage des tests : seuls les fichiers `test_*.py` sont lancés |
 | `requirements.txt` | Bibliothèques Python et leurs versions |
 
 ## Installation sur un PC Windows (une seule fois)
@@ -45,6 +47,32 @@ avec une seule ligne, en remplaçant par son nom et son adresse :
 ```toml
 SEC_USER_AGENT = "Prénom Nom adresse@exemple.com"
 ```
+
+## Compteur des recherches (Supabase, facultatif)
+
+Le site ajoute une ligne (date, symbole, nom de la société) dans une table Supabase à chaque fiche affichée, une fois par
+société et par visite. Rien n'est enregistré sur le visiteur. Sans réglage, ou si Supabase est en panne, le site marche
+normalement. Mise en place, une seule fois :
+
+1. Sur [supabase.com](https://supabase.com), « Start your project », se connecter avec son compte GitHub.
+2. « New project » : nom `notabourse`, offre gratuite, région européenne. Le mot de passe de la base demandé à ce
+   moment reste personnel : le site n'en a pas besoin.
+3. Quand le projet est prêt : menu « SQL Editor » > « New query », coller tout le fichier `supabase/creer_table.sql`,
+   cliquer « Run ». Résultat attendu : « Success. No rows returned ».
+4. Relever l'adresse du projet (« Project URL », de la forme `https://xxxx.supabase.co`) et la clé **publique** (« Publishable
+   key », qui commence par `sb_publishable_`, ou l'ancienne clé « anon public »), dans les réglages du projet (« Project
+   Settings », rubriques des clés d'API et de l'API de données ; l'emplacement exact peut changer selon la version de
+   Supabase). **Jamais la clé « secret » ou « service_role »** : elle donne tous les droits.
+5. Ajouter deux lignes à `.streamlit/secrets.toml` :
+
+```toml
+SUPABASE_URL = "https://xxxx.supabase.co"
+SUPABASE_CLE = "sb_publishable_..."
+```
+
+Avec cette clé, la table accepte seulement des ajouts : personne ne peut lire, modifier ni effacer les lignes, même si la
+clé fuitait. Pour lire le compteur : « SQL Editor », coller `supabase/lire_compteur.sql`, « Run » (ou « Table Editor »
+> `recherches`). Pour le site en ligne, les deux mêmes lignes vont dans les secrets de Streamlit Cloud.
 
 ## Lancer les tests
 

@@ -5,6 +5,7 @@ import streamlit as st                 # interface web
 
 from notabourse.calcul import charger_reference, noter_hors_indice, ratios_et_croissances
 from notabourse.classement import charger_correspondance_yahoo
+from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
@@ -348,3 +349,7 @@ if texte.strip():
         st.info(T["erreur_classement"])
     else:
         afficher_fiche(fiche, T, L, props[i]["bourse"])
+        deja = st.session_state.setdefault("recherches_comptees", set())     # sociétés déjà comptées pendant
+        if fiche["symbole"] not in deja:                                      # cette visite (pas à chaque clic)
+            deja.add(fiche["symbole"])
+            compter_recherche(fiche["symbole"], fiche["nom"])                 # compteur Supabase, discret

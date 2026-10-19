@@ -68,6 +68,8 @@ l'exclusion.
 - Comptes, cours et capitalisations : **Yahoo Finance**, convertis en dollars. Les ratios sont calculés poste par poste
   comme dans la recherche.
 - 12 derniers mois : les 4 derniers trimestres publiés, sinon le dernier exercice (sociétés qui publient par semestre).
+- Le site compte les recherches (date et société cherchée) pour savoir ce qui intéresse ; il n'enregistre rien sur
+  le visiteur.
 - Les membres du S&P 500 sont notés entre eux **chaque semaine** ; leur fiche vient de ce calcul. Une autre société est
   calculée à la demande, puis comparée à ces membres comme si on l'ajoutait à son groupe, sans changer leurs notes.
 
