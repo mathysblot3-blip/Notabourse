@@ -23,7 +23,7 @@ ROE_EXCEPTIONNEL = 0.40          # rentabilité des fonds propres d'au moins 40 
 ROE_FONDS_PROPRES_FAIBLES = 1.0  # au-delà de 100 %, les fonds propres sont plus petits que le bénéfice d'une année
 CROISSANCE_FORTE = 0.15          # croissance moyenne d'au moins 15 % par an
 CROISSANCE_NETTE = 0.05          # croissance moyenne d'au moins 5 % par an (sinon « lente »)
-AVANCE_NETTE = 0.05              # écart au S&P 500 (mesure de la note, ramenée à un an) : net au-delà de 5 %
+AVANCE_NETTE = 0.001             # écart moyen au S&P 500 (mesure de la note) : net au-delà de 0,1 % par semaine
 NOTE_DYNAMIQUE_FORTE = 75        # en avance et note de la dynamique d'au moins 75 : « nettement battu »
 NOTE_DYNAMIQUE_FAIBLE = 25       # en retard et note de la dynamique sous 25 : « nettement décroché »
 TAUX_BORNE = 1.0                 # croissance affichée bornée à +-100 % (au-delà : « > +100 % »)
@@ -203,7 +203,7 @@ def phrases_dynamique(f, c):
     plafonnées (fonction tente). Ce n'est pas la performance réelle de l'action : la phrase ne donne donc pas de
     pourcentage, seulement le sens (avance ou retard), sa force (note de la partie) et sa régularité."""
     detail = {d["ratio"]: d for d in c["detail"]}
-    a, q = detail["AVANCE"]["valeur"], c["note"]
+    a, q = detail["ECART_HEBDO"]["valeur"], c["note"]
     if manquant(a) or q is None:
         return [_p("dyn_inconnue", True)]
     if a >= AVANCE_NETTE:                                                     # en avance
@@ -213,32 +213,58 @@ def phrases_dynamique(f, c):
     else:                                                                     # en retard
         niveau = 2 if q >= NOTE_DYNAMIQUE_FAIBLE else 1
     sens = "pos" if niveau >= 4 else ("neutre" if niveau == 3 else "neg")
-    centile = detail["ECART_M"]["centile"]                                    # haut = régulière (peu d'écarts)
+    centile = detail["ECART_TYPE_HEBDO"]["centile"]                                    # haut = régulière (peu d'écarts)
     regularite = ("reg" if centile is not None and centile >= FORT else
                   "irr" if centile is not None and centile <= FAIBLE else "aucune")
     return [_p("dyn_modele", True, tete=(f"dyn_{niveau}", "cle"), suite=(f"dyn_suite_{sens}_{regularite}", "cle"))]
 
 
 # --- 6. Santé financière (garde-fou et point de vigilance) -----------------------------------------------------------
+def _vigilance_du_voyant(v):
+    """Phrase de vigilance d'un voyant s'il franchit un seuil d'affichage de Mathys (SEUILS_VIGILANCE), sinon None."""
+    m = v["mesure"] or {}
+    if v["voyant"] == "endettement" and not manquant(m.get("tlmta")) and m["tlmta"] >= SEUILS_VIGILANCE["endettement"]:
+        return _p("sante_dettes", x=(m["tlmta"], "pct0"))
+    if v["voyant"] == "intérêts":
+        if m.get("ebitda_negatif"):
+            return _p("sante_interets_negatif")                               # résultat négatif avec des intérêts
+        if not m.get("sans_interets") and not manquant(m.get("couverture")) and \
+                m["couverture"] < SEUILS_VIGILANCE["intérêts"]:
+            return _p("sante_interets", x=(m["couverture"], "nombre1"))
+    if v["voyant"] == "trésorerie" and not m.get("flux_positif") and not manquant(m.get("annees")):
+        return _p("sante_tresorerie", x=(m["annees"], "nombre1"))             # l'activité consomme de l'argent
+    if v["voyant"] == "fonds propres / actif" and not manquant(m.get("ratio")) and \
+            m["ratio"] < SEUILS_VIGILANCE["fonds propres / actif"]:
+        return _p("sante_fonds_propres", x=(m["ratio"], "pct1"))
+    return None
+
+
 def _points_de_vigilance(f):
     """Points faibles de santé financière d'après les seuils d'affichage de Mathys (SEUILS_VIGILANCE)."""
-    sortie = []
-    for v in f["garde_fou"]["voyants"]:
-        m = v["mesure"] or {}
-        if v["voyant"] == "endettement" and not manquant(m.get("tlmta")) and m["tlmta"] >= SEUILS_VIGILANCE["endettement"]:
-            sortie.append(_p("sante_dettes", x=(m["tlmta"], "pct0")))
-        elif v["voyant"] == "intérêts":
-            if m.get("ebitda_negatif"):
-                sortie.append(_p("sante_interets_negatif"))                   # résultat négatif avec des intérêts
-            elif not m.get("sans_interets") and not manquant(m.get("couverture")) and \
-                    m["couverture"] < SEUILS_VIGILANCE["intérêts"]:
-                sortie.append(_p("sante_interets", x=(m["couverture"], "nombre1")))
-        elif v["voyant"] == "trésorerie" and not m.get("flux_positif") and not manquant(m.get("annees")):
-            sortie.append(_p("sante_tresorerie", x=(m["annees"], "nombre1")))     # l'activité consomme de l'argent
-        elif v["voyant"] == "fonds propres / actif" and not manquant(m.get("ratio")) and \
-                m["ratio"] < SEUILS_VIGILANCE["fonds propres / actif"]:
-            sortie.append(_p("sante_fonds_propres", x=(m["ratio"], "pct1")))
-    return sortie
+    return [p for p in (_vigilance_du_voyant(v) for v in f["garde_fou"]["voyants"]) if p]
+
+
+def couleur_affichage(v):
+    """Couleur MONTRÉE d'un voyant (affichage seulement) [M] 19/10/2026 : la zone orange est élargie jusqu'aux seuils
+    de vigilance pour prévenir plus tôt. Rouge = rouge de la formule ; orange = orange de la formule OU seuil de
+    vigilance franchi ; vert sinon. La formule (et donc l'exclusion) garde ses propres couleurs."""
+    if v["note"] is None:
+        return None                                                           # voyant incalculable : gris
+    if v["couleur"] == "rouge":
+        return "rouge"
+    if v["couleur"] == "orange" or _vigilance_du_voyant(v):
+        return "orange"
+    return "vert"
+
+
+def couleur_moyenne_affichage(f):
+    """Couleur MONTRÉE de la moyenne des voyants : celle de la formule si elle est orange ou rouge (exclusion) ;
+    orange si un voyant est montré orange ou rouge ; vert sinon."""
+    gf = f["garde_fou"]
+    if gf["couleur"] in (None, "orange", "rouge"):
+        return gf["couleur"]
+    montrees = [couleur_affichage(v) for v in gf["voyants"]]
+    return "orange" if any(c in ("orange", "rouge") for c in montrees) else "vert"
 
 
 def _points_forts_sante(f):

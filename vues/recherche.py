@@ -5,16 +5,17 @@ import streamlit as st                 # interface web
 
 from notabourse.calcul import charger_reference, noter_hors_indice, ratios_et_croissances
 from notabourse.classement import charger_correspondance_yahoo
+from notabourse.constantes import ECHELLE_ETOILES, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.fiche import fiche_hors_indice, fiche_membre
-from notabourse.phrases import phrases, rendre
+from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.sources import DonneesIndisponibles, cotations, table_cik_sec
 from vues.commun import SITE, date, dollars, nombre, pct, textes
 
 BLEU = "#5B8DEF"                                                              # couleur des barres, jauge, étoiles
 COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D64545", None: "#4A4F5C"}   # réservées au garde-fou
 VIOLET = "#8E7CC3"                                                            # bandeau « exclue » (pas une couleur du garde-fou)
-JAUNE = "#C9A227"                                                             # point de vigilance (affichage seulement)
-STATUTS = {"bonne": COULEURS["vert"], "vigilance": JAUNE, "exclue": VIOLET, "inconnue": COULEURS[None]}
+STATUTS = {"bonne": COULEURS["vert"], "vigilance": COULEURS["orange"],        # point de vigilance : orange [M] 19/10
+           "exclue": VIOLET, "inconnue": COULEURS[None]}
 
 
 # --- Données, gardées en mémoire (cache) ------------------------------------------------------------------------
@@ -104,6 +105,8 @@ def valeur_ratio(x, fmt, L):
     """Valeur d'un ratio selon son format (pourcentage, dollars, années)."""
     if fmt == "pct":
         return pct(x, L)
+    if fmt == "pct2":
+        return pct(x, L, 2)
     if fmt == "usd":
         return dollars(x, L)
     return nombre(x, L, 1)
@@ -140,13 +143,24 @@ def texte_phrases(liste, T, L):
 
 
 def detail_note(f, T, L, dp):
-    """Menu dépliant de la note : note M, jauge, rang dans le S&P 500, membres proches, dates des données."""
-    n, cp = f["note"], f["comparaison"]
-    c1, c2 = st.columns([1.4, 1])
-    c1.plotly_chart(jauge(n["sur_100"]), width="stretch", config={"displayModeBar": False})
-    c1.caption(T["aide_note_100"])
-    c2.metric(T["note_m"], nombre(n["M"], L, 2), help=T["aide_note_m"])
-    c2.caption(f"{nombre(n['etoiles'], L, 1)} / 5 ★")
+    """Menu dépliant de la note : le calcul étape par étape avec les chiffres de la société (S, moyenne et écart-type
+    du groupe, M, centile, étoiles), puis le rang dans le S&P 500, les membres proches et les dates des données."""
+    n, cp, k = f["note"], f["comparaison"], f["calcul"]
+    st.markdown(f"**{T['calcul_etapes']}**")
+    if not f["membre"]:
+        st.caption(T["calc_note_hors_indice"])
+    presentes = [c["note"] for c in f["composantes"] if c["note"] is not None]   # notes de partie calculables
+    st.markdown(T["calc_note_1"].format(groupe=T["groupe_" + f["groupe"]], nb=k["nb_groupe"]))
+    st.markdown(T["calc_note_2"].format(detail=" + ".join(nombre(x, L, 1) for x in presentes), k=len(presentes),
+                                        S=nombre(k["S"], L, 1)))
+    st.markdown(T["calc_note_3"].format(S=nombre(k["S"], L, 1), m=nombre(k["S_moyenne_groupe"], L, 1),
+                                        e=nombre(k["S_ecart_type_groupe"], L, 1), M=nombre(n["M"], L, 2)))
+    st.markdown(T["calc_note_4"].format(n=k["nb_membres_notes"], note=nombre(n["sur_100"], L, 0)))
+    if n["regle"] == "affichage":
+        st.caption(T["calc_note_regle_affichage"])
+    st.markdown(T["calc_note_5"])
+    st.table(pd.DataFrame([{T["col_etoiles_note"]: str(minimum), T["col_etoiles"]: nombre(nb, L, 1)}
+                           for minimum, nb in ECHELLE_ETOILES]))
     if cp:
         st.markdown(f"**{T['comparaison']}**  \n" + T["rang"].format(rang=cp["rang"], nb=cp["nb"]) + "  \n" +
                     T["moyenne_secteur_note"].format(x=nombre(cp["moyenne_secteur"], L, 0), n=cp["nb_secteur"]))
@@ -157,10 +171,38 @@ def detail_note(f, T, L, dp):
                                          reference=date(f["dates"]["reference"], L)))
 
 
+def etapes_composante(f, c, T, L):
+    """Texte « le calcul, étape par étape » d'une partie, avec les chiffres de la société."""
+    note = "-" if c["note"] is None else nombre(c["note"], L, 0)
+    secteur = T[f"secteur_{f['secteur']}"] if f["groupe"] != "FIN" else T["sous_" + f["sous_secteur"]]
+    k = f["calcul"]
+    if c["code"] == "Q1":
+        v = c["detail"][0]["valeur"]
+        cle = "calc_rent_fin" if f["groupe"] == "FIN" else "calc_rent_nf"
+        return T[cle].format(v=pct(v, L, 1), secteur=secteur, note=note)
+    if c["code"] == "G1":
+        serie = lambda col: T["serie_" + col.split("_", 1)[1]]                # PERS_CA -> « ventes »
+        pers = ", ".join(f"{serie(col)} {nombre(x, L, 2)}" for col, x in k["PERS"].items()) + " " + T["calc_pers_suffixe"]
+        gs = ", ".join(f"{serie(col)} {pct(x, L, 0)}" for col, x in k["GS"].items()) + " " + T["calc_gs_suffixe"]
+        return T["calc_croiss"].format(pers=pers, gs=gs, note=note)
+    if c["code"] == "R2":
+        return T["calc_bilan_" + f["groupe"]].format(note=note)
+    m = k["M1"]                                                               # dynamique
+    if m["brut"] is None:
+        return T["calc_dyn_manquant"]
+    etape4 = (T["calc_dyn_pos"].format(brut=nombre(m["brut"], L, 2)) if m["moyenne"] > 0 else
+              T["calc_dyn_neg"].format(s=pct(m["s_med"], L, 2), brut=nombre(m["brut"], L, 2)))
+    return T["calc_dyn"].format(moy=pct(m["moyenne"], L, 2), n=int(m["n"]), e=pct(m["ecart_type"], L, 2),
+                                etape4=etape4, note=note)
+
+
 def detail_composante(f, c, T, L, dp):
-    """Menu dépliant d'une partie : ce qu'elle mesure, puis ses chiffres (ratios ou croissances annuelles)."""
+    """Menu dépliant d'une partie : ce qu'elle mesure, le calcul étape par étape, puis ses chiffres."""
     cle = f"phrase_{c['nom']}_fin" if f["groupe"] == "FIN" and c["nom"] in ("rentabilite", "bilan") else f"phrase_{c['nom']}"
-    st.caption(T[cle] + (f" ({T['historique_court']})" if c["code"] == "G1" else ""))
+    st.markdown(f"**{T['ce_que_mesure']}**{dp}" + T[cle] + (f" ({T['historique_court']})" if c["code"] == "G1" else ""))
+    st.markdown(f"**{T['calcul_etapes']}**")
+    st.markdown(md(etapes_composante(f, c, T, L)))
+    st.markdown(f"**{T['chiffres_societe']}**")
     if c["code"] == "G1":
         if not c["croissances"]:
             st.write(T["donnees_insuffisantes"])
@@ -170,23 +212,53 @@ def detail_composante(f, c, T, L, dp):
         st.table(pd.DataFrame([{T["col_ratio"]: T[d["ratio"]], T["col_valeur"]: valeur_ratio(d["valeur"], d["format"], L),
                                 T["col_moyenne_secteur"]: valeur_ratio(d["moyenne_secteur"], d["format"], L),
                                 T["col_centile"]: nombre(d["centile"], L, 0)} for d in c["detail"]]))
+        if any(d.get("en_ecart") for d in c["detail"]):
+            st.caption(T["note_rang_ecart"])                                  # rang sur l'écart au secteur, comme la note
+
+
+def seuils_voyant(nom, T, L):
+    """Seuils affichés d'un voyant : (vert de la formule, rouge de la formule, orange du site), tirés des constantes."""
+    vert, rouge = SEUILS_GARDE_FOU[nom]                                       # seuils de la formule (inchangés)
+    if nom == "trésorerie":
+        ans = lambda x: T["unite_an" if x == 1 else "unite_ans"].format(x=nombre(x, L, 0))
+        return (T["ou_plus"].format(x=ans(vert)) + T["ou_flux_positif"], T["ou_moins"].format(x=ans(rouge)),
+                T["flux_negatif"])
+    if nom == "endettement":
+        return (T["ou_moins"].format(x=pct(vert, L, 0)), T["ou_plus"].format(x=pct(rouge, L, 0)),
+                T["ou_plus"].format(x=pct(SEUILS_VIGILANCE[nom], L, 0)))
+    if nom == "intérêts":
+        fois = lambda x: T["unite_fois"].format(x=nombre(x, L, 0))
+        return (T["ou_plus"].format(x=fois(vert)), T["ou_moins"].format(x=fois(rouge)),
+                T["moins_de"].format(x=fois(SEUILS_VIGILANCE[nom])))
+    return (T["ou_plus"].format(x=pct(vert, L, 0)), T["ou_moins"].format(x=pct(rouge, L, 0)),   # fonds propres / actif
+            T["moins_de"].format(x=pct(SEUILS_VIGILANCE[nom], L, 0)))
 
 
 def detail_sante(f, T, L, dp):
-    """Menu dépliant de la santé financière : voyants du garde-fou, moyenne, conditions d'exclusion."""
+    """Menu dépliant de la santé financière : voyants (couleurs du site), calcul étape par étape, seuils, conditions."""
     gf = f["garde_fou"]
-    st.caption(T["phrase_garde_fou"])
     cols = st.columns(len(gf["voyants"]) + 1)
     for col, v in zip(cols, gf["voyants"]):
         note = "" if v["note"] is None else f" · {nombre(v['note'], L, 2)}"
         col.markdown(pastille(f"<b>{T['voyant_' + v['voyant']]}</b>{note}<br><small>{mesure_voyant(v, T, L)}</small>",
-                              v["couleur"]), unsafe_allow_html=True)
+                              couleur_affichage(v)), unsafe_allow_html=True)
     moy = "-" if gf["moyenne"] is None else nombre(gf["moyenne"], L, 2)
-    cols[-1].markdown(pastille(f"<b>{T['moyenne_voyants']}</b><br>{moy}", gf["couleur"]), unsafe_allow_html=True)
-    st.markdown(f"**{T['conditions']}**")
+    cols[-1].markdown(pastille(f"<b>{T['moyenne_voyants']}</b><br>{moy}", couleur_moyenne_affichage(f)),
+                      unsafe_allow_html=True)
+    st.markdown(f"**{T['calcul_etapes']}**")
+    st.markdown(T["calc_sante_1"])
+    lignes = []
+    for v in gf["voyants"]:
+        vert, rouge, orange = seuils_voyant(v["voyant"], T, L)
+        lignes.append({T["col_voyant"]: T["voyant_" + v["voyant"]], T["col_mesure"]: T["mesure_nom_" + v["voyant"]],
+                       T["col_vert"]: vert, T["col_rouge"]: rouge, T["col_orange_site"]: orange})
+    st.table(pd.DataFrame(lignes))
+    st.markdown(T["calc_sante_2"].format(moy=moy))
+    st.markdown(T["calc_sante_3"])
     for cnd in gf["conditions"]:
         etat = T["remplie"] if cnd["remplie"] else (T["donnee_manquante"] if cnd.get("donnee_manquante") else T["non_remplie"])
         st.markdown(f"- {T['cond_' + cnd['condition']]}{dp}**{etat}**")
+    st.markdown(T["calc_sante_4"])
     if gf["exclue"]:
         st.caption(T["explication_exclusion"])
 
@@ -215,11 +287,10 @@ def afficher_fiche(f, T, L, bourse=None):
     if n["sur_100"] is None:
         st.info(T["pas_de_note"])
     else:
-        st.markdown(f'<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
-                    f'<div>{etoiles_html(n["etoiles"])}</div>'
-                    f'<div style="font-size:2.4rem;font-weight:700;line-height:1">{nombre(n["sur_100"], L, 0)}'
-                    f'<span style="font-size:1.1rem;font-weight:400;opacity:.7"> / 100</span></div></div>',
-                    unsafe_allow_html=True)
+        c1, c2 = st.columns([1, 1.2], vertical_alignment="center")          # étoiles | jauge en demi-cercle [M]
+        c1.markdown(etoiles_html(n["etoiles"]), unsafe_allow_html=True)
+        c1.caption(f"{nombre(n['etoiles'], L, 1)} / 5 · {T['note_m']}{dp}{nombre(n['M'], L, 2)}", help=T["aide_note_m"])
+        c2.plotly_chart(jauge(n["sur_100"]), width="stretch", config={"displayModeBar": False})
         st.markdown(texte_phrases(P["note"], T, L))
         for a in f["avertissements"]:
             if a in ("partielle", "cotee_recente"):

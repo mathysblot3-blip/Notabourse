@@ -63,6 +63,26 @@ def test_vigilance_tresorerie_et_financieres():
     assert sante(fiche("FIN", voyants=assez))["statut"] == "bonne"
 
 
+@pytest.mark.parametrize("note, couleur_formule, tlmta, attendu", [
+    (1.0, "vert", 0.30, "vert"),       # peu de dettes : vert
+    (1.0, "vert", 0.65, "orange"),     # vert pour la formule, mais seuil de vigilance franchi : montré orange
+    (0.0, "orange", 0.85, "orange"),   # orange de la formule : orange
+    (-0.5, "rouge", 0.95, "rouge"),    # rouge de la formule : rouge
+])
+def test_couleur_affichee_elargit_l_orange(note, couleur_formule, tlmta, attendu):
+    from notabourse.phrases import couleur_affichage
+    v = {"voyant": "endettement", "note": note, "couleur": couleur_formule, "mesure": {"tlmta": tlmta}}
+    assert couleur_affichage(v) == attendu
+
+
+def test_moyenne_montree_orange_sans_exclusion():
+    from notabourse.phrases import couleur_moyenne_affichage
+    v = [{"voyant": "endettement", "note": 1.0, "couleur": "vert", "mesure": {"tlmta": 0.65}}]
+    f = fiche(voyants=v)
+    f["garde_fou"]["couleur"] = "vert"                                        # la formule : vert, pas d'exclusion
+    assert couleur_moyenne_affichage(f) == "orange"
+
+
 def test_exclusion_avant_vigilance():
     cond = [{"condition": "garde_fou", "remplie": True}, {"condition": "benefices", "remplie": False},
             {"condition": "fonds_propres", "remplie": True}]
@@ -120,3 +140,17 @@ def test_toutes_les_fiches_des_membres_se_lisent():
             for p in (liste["phrases"] if partie == "sante" else liste):
                 for lg in ("fr", "en"):
                     assert rendre(p, T[lg], lg)                               # texte non vide, aucune clé manquante
+
+
+# --- Détail chiffré : le rang affiché suit la note --------------------------------------------------------------------
+def test_rang_affiche_redonne_la_note_de_rentabilite():
+    """Rentabilité : note = 100 x (rang - 5 %) / 90 %, bornée ; le rang affiché doit redonner la note exacte."""
+    from notabourse.calcul import charger_reference
+    from notabourse.fiche import fiche_membre
+    ref, cr = charger_reference()
+    for s in ref.index[:120]:                                                 # 120 membres suffisent (rapide)
+        c = fiche_membre(s, ref, cr)["composantes"][0]                        # rentabilité
+        if c["note"] is None or c["detail"][0]["centile"] is None:
+            continue
+        refaite = 100 * min(1, max(0, (c["detail"][0]["centile"] / 100 - 0.05) / 0.90))
+        assert refaite == pytest.approx(c["note"], abs=1e-9)
