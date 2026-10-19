@@ -73,7 +73,7 @@ Ordre de repli de gauche à droite (« → ») ; « 0 si absent » reprend la r�
 |---|---|
 | TTM (12 derniers mois) d'un poste : somme des 4 derniers trimestres s'ils se suivent, s'ils contiennent ce poste et si le dernier est postérieur au dernier exercice ; sinon le dernier exercice (comme la recherche quand aucun 10-Q ne suit le 10-K). Les sociétés qui publient par semestre (LVMH, Nestlé, Unibail) n'ont pas de trimestres chez Yahoo : TTM = dernier exercice | [P] (la recherche : exercice + cumul de l'exercice en cours − cumul de l'an passé, équivalent) |
 | Plus de 15 mois depuis la fin de la dernière période : poste manquant | [R] conception_v2 §2.2 |
-| Bilan : le plus récent disponible (trimestriel, semestriel ou annuel) | [R] « dernier bilan déposé » |
+| Bilan : le plus récent **complet** (actif, dettes et fonds propres présents), trimestriel, semestriel ou annuel ; si aucun n'est complet, le plus récent. Tous les postes viennent de la même date | [R] « dernier bilan déposé », adapté [M] 19/10/2026 : au premier passage du robot, Yahoo a renvoyé pour 21 membres un bilan de juin à moitié rempli (7 notes déplacées de plus de 5 points, Gartner 42 → 10) |
 | Exercices : les 4 plus récents où la série existe | [M] 19/10/2026 (4 exercices) |
 | Calcul daté (test d'acceptation) : cours jusqu'à la veille de la date ; une période n'est retenue que si son rapport (10-Q, 10-K...) a été déposé à la SEC avant la date, d'après l'index des dépôts (métadonnées seulement) ; sans dépôt SEC : trimestres clos au moins 45 jours avant, exercices au moins 75 jours avant | [M] 19/10/2026 |
 

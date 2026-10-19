@@ -86,6 +86,7 @@ ces adaptations :
 | Note dès 2 parties, avec un avertissement (la recherche exige la dynamique) | Choix de l'auteur : noter aussi les sociétés incomplètes, en le signalant |
 | Sociétés cotées depuis moins de 12 mois notées, avec un avertissement (la recherche ne les note pas) | Même choix |
 | Classement par l'industrie Yahoo quand la SEC n'a pas de code d'activité | Sociétés non américaines |
+| Bilan : le plus récent qui donne l'actif, les dettes et les fonds propres (la recherche prend le dernier bilan déposé) | Yahoo renvoie parfois un bilan récent à moitié rempli |
 | Comptes en normes IFRS (sociétés européennes, asiatiques...) | Définitions proches mais pas identiques (loyers, éléments exceptionnels) : comparaison moins exacte |
 | Phrases simples et point de vigilance orange | Affichage seulement : la note ne change pas |
 

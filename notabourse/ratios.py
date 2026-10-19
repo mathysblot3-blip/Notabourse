@@ -129,19 +129,11 @@ def ttm(annuel, trim, colonne, D):
     return valeur, fin, origine
 
 
-def dernier_bilan(bilan, bilan_t, D):
-    """Postes du bilan le plus récent (trimestriel, semestriel ou annuel). Renvoie (dict des postes, date)."""
-    colonnes = {}
-    for df in (bilan_t, bilan):                                               # trimestriel d'abord, à date égale
-        for c in df.columns:
-            if df[c].notna().any():
-                colonnes.setdefault(c, []).append(df[c])
-    if not colonnes:
-        return {}, None
-    date = max(colonnes)                                                      # date du bilan le plus récent
-    if date < D - pd.DateOffset(months=MOIS_RECENCE):                         # trop ancien : rien
-        return {}, date
-    tableau = pd.concat(colonnes[date], axis=1)                               # le ou les bilans de cette date
+POSTES_BILAN_COMPLET = ["TA", "TL", "SE"]   # un bilan est « complet » s'il donne l'actif, les dettes et les fonds propres
+
+
+def _postes_bilan(tableau):
+    """Valeurs des postes P_BILAN dans le ou les bilans d'une même date (premier nom disponible, ordre de repli)."""
     valeurs = {}
     for k, noms in P_BILAN.items():
         v = np.nan
@@ -152,7 +144,28 @@ def dernier_bilan(bilan, bilan_t, D):
                     v = float(x.iloc[0])
                     break
         valeurs[k] = v
-    return valeurs, date
+    return valeurs
+
+
+def dernier_bilan(bilan, bilan_t, D):
+    """Postes du DERNIER BILAN COMPLET (trimestriel, semestriel ou annuel) : le plus récent qui donne l'actif, les dettes
+    et les fonds propres ; si aucun n'est complet, le plus récent tel quel. Tous les postes viennent de la même date.
+    [M] 19/10/2026 : Yahoo renvoie parfois un bilan récent à moitié rempli (constaté sur 21 membres lors du premier
+    passage du robot), qui faisait disparaître des ratios. Renvoie (dict des postes, date)."""
+    colonnes = {}
+    for df in (bilan_t, bilan):                                               # trimestriel d'abord, à date égale
+        for c in df.columns:
+            if df[c].notna().any():
+                colonnes.setdefault(c, []).append(df[c])
+    if not colonnes:
+        return {}, None
+    dates = sorted(colonnes, reverse=True)                                    # du plus récent au plus ancien
+    postes = {d: _postes_bilan(pd.concat(colonnes[d], axis=1)) for d in dates}
+    complets = [d for d in dates if all(pd.notna(postes[d][k]) for k in POSTES_BILAN_COMPLET)]
+    date = complets[0] if complets else dates[0]                              # le plus récent complet, sinon le plus récent
+    if date < D - pd.DateOffset(months=MOIS_RECENCE):                         # trop ancien : rien
+        return {}, date
+    return postes[date], date
 
 
 def couper(df, limite, depots=None, D=None):

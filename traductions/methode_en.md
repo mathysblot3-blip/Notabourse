@@ -85,6 +85,7 @@ adaptations:
 | A score from 2 parts, with a warning (the research requires momentum) | Author's choice: also score incomplete companies, while flagging it |
 | Companies listed for less than 12 months are scored, with a warning (the research does not score them) | Same choice |
 | Classification by the Yahoo industry when the SEC has no industry code | Non-US companies |
+| Balance sheet: the latest one that gives assets, debts and equity (the research takes the last filed balance sheet) | Yahoo sometimes returns a half-filled recent balance sheet |
 | IFRS accounts (European, Asian companies...) | Close but not identical definitions (leases, one-off items): a less exact comparison |
 | Simple sentences and the orange watch point | Display only: the score does not change |
 

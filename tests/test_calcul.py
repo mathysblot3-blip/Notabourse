@@ -14,7 +14,7 @@ from notabourse.composantes import croissance_symetrique, pers, tente  # noqa: E
 from notabourse.constantes import PERS_ANNUEL  # noqa: E402
 from notabourse.garde_fou import couleur, exclusions, note_voyant, notes_garde_fou  # noqa: E402
 from notabourse.note import etoiles, note_affichage_hors_indice, note_m_reference  # noqa: E402
-from notabourse.ratios import couper, poste, ttm  # noqa: E402
+from notabourse.ratios import couper, dernier_bilan, poste, ttm  # noqa: E402
 
 
 # --- Garde-fou : les points du tableau de candidat_c8.md --------------------------------------------------------
@@ -188,3 +188,33 @@ def test_affichage_societe_recente_notee():
     ext["premier_cours"] = ext["date"] - pd.Timedelta(days=100)               # cotée depuis 100 jours
     assert np.isnan(note_m_reference(ext, ref)["note_sur_100"].iloc[0])
     assert note_affichage_hors_indice(ext, ref)["note_sur_100"].notna().iloc[0]
+
+
+# --- Bilan : le dernier bilan complet [M] 19/10/2026 ------------------------------------------------------------------
+def _bilan(colonnes):
+    """Faux bilan Yahoo : {date: {poste: valeur}} -> tableau postes x dates."""
+    return pd.DataFrame({pd.Timestamp(d): v for d, v in colonnes.items()})
+
+
+def test_bilan_recent_incomplet_ignore():
+    """Juin ne donne que l'actif : on garde mars, complet, et tous les postes viennent de mars."""
+    trimestriel = _bilan({"2026-06-30": {"Total Assets": 9.0},
+                          "2026-03-31": {"Total Assets": 7.7, "Total Liabilities Net Minority Interest": 7.6,
+                                         "Stockholders Equity": 0.1}})
+    valeurs, date = dernier_bilan(pd.DataFrame(), trimestriel, pd.Timestamp("2026-10-19"))
+    assert date == pd.Timestamp("2026-03-31") and valeurs["TA"] == 7.7 and valeurs["SE"] == 0.1
+
+
+def test_bilan_recent_complet_garde():
+    trimestriel = _bilan({"2026-06-30": {"Total Assets": 9.0, "Total Liabilities Net Minority Interest": 8.0,
+                                         "Stockholders Equity": 1.0},
+                          "2026-03-31": {"Total Assets": 7.7, "Total Liabilities Net Minority Interest": 7.6,
+                                         "Stockholders Equity": 0.1}})
+    _, date = dernier_bilan(pd.DataFrame(), trimestriel, pd.Timestamp("2026-10-19"))
+    assert date == pd.Timestamp("2026-06-30")
+
+
+def test_aucun_bilan_complet_prend_le_plus_recent():
+    trimestriel = _bilan({"2026-06-30": {"Total Assets": 9.0}, "2026-03-31": {"Stockholders Equity": 0.1}})
+    valeurs, date = dernier_bilan(pd.DataFrame(), trimestriel, pd.Timestamp("2026-10-19"))
+    assert date == pd.Timestamp("2026-06-30") and valeurs["TA"] == 9.0 and np.isnan(valeurs["SE"])
