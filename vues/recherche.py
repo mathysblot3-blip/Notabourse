@@ -1,4 +1,7 @@
 """Page principale : recherche d'une société, puis fiche de sa note (cahier des charges §3 et §4)."""
+import logging                         # erreurs inattendues notées dans le journal du serveur
+import time                            # limite du nombre de calculs par visite
+
 import pandas as pd                    # dates et tableaux
 import plotly.graph_objects as go      # jauge de la note
 import streamlit as st                 # interface web
@@ -8,6 +11,8 @@ from notabourse.classement import charger_correspondance_yahoo
 from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.fiche import fiche_hors_indice, fiche_membre
+from notabourse.formats import echapper
+from notabourse.limites import autoriser
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.sources import DonneesIndisponibles, cotations, table_cik_sec
 from vues.commun import SITE, date, dollars, nombre, pct, textes
@@ -38,13 +43,13 @@ def renvois_categories():
     return m.dropna(subset=["autre_categorie_de"]).set_index("symbole")["autre_categorie_de"].to_dict()
 
 
-@st.cache_data(ttl=24 * 3600, show_spinner=False)
+@st.cache_data(ttl=24 * 3600, max_entries=1000, show_spinner=False)          # bornée : pas de saturation de la mémoire
 def propositions(texte):
     """Cotations proposées pour une recherche (24 heures en mémoire)."""
     return cotations(texte)
 
 
-@st.cache_data(ttl=24 * 3600, show_spinner=False)
+@st.cache_data(ttl=24 * 3600, max_entries=1, show_spinner=False)
 def table_cik():
     """Table symbole -> CIK de la SEC (24 heures en mémoire) ; None si la SEC ne répond pas."""
     try:
@@ -53,7 +58,7 @@ def table_cik():
         return None
 
 
-@st.cache_data(ttl=24 * 3600, show_spinner=False)
+@st.cache_data(ttl=24 * 3600, max_entries=300, show_spinner=False)           # bornée : pas de saturation de la mémoire
 def calculer_fiche(symbole, signature):
     """Fiche d'une société : tirée de la référence pour un membre, calculée en direct sinon [M] ; 24 heures en mémoire."""
     ref, cr = _reference(signature)
@@ -277,8 +282,8 @@ def afficher_fiche(f, T, L, bourse=None):
     P = phrases(f)                                                            # phrases simples de chaque partie
     secteur = T[f"secteur_{f['secteur']}"] + (f" ({T['sous_' + f['sous_secteur']]})" if f["groupe"] == "FIN" else "")
     # En-tête
-    st.header(f"{f['nom']}")
-    st.caption(f"**{f['symbole']}** · {bourse or f['bourse']} · {secteur} · {md(dollars(f['capitalisation_usd'], L))} · "
+    st.header(echapper(f["nom"]))                                            # nom fourni par Yahoo : échappé
+    st.caption(f"**{echapper(f['symbole'])}** · {echapper(bourse or f['bourse'])} · {secteur} · {md(dollars(f['capitalisation_usd'], L))} · "
                f"{T['membre'] if f['membre'] else T['hors_indice']}")
     if f["garde_fou"]["exclue"]:                                              # bandeau « exclue », raisons dans Santé
         st.markdown(f'<div style="border:2px solid {VIOLET};border-radius:8px;padding:8px 14px;margin:4px 0 10px">'
@@ -326,12 +331,16 @@ T = textes()
 L = st.session_state.get("langue", "fr")
 st.title(T["titre"])
 st.caption(T["sous_titre"])
-texte = st.text_input(T["champ_recherche"], placeholder=T["exemple_recherche"])
+texte = st.text_input(T["champ_recherche"], placeholder=T["exemple_recherche"], max_chars=60)   # saisie bornée
 if texte.strip():
     try:
         props = propositions(texte.strip())
     except DonneesIndisponibles:
         st.info(T["erreur_donnees"])
+        st.stop()
+    except Exception:                                                         # imprévu : message simple au visiteur,
+        logging.exception("Recherche impossible")                             # détail seulement dans le journal
+        st.info(T["erreur_inattendue"])
         st.stop()
     if not props:
         st.info(T["aucun_resultat"])
@@ -339,12 +348,24 @@ if texte.strip():
     libelles = [f"{p['nom']} · {p['symbole']} · {p['bourse']} · {p['devise'] or '?'}"
                 + (f" ({T['cotation_principale']})" if p["principale"] else "") for p in props]
     i = st.selectbox(T["choisir_cotation"], range(len(props)), format_func=lambda k: libelles[k])
+    symbole = props[i]["symbole"]
+    vues = st.session_state.setdefault("societes_vues", set())                # sociétés déjà affichées pendant la visite
+    if symbole not in vues:                                                   # nouvelle société : limite par visite
+        ok, st.session_state["calculs"] = autoriser(st.session_state.get("calculs", []), time.time())
+        if not ok:
+            st.info(T["trop_de_recherches"])
+            st.stop()
     with st.spinner(T["attente"]):
         try:
-            fiche = calculer_fiche(props[i]["symbole"], (SITE / "reference" / "reference.parquet").stat().st_mtime)
+            fiche = calculer_fiche(symbole, (SITE / "reference" / "reference.parquet").stat().st_mtime)
         except DonneesIndisponibles:
             st.info(T["erreur_donnees"])
             st.stop()
+        except Exception:                                                     # imprévu : message simple au visiteur
+            logging.exception("Calcul impossible pour %s", symbole)
+            st.info(T["erreur_inattendue"])
+            st.stop()
+    vues.add(symbole)
     if fiche.get("erreur") == "classement":
         st.info(T["erreur_classement"])
     else:

@@ -282,5 +282,8 @@
   "unite_fois": "{x} fois",
   "ECART_HEBDO": "Écart moyen par semaine avec le S&P 500 (hausses extrêmes neutralisées)",
   "ECART_TYPE_HEBDO": "Irrégularité : écart-type de cet écart, par semaine",
-  "note_rang_ecart": "Rentabilité, et fonds propres des financières : le rang porte sur l'écart à la moyenne du secteur, comme la note."
+  "note_rang_ecart": "Rentabilité, et fonds propres des financières : le rang porte sur l'écart à la moyenne du secteur, comme la note.",
+  "erreur_inattendue": "Calcul impossible pour cette société pour le moment. Réessaie plus tard ou choisis une autre cotation.",
+  "trop_de_recherches": "Beaucoup de sociétés différentes en peu de temps : patiente quelques minutes avant une nouvelle recherche.",
+  "page_mentions": "Mentions légales"
 }

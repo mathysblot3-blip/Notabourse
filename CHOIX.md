@@ -195,3 +195,16 @@ Affichage seulement : rien dans cette partie ne change la note ni l'exclusion.
 |---|---|
 | Streamlit Community Cloud, Python 3.12, secrets (SEC, Supabase) collés dans les réglages de l'application | [M] cahier des charges ; procédure de la documentation Streamlit (« Deploy your app », lue le 19/10/2026) |
 | Vérifié en ligne le 19/10/2026 : Apple (membre, 92), LVMH (calcul en direct, 24), Roku (classée par la SEC), Claranova (5), recherche sans résultat, anglais, page Méthode, largeur téléphone. Yahoo et la SEC répondent aux serveurs de Streamlit | [T] |
+
+## 16. Audit de sécurité et mentions légales (19/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Erreurs : `showErrorDetails = "none"` (le défaut « full » montrait le code et les chemins aux visiteurs) ; erreurs imprévues attrapées, message simple, détail dans le journal du serveur | [P] |
+| Mémoire bornée : caches limités (1 000 recherches, 300 fiches) pour qu'une avalanche de recherches ne fasse pas tomber le site | [P] |
+| Au plus 20 nouvelles sociétés par 10 minutes et par visite (`notabourse/limites.py`) ; saisie limitée à 60 caractères | [P] |
+| Textes venus de Yahoo (nom, symbole, bourse) échappés avant l'affichage Markdown ; aucun texte venu de Yahoo dans le HTML non échappé (test automatique) | [P] |
+| Actions GitHub du robot figées par leur commit (checkout v4.4.0, setup-python v5.6.0) | [P] |
+| Page « Mentions légales » : éditeur non professionnel anonyme (LCEN, article 1-1, II, vérifié sur Légifrance le 19/10/2026), contact par GitHub, déclaration d'intérêts générale, hébergeur et prestataires de stockage | [M] 19/10/2026 |
+| Cookies de mesure d'audience déposés par l'hébergeur Streamlit (Google Analytics, Segment, Datadog, relevés le 19/10/2026) : signalés dans les mentions, comparaison d'autres hébergeurs plus tard | [M] 19/10/2026 |
+| Adresses : Snowflake Inc. (dépôts SEC, 8-K d'août 2025), GitHub, Inc., Supabase (conditions d'utilisation de Supabase) ; vérifiées en ligne le 19/10/2026 | sourcé |

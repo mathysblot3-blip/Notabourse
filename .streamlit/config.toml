@@ -8,6 +8,8 @@ textColor = "#E8EAED"                 # texte
 
 [client]
 toolbarMode = "minimal"               # menu de Streamlit réduit pour les visiteurs
+showErrorDetails = "none"            # en cas d'erreur, message général : ni code ni chemins de fichiers montrés
+                                      # aux visiteurs (audit de sécurité du 19/10/2026)
 
 [browser]
 gatherUsageStats = false              # pas d'envoi de statistiques d'usage à Streamlit depuis le PC

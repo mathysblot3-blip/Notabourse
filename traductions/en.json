@@ -282,5 +282,8 @@
   "unite_fois": "{x}x",
   "ECART_HEBDO": "Average weekly gap to the S&P 500 (extreme rises neutralised)",
   "ECART_TYPE_HEBDO": "Unevenness: standard deviation of this gap, per week",
-  "note_rang_ecart": "Profitability, and equity of financials: the rank is based on the gap to the sector average, as in the score."
+  "note_rang_ecart": "Profitability, and equity of financials: the rank is based on the gap to the sector average, as in the score.",
+  "erreur_inattendue": "This company cannot be computed right now. Please try again later or choose another listing.",
+  "trop_de_recherches": "Many different companies in a short time: please wait a few minutes before a new search.",
+  "page_mentions": "Legal notice"
 }

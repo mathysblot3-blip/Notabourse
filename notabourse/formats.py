@@ -46,3 +46,15 @@ def date(d, langue_):
         return "-"
     d = pd.Timestamp(d)
     return d.strftime("%d/%m/%Y") if langue_ == "fr" else d.strftime("%Y-%m-%d")
+
+
+CARACTERES_MARKDOWN = r"\`*_{}[]()#+-.!|<>$~"                            # caractères qui ont un sens en Markdown
+
+
+def echapper(texte):
+    """Texte venu de l'extérieur (nom de société, bourse... fournis par Yahoo) rendu inoffensif pour Markdown : chaque
+    caractère spécial est précédé d'une barre oblique inverse, pour qu'un nom ne puisse pas insérer un lien ou une image
+    dans la page (audit de sécurité du 19/10/2026)."""
+    if manquant(texte):
+        return ""
+    return "".join("\\" + c if c in CARACTERES_MARKDOWN else c for c in str(texte))
