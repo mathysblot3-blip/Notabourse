@@ -63,3 +63,12 @@ DELAI_EXERCICE = pd.Timedelta(days=75)       # un exercice n'est connu que 75 jo
 # --- Échelle des demi-étoiles (cahier des charges §4) [M] ; borne basse incluse [P] ---------------------------------
 ECHELLE_ETOILES = [(95, 5.0), (90, 4.5), (80, 4.0), (70, 3.5), (55, 3.0), (40, 2.5), (30, 2.0), (20, 1.5), (10, 1.0),
                    (0, 0.5)]             # (note minimale sur 100, nombre d'étoiles)
+
+# --- « Point de vigilance » : AFFICHAGE SEULEMENT, ni la note ni l'exclusion ne changent [M] 19/10/2026 -------------
+# Le garde-fou de la formule ne signale presque rien (493 membres sur 500 en vert) ; ces seuils plus stricts servent
+# seulement à prévenir le visiteur d'un point faible (« seuils moyens » : 37 des 410 membres gardés signalés).
+SEUILS_VIGILANCE = {
+    "endettement": 0.60,                     # dettes / (dettes + capitalisation) à partir de 60 %
+    "intérêts": 4.0,                         # EBITDA inférieur à 4 fois les intérêts
+    "fonds propres / actif": 0.06,           # financières : fonds propres inférieurs à 6 % de l'actif
+}                                            # trésorerie : tout flux d'exploitation négatif est signalé

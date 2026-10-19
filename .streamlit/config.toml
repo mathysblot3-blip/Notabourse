@@ -1,0 +1,13 @@
+# Apparence du site (thème sombre). Le vert, l'orange et le rouge sont réservés au garde-fou [M] cahier des charges.
+[theme]
+base = "dark"
+primaryColor = "#5B8DEF"              # bleu : barres, jauge, boutons
+backgroundColor = "#0F1117"           # fond de page
+secondaryBackgroundColor = "#1B1F2A"  # fond des encadrés
+textColor = "#E8EAED"                 # texte
+
+[client]
+toolbarMode = "minimal"               # menu de Streamlit réduit pour les visiteurs
+
+[browser]
+gatherUsageStats = false              # pas d'envoi de statistiques d'usage à Streamlit depuis le PC

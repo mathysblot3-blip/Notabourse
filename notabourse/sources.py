@@ -157,3 +157,51 @@ def rechercher(texte, nombre=8):
     s = avec_reprises(yf.Search, texte, max_results=nombre, news_count=0)
     return [{"symbole": q.get("symbol"), "nom": q.get("longname") or q.get("shortname"), "bourse": q.get("exchDisp"),
              "code_bourse": q.get("exchange"), "type": q.get("quoteType")} for q in s.quotes]
+
+
+# --- Cotations proposées à l'utilisateur ---------------------------------------------------------------------------
+# Code de bourse Yahoo -> (pays, devise de cotation). Sert à mettre la cotation principale en tête (bourse du pays de
+# la société) et à afficher la devise sans requête de plus [P].
+BOURSES = {
+    "NMS": ("United States", "USD"), "NGM": ("United States", "USD"), "NCM": ("United States", "USD"),
+    "NYQ": ("United States", "USD"), "ASE": ("United States", "USD"), "PCX": ("United States", "USD"),
+    "BTS": ("United States", "USD"), "PAR": ("France", "EUR"), "AMS": ("Netherlands", "EUR"),
+    "BRU": ("Belgium", "EUR"), "LIS": ("Portugal", "EUR"), "MIL": ("Italy", "EUR"), "MCE": ("Spain", "EUR"),
+    "GER": ("Germany", "EUR"), "FRA": ("Germany", "EUR"), "BER": ("Germany", "EUR"), "MUN": ("Germany", "EUR"),
+    "STU": ("Germany", "EUR"), "DUS": ("Germany", "EUR"), "HAM": ("Germany", "EUR"), "VIE": ("Austria", "EUR"),
+    "HEL": ("Finland", "EUR"), "ISE": ("Ireland", "EUR"), "EBS": ("Switzerland", "CHF"), "LSE": ("United Kingdom", "GBp"),
+    "STO": ("Sweden", "SEK"), "CPH": ("Denmark", "DKK"), "OSL": ("Norway", "NOK"), "JPX": ("Japan", "JPY"),
+    "HKG": ("Hong Kong", "HKD"), "SHH": ("China", "CNY"), "SHZ": ("China", "CNY"), "KSC": ("South Korea", "KRW"),
+    "KOE": ("South Korea", "KRW"), "TAI": ("Taiwan", "TWD"), "TWO": ("Taiwan", "TWD"), "NSI": ("India", "INR"),
+    "BSE": ("India", "INR"), "SES": ("Singapore", "SGD"), "ASX": ("Australia", "AUD"), "NZE": ("New Zealand", "NZD"),
+    "TOR": ("Canada", "CAD"), "VAN": ("Canada", "CAD"), "CNQ": ("Canada", "CAD"), "NEO": ("Canada", "CAD"),
+    "SAO": ("Brazil", "BRL"), "MEX": ("Mexico", "MXN"), "JNB": ("South Africa", "ZAc"), "TLV": ("Israel", "ILA"),
+    "WSE": ("Poland", "PLN"), "IST": ("Turkey", "TRY"), "SAU": ("Saudi Arabia", "SAR"),
+}
+HORS_COTE = {"PNK", "OQB", "OQX", "OID", "OBB", "OEM", "OGM"}               # marchés de gré à gré (OTC) : en dernier
+
+
+def cotations(texte):
+    """Actions proposées pour une recherche, cotation principale en tête [M] cahier des charges §2.2.
+    Règle [P] : d'abord les cotations sur une bourse du pays de la société (pays lu dans la fiche Yahoo de la
+    première proposition), puis les autres bourses, puis les marchés de gré à gré ; à égalité, l'ordre de Yahoo.
+    Renvoie une liste de dict (symbole, nom, bourse, devise, principale)."""
+    liste = [q for q in rechercher(texte) if q["type"] == "EQUITY" and q["symbole"]]   # actions seulement
+    if not liste:
+        return []
+    try:
+        pays = avec_reprises(lambda: yf.Ticker(liste[0]["symbole"]).info).get("country")   # pays de la société
+    except DonneesIndisponibles:
+        pays = None
+
+    def rang(q):
+        code = q["code_bourse"]
+        if code in HORS_COTE:
+            return 2                                                          # gré à gré : en dernier
+        return 0 if pays and BOURSES.get(code, (None,))[0] == pays else 1     # bourse du pays d'abord
+
+    liste = sorted(liste, key=rang)                                           # tri stable : l'ordre de Yahoo est gardé
+    for i, q in enumerate(liste):
+        q["devise"] = "USD" if q["code_bourse"] in HORS_COTE else BOURSES.get(q["code_bourse"], (None, None))[1]
+        q["principale"] = i == 0
+    return liste

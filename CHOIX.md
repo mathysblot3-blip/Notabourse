@@ -136,3 +136,18 @@ des ratios de recherche).
 Contrôle (19/10/2026) : 500 sociétés, dont 411 industrielles, 62 financières et 27 foncières, la même répartition que la
 recherche au 31/08/2026 ; 90 membres exclus (recherche au 31/08/2026 : 92), dont 49 pour pertes et 36 pour fonds
 propres négatifs.
+
+## 11. Fiche épurée, phrases simples et point de vigilance (étape d, 19/10/2026)
+
+Affichage seulement : rien dans cette partie ne change la note ni l'exclusion.
+
+| Choix | Nature |
+|---|---|
+| Fiche épurée : étoiles, note sur 100 et une phrase ; une ligne par partie avec sa phrase ; les chiffres, voyants, note M, jauge, rang et membres proches sont dans des menus dépliants fermés | [M] 19/10/2026 |
+| Sous chaque partie, une phrase sans vocabulaire boursier, choisie selon la valeur de chaque ratio de la partie (une quinzaine de phrases possibles par partie), qui cite le point fort ou le point faible en cause (`notabourse/phrases.py`) | [M] 19/10/2026 |
+| « Point de vigilance » jaune pour une société gardée qui a : dettes ≥ 60 % de (dettes + capitalisation), EBITDA < 4 fois les intérêts, flux d'exploitation négatif, ou (financières) fonds propres < 6 % de l'actif. Référence du 19/10 : 37 des 410 membres gardés signalés. Raison : le garde-fou de la formule laisse 493 membres sur 500 en vert | [M] 19/10/2026 (« seuils moyens ») |
+| Seuils des phrases : niveaux 80 / 60 / 40 / 20 pour une partie, 90 / 75 / 60 / 40 / 25 pour la note ; point fort au-dessus du 70e centile du groupe, point faible sous le 30e ; rentabilité « exceptionnelle » dès 40 % ; croissance forte dès 15 % par an, nette dès 5 % ; écart au marché net au-delà de 5 % | [P] |
+| Rentabilité : la phrase compare à la médiane du secteur, pas à la moyenne (moyenne du ROE en technologie et équipements : 260 %, faussée par quelques fonds propres minuscules ; médiane : 23 %). Le tableau chiffré garde la moyenne du cahier des charges §4 | [P] |
+| Croissance « typique » = médiane des taux annuels, affichée bornée à ± 100 % (une base proche de zéro donne des taux absurdes : Boeing, résultat d'exploitation −964 % en moyenne) | [P] |
+| Dynamique : la phrase ne donne aucun pourcentage, car la mesure de la note neutralise les hausses extrêmes et plafonne les chutes extrêmes (fonction `tente`) : ce n'est pas la performance réelle de l'action. Le détail ajoute l'irrégularité de l'écart au marché (écart-type hebdomadaire × √52) | [P] |
+| Demi-étoiles dessinées en SVG (le caractère ★ colorié se décalait selon la police) | [P] |
