@@ -1,0 +1,12 @@
+# Environnement Python local (recréé avec requirements.txt, voir README.md)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets : jamais dans le dépôt (en-tête SEC, clés Supabase). Ils vont dans les secrets de Streamlit Cloud.
+.streamlit/secrets.toml
+.env
+
+# Caches de téléchargement (Yahoo, SEC) : recréés automatiquement
+cache/
