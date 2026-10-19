@@ -1,0 +1,57 @@
+# Robot hebdomadaire de NotaBourse (étape f) : recalcule la référence S&P 500 et la publie dans le dépôt.
+# GitHub lit ce fichier tout seul (dossier .github/workflows). Le site en ligne se met à jour à chaque publication.
+# Si une étape échoue, rien n'est publié : l'ancienne référence reste en ligne et GitHub envoie un courriel.
+
+name: Référence hebdomadaire
+
+on:
+  schedule:
+    - cron: "0 6 * * 6"          # chaque samedi à 06:00 UTC, marchés fermés [P] P8
+  workflow_dispatch:             # bouton « Run workflow » de l'onglet Actions : lancement à la main [P] P8
+
+permissions:
+  contents: write                # droit de publier (commit) les nouveaux fichiers, et rien d'autre
+
+concurrency:
+  group: reference-hebdo         # jamais deux calculs en même temps
+  cancel-in-progress: false
+
+jobs:
+  reference:
+    runs-on: ubuntu-latest       # ordinateur prêté par GitHub, effacé après chaque passage
+    timeout-minutes: 180         # arrêt de sécurité au bout de 3 heures (le calcul prend environ 40 minutes)
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip             # garde les bibliothèques téléchargées d'une semaine sur l'autre
+
+      - name: Installer les bibliothèques
+        run: pip install -r requirements.txt
+
+      - name: Construire la référence (500 membres, données Yahoo du jour)
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}   # en-tête demandé par la SEC, rangé dans les secrets du dépôt
+        run: python reference/construire_reference.py
+
+      - name: Contrôler la référence
+        run: python reference/controler_reference.py
+
+      - name: Lancer les tests (toutes les fiches doivent se lire)
+        run: python -m pytest tests -q
+
+      - name: Publier la référence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reference/reference.parquet reference/croissances.parquet reference/membres_sp500.csv reference/reference_info.json
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau à publier."
+          else
+            git commit -m "Référence S&P 500 du $(date -u +%d/%m/%Y) (robot hebdomadaire)"
+            git push
+          fi

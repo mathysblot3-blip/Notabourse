@@ -9,5 +9,4 @@ pyarrow==26.0.0        # lecture et écriture du fichier de référence (.parque
 requests==2.34.2       # requêtes web (SEC)
 lxml==6.1.3            # lecture de la page Wikipédia des membres du S&P 500
 plotly==7.1.0          # jauge et barres de la fiche
-supabase==2.33.0       # compteur des recherches
 pytest==9.1.1          # tests

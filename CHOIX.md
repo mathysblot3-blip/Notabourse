@@ -175,3 +175,16 @@ Affichage seulement : rien dans cette partie ne change la note ni l'exclusion.
 | Compteur visible par Mathys seul (tableau de bord Supabase), pas affiché sur le site | [M] 19/10/2026 |
 | Une ligne par société et par visite (pas à chaque clic), envoi en arrière-plan, silence en cas de panne | [P] |
 | Requête directe à l'API de Supabase avec `requests` (déjà installé), sans bibliothèque de plus | [P] |
+
+## 14. Robot hebdomadaire (étape f, 19/10/2026)
+
+| Choix | Nature |
+|---|---|
+| GitHub Actions, chaque samedi à 06:00 UTC, plus un lancement à la main | [P] P8, validée avec le plan |
+| Étapes : construction, contrôle (`reference/controler_reference.py`), tests, publication des 4 fichiers de `reference/` ; un échec n'efface rien et déclenche un courriel de GitHub | [P] P6, validée avec le plan |
+| Seuils du contrôle : au moins 480 membres, 90 % présents, 85 % notés, groupes d'au moins 300 / 40 / 15 sociétés (19/10/2026 : 411 / 62 / 27), aucun montant brut | [P] |
+| Les courriels d'échec vont à la personne qui a créé le robot (documentation GitHub, « Notifications for workflow runs », lue le 19/10/2026) | sourcé |
+| Règle des 60 jours sans activité (dépôt public) : confirmée par la documentation GitHub (« Disabling and enabling a workflow », lue le 19/10/2026), qui ne définit pas l'activité : effet des commits du robot incertain | sourcé, incertain |
+| Bibliothèque `supabase` retirée de `requirements.txt` (le compteur passe par `requests`) | [P] |
+| Licence MIT pour le code ; elle ne couvre pas les données de Yahoo et de la SEC | [M] 19/10/2026 (« MIT si gratuite ») |
+| Auteur des commits : adresse privée de GitHub (`…@users.noreply.github.com`), jamais l'adresse personnelle | [M] 19/10/2026 |
