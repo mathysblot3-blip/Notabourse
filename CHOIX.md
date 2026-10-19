@@ -188,3 +188,10 @@ Affichage seulement : rien dans cette partie ne change la note ni l'exclusion.
 | Bibliothèque `supabase` retirée de `requirements.txt` (le compteur passe par `requests`) | [P] |
 | Licence MIT pour le code ; elle ne couvre pas les données de Yahoo et de la SEC | [M] 19/10/2026 (« MIT si gratuite ») |
 | Auteur des commits : adresse privée de GitHub (`…@users.noreply.github.com`), jamais l'adresse personnelle | [M] 19/10/2026 |
+
+## 15. Mise en ligne (étape g, 19/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Streamlit Community Cloud, Python 3.12, secrets (SEC, Supabase) collés dans les réglages de l'application | [M] cahier des charges ; procédure de la documentation Streamlit (« Deploy your app », lue le 19/10/2026) |
+| Vérifié en ligne le 19/10/2026 : Apple (membre, 92), LVMH (calcul en direct, 24), Roku (classée par la SEC), Claranova (5), recherche sans résultat, anglais, page Méthode, largeur téléphone. Yahoo et la SEC répondent aux serveurs de Streamlit | [T] |

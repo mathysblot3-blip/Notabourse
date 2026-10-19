@@ -4,7 +4,8 @@ Site web public où l'on tape le nom d'une entreprise cotée et où l'on obtient
 100, note M) avec le détail du calcul. La note vient du travail de recherche de Mathys Blot (formule C8) ; le site
 l'applique aux données de Yahoo Finance. **Ceci n'est pas un conseil en investissement.**
 
-Réalisé par Mathys Blot. État : en construction (étape d sur g : interface).
+Réalisé par Mathys Blot. **Site en ligne** : https://notabourse-muapxg2nhmeeq9txb3nyln.streamlit.app (Streamlit Community Cloud,
+mis à jour automatiquement à chaque envoi sur GitHub).
 
 ## Ce que contient ce dossier
 
@@ -134,6 +135,13 @@ git push -u origin main
 À savoir : dans un dépôt public, GitHub désactive les tâches planifiées après 60 jours sans activité dans le dépôt. Sa
 documentation ne dit pas si les commits du robot comptent comme activité (incertain). Si le robot s'arrête : onglet
 « Actions », « Référence hebdomadaire », « Enable workflow ».
+
+## Mise en ligne (Streamlit Community Cloud)
+
+Faite une seule fois le 19/10/2026 : [share.streamlit.io](https://share.streamlit.io), connexion avec GitHub, « Create
+app », dépôt `mathysblot3-blip/Notabourse`, branche `main`, fichier `app.py`, Python 3.12, et le contenu de
+`.streamlit/secrets.toml` collé dans « Advanced settings » > « Secrets ». Ensuite, chaque envoi sur GitHub (une
+modification du site, ou la référence du samedi publiée par le robot) met le site en ligne à jour tout seul.
 
 ## Licence
 
