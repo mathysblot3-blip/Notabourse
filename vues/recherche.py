@@ -264,8 +264,7 @@ def detail_sante(f, T, L, dp):
         vert, rouge, orange = seuils_voyant(v["voyant"], T, L)
         # nom du voyant et ce qu'il mesure dans la même case, l'un sous l'autre : 4 colonnes au lieu de 5, le tableau
         # tient sur téléphone
-        lignes.append({T["col_voyant"]: f"**{T['voyant_' + v['voyant']]}**  
-{T['mesure_nom_' + v['voyant']]}",
+        lignes.append({T["col_voyant"]: f"**{T['voyant_' + v['voyant']]}**  \n{T['mesure_nom_' + v['voyant']]}",
                        T["col_vert"]: vert, T["col_rouge"]: rouge, T["col_orange_site"]: orange})
     st.table(pd.DataFrame(lignes))
     st.markdown(T["calc_sante_2"].format(moy=moy))
