@@ -13,3 +13,6 @@ cache/
 
 # Réglages locaux de Claude Code (aperçu du site)
 .claude/
+
+# Logo provisoire de Mathys (image de remplacement de licence inconnue) : jamais publié sur GitHub
+images/logo_provisoire.png

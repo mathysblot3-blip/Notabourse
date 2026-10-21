@@ -55,6 +55,7 @@ def test_html_non_echappe_sans_texte_venu_de_yahoo():
 def test_mentions_legales_completes_dans_les_deux_langues():
     pages = {lg: (SITE / "traductions" / f"mentions_{lg}.md").read_text(encoding="utf-8") for lg in ("fr", "en")}
     for lg, p in pages.items():
+        p = p.replace(" ", " ")                                          # espaces insécables lues comme des espaces
         assert len([l for l in p.splitlines() if l.startswith("### ")]) == 6, lg
         assert "1-1" in p and "Snowflake Inc." in p and "+1 844 766 9355" in p, lg   # LCEN : hébergeur et téléphone
         assert "—" not in p                                                    # règle de rédaction : pas de tiret cadratin

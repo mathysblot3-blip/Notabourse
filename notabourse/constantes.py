@@ -72,3 +72,12 @@ SEUILS_VIGILANCE = {
     "intérêts": 4.0,                         # EBITDA inférieur à 4 fois les intérêts
     "fonds propres / actif": 0.06,           # financières : fonds propres inférieurs à 6 % de l'actif
 }                                            # trésorerie : tout flux d'exploitation négatif est signalé
+
+# --- Prix comparé au secteur : indicateur À PART, hors de la note [M] 21/10/2026 -------------------------------------
+# Repris de Recherche_score/36_per_secteur.py et indicateur_per_secteur.md [R]
+PRIX_BON_MARCHE = 0.80                       # PER / PER du secteur <= 0,8 : bon marché (écart de -20 % ou moins)
+PRIX_CHERE = 1.25                            # PER / PER du secteur >= 1,25 : chère (écart de +25 % ou plus) ; 1 / 0,8
+PRIX_MIN_PAIRS = 5                           # au moins 5 membres bénéficiaires dans le secteur, sinon tout le groupe
+PRIX_BORNE_BARRE = 2.0                       # barre : de « 2 fois plus cher » à « 2 fois moins cher » que le secteur [P]
+PRIX_PER_MAX_REPLI = 100.0                   # repli sur un bénéfice ancien ou moyen : au-delà d'un PER de 100 (bénéfice
+                                             # quasi nul), on passe au prix / ventes, plus parlant [P] 21/10/2026

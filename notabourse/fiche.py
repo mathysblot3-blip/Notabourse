@@ -12,6 +12,7 @@ import pandas as pd   # tableaux de données
 from notabourse.composantes import ecart_secteur, m1_final, winsoriser
 from notabourse.constantes import COMPOSANTES_C8, NOMS_COMPOSANTES, ROUGE, VERT
 from notabourse.note import etoiles
+from notabourse.prix import prix_secteur
 
 # Ratios montrés dans « Voir le détail » : (colonne, sens : +1 si plus haut = mieux, format d'affichage)
 RATIOS = {
@@ -203,7 +204,8 @@ def _assembler(ligne, notes, voyants, mesures, exclusion, ref, cr, membre, date_
             "note": {"sur_100": note, "etoiles": etoiles(note), "M": notes.get("M"), "regle": notes.get("regle"),
                      "nb_composantes": nb},
             "avertissements": av, "composantes": comp, "garde_fou": gf,
-            "comparaison": _comparaison(note, ligne, ref, cik), "calcul": _calcul(ligne, notes, ref)}
+            "comparaison": _comparaison(note, ligne, ref, cik), "calcul": _calcul(ligne, notes, ref),
+            "prix": prix_secteur(ligne, ref)}                                 # à part : n'entre pas dans la note
 
 
 def fiche_membre(symbole, ref, croissances_ref):

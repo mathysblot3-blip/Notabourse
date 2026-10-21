@@ -1,7 +1,8 @@
-# NotaBourse : le site
+# Bourse à lunettes : le site
 
-Site web public où l'on tape le nom d'une entreprise cotée et où l'on obtient sa **note NotaBourse** (étoiles, note sur
-100, note M) avec le détail du calcul. La note vient du travail de recherche de Mathys Blot (formule C8) ; le site
+Site web public où l'on tape le nom d'une entreprise cotée et où l'on obtient sa note (étoiles, note sur 100, note M)
+avec le détail du calcul. Le site s'appelle **Bourse à lunettes** depuis le 20/10/2026 (ours à lunettes + bourse) ; il
+s'appelait NotaBourse, nom que gardent le dépôt GitHub, le dossier `notabourse/` du code et la recherche. La note vient du travail de recherche de Mathys Blot (formule C8) ; le site
 l'applique aux données de Yahoo Finance. **Ceci n'est pas un conseil en investissement.**
 
 Réalisé par Mathys Blot. **Site en ligne** : https://notabourse-muapxg2nhmeeq9txb3nyln.streamlit.app (Streamlit Community Cloud,
@@ -12,9 +13,10 @@ mis à jour automatiquement à chaque envoi sur GitHub).
 | Fichier ou dossier | Rôle |
 |---|---|
 | `notabourse/` | Le calcul, sans interface : données (`sources.py`), classement (`classement.py`), ratios (`ratios.py`), composantes (`composantes.py`), garde-fou (`garde_fou.py`), note (`note.py`), enchaînement (`calcul.py`), constantes (`constantes.py`), contenu de la fiche (`fiche.py`), phrases simples (`phrases.py`), mise en forme des nombres (`formats.py`), compteur des recherches (`compteur.py`), limite de calculs par visite (`limites.py`) |
-| `app.py`, `vues/`, `traductions/` | L'interface : navigation (`app.py`), page de recherche et fiche (`vues/recherche.py`), page Méthode (`vues/methode.py`), mentions légales (`vues/mentions.py`), textes en français et en anglais (`traductions/`, dont la page Méthode : `methode_fr.md`, `methode_en.md`, et les mentions légales : `mentions_fr.md`, `mentions_en.md`, à corriger directement) |
+| `images/` | Logo du site : `logo.png` (définitif, à ajouter par Mathys) ; `icone.png` (« B » à points, icône d'onglet dessinée par le code). Le logo provisoire `logo_provisoire.png` n'est jamais publié (`.gitignore`) |
+| `app.py`, `vues/`, `traductions/` | L'interface : navigation (`app.py`), page de recherche et fiche (`vues/recherche.py`), page Méthode (`vues/methode.py`), page Backtesting (`vues/tests.py`, graphiques dans `images/tests/`), page Sources (`vues/sources.py`), mentions légales (`vues/mentions.py`), textes en français et en anglais (`traductions/`, dont la page Méthode : `methode_fr.md`, `methode_en.md`, les sources : `sources_fr.md`, `sources_en.md`, et les mentions légales : `mentions_fr.md`, `mentions_en.md`, à corriger directement) |
 | `reference/` | Fichiers de référence du S&P 500 (`ff12_sic.csv` : table des 12 secteurs de Fama et French) |
-| `tests/` | Tests automatiques (`test_calcul.py` pour les calculs, `test_phrases.py` pour les phrases et les textes) et cas de test lus sur Internet (`cas_de_test.py`, résultat dans `cas_de_test.md`) |
+| `tests/` | Tests automatiques (`test_calcul.py` pour les calculs, `test_phrases.py` pour les phrases et les textes, `test_prix.py` pour le prix comparé au secteur) et cas de test lus sur Internet (`cas_de_test.py`, résultat dans `cas_de_test.md`) |
 | `supabase/` | Scripts SQL du compteur des recherches : création de la table (`creer_table.sql`), lecture (`lire_compteur.sql`) |
 | `LICENSE` | Licence MIT du code |
 | `CHOIX.md` | Tous les choix de conception, avec leur nature (repris de la recherche, avis de Mathys, proposé, résultat de test) |
@@ -148,9 +150,11 @@ modification du site, ou la référence du samedi publiée par le robot) met le 
 Le code est sous licence MIT (fichier `LICENSE`) : chacun peut le réutiliser, à condition de garder la mention
 « Copyright (c) 2026 Mathys Blot ». La licence couvre le code seulement : les fichiers de `reference/` sont des ratios
 calculés à partir des données de Yahoo Finance et de la SEC, fournis sans garantie et soumis aux conditions de ces
-sources.
+sources. Exception : `reference/membres_sp500.csv` est tiré de l'article Wikipédia « List of S&P 500 companies »
+(contributeurs de Wikipédia) et reste sous licence CC BY-SA 4.0.
 
 ## Sources des données
 
 Yahoo Finance (bibliothèque yfinance, non officielle, sans garantie), SEC (codes SIC et dates de dépôt), Wikipédia (liste
-des membres du S&P 500), Kenneth French (table des secteurs). Le site n'affiche les données que d'une société à la fois.
+des membres du S&P 500), Kenneth French (table des secteurs). Le site n'affiche les données que d'une société à la fois. Liste complète des articles et des données : page
+Sources du site (`traductions/sources_fr.md`).

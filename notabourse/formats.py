@@ -2,33 +2,46 @@
 (vues/) et par les phrases simples de la fiche (phrases.py), et donc testable avec pytest."""
 import pandas as pd   # valeurs manquantes et dates
 
+INSECABLE = " "   # espace insécable : « 4 993 Md$ » ou « 12,3 % » ne sont jamais coupés en fin de ligne
+MOINS = "−"       # vrai signe moins « − », plus lisible que le trait d'union « - »
+
 
 def manquant(x):
     """Vrai si la valeur est absente (None ou NaN)."""
     return x is None or pd.isna(x)
 
 
+def _signe(texte):
+    """Remplace le trait d'union du début par le vrai signe moins ; « -0,0 » (arrondi de presque rien) devient « 0,0 »."""
+    if not texte.startswith("-"):
+        return texte
+    if texte.strip("-0.,") == "":                                             # que des zéros après le signe
+        return texte[1:]
+    return MOINS + texte[1:]
+
+
 def nombre(x, langue_, decimales=1):
     """Nombre lisible : 1 234,5 en français, 1,234.5 en anglais ; « - » si manquant."""
     if manquant(x):
         return "-"
-    texte = f"{x:,.{decimales}f}"                                             # 1,234.5 (format anglais)
-    return texte.replace(",", " ").replace(".", ",") if langue_ == "fr" else texte
+    texte = _signe(f"{x:,.{decimales}f}")                                     # 1,234.5 (format anglais)
+    return texte.replace(",", INSECABLE).replace(".", ",") if langue_ == "fr" else texte
 
 
 def pct(x, langue_, decimales=1):
     """Pourcentage lisible : 12,3 % en français, 12.3% en anglais ; « - » si manquant."""
     if manquant(x):
         return "-"
-    texte = f"{100 * x:.{decimales}f}"                                        # 0,123 -> « 12.3 »
-    return texte.replace(".", ",") + " %" if langue_ == "fr" else texte + "%"
+    texte = _signe(f"{100 * x:.{decimales}f}")                                # 0,123 -> « 12.3 »
+    return texte.replace(".", ",") + INSECABLE + "%" if langue_ == "fr" else texte + "%"
 
 
 def pct_signe(x, langue_, decimales=1):
-    """Pourcentage avec son signe : +12,3 % ou -4,0 %."""
+    """Pourcentage avec son signe : +12,3 % ou −4,0 %."""
     if manquant(x):
         return "-"
-    return ("+" if x > 0 else "") + pct(x, langue_, decimales)               # le « - » est déjà mis par pct
+    texte = pct(x, langue_, decimales)                                        # le « − » est déjà mis par pct
+    return ("+" if texte[0].isdigit() and texte.strip("0,.%" + INSECABLE) else "") + texte   # pas de « +0,0 % »
 
 
 def dollars(x, langue_):
@@ -36,8 +49,8 @@ def dollars(x, langue_):
     if manquant(x):
         return "-"
     if abs(x) >= 1e9:                                                         # milliards
-        return f"{nombre(x / 1e9, langue_, 0)} Md$" if langue_ == "fr" else f"${nombre(x / 1e9, langue_, 0)}bn"
-    return f"{nombre(x / 1e6, langue_, 0)} M$" if langue_ == "fr" else f"${nombre(x / 1e6, langue_, 0)}m"   # millions
+        return f"{nombre(x / 1e9, langue_, 0)}{INSECABLE}Md$" if langue_ == "fr" else f"${nombre(x / 1e9, langue_, 0)}bn"
+    return f"{nombre(x / 1e6, langue_, 0)}{INSECABLE}M$" if langue_ == "fr" else f"${nombre(x / 1e6, langue_, 0)}m"   # millions
 
 
 def date(d, langue_):

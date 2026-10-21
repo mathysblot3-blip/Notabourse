@@ -261,6 +261,34 @@ def ratios_societe(d, classement, D, mode="direct"):
     r["TLMTA"] = tl_usd / (tl_usd + me)                                       # dettes / (dettes + capitalisation)
     r["CASHMTA"] = cash_usd / (tl_usd + me)                                   # trésorerie / (dettes + capitalisation)
     r["TAILLE"] = me                                                          # capitalisation en dollars
+    # Prix comparé au secteur (indicateur à part, hors de la note, Recherche_score/36_per_secteur.py) [M] 21/10/2026 :
+    # bénéfice net part du groupe des 12 derniers mois / capitalisation, en dollars tous les deux. C'est l'inverse du
+    # PER ; un ratio dérivé, publiable dans la référence (aucun montant brut)
+    r["EP"] = valeurs["NI_common"] * fx_comptes / me
+    # Replis pour la SEULE société affichée (le PER du secteur n'utilise que EP) [M] 21/10/2026 : « toujours avoir
+    # quelque chose à dire », la fiche ajoutant « valeur peu fiable ». 12 derniers mois inconnus : PER récent donné par
+    # Yahoo, sinon dernier exercice publié (peut-être ancien) ; perte : bénéfice moyen des derniers exercices
+    ni_ex = annuel["NI_common"].dropna().head(NB_EXERCICES)                   # exercices, du plus récent au plus ancien
+    ep_aff, origine, nb_ex = r["EP"], ("12_mois" if pd.notna(r["EP"]) else None), None
+    pe_yahoo = info.get("trailingPE")                                         # PER des 12 derniers mois selon Yahoo
+    if pd.isna(ep_aff) and isinstance(pe_yahoo, (int, float)) and pe_yahoo > 0:
+        ep_aff, origine = 1.0 / pe_yahoo, "yahoo"
+    if pd.isna(ep_aff) and len(ni_ex):                                        # dernier exercice publié
+        ep_aff, origine = ni_ex.iloc[0] * fx_comptes / me, "exercice"
+    if (pd.isna(ep_aff) or ep_aff <= 0) and len(ni_ex) >= 2 and ni_ex.mean() > 0:   # perte : bénéfice moyen
+        ep_aff, origine, nb_ex = ni_ex.mean() * fx_comptes / me, "moyenne", len(ni_ex)
+    r["EP_AFF"], r["EP_ORIGINE"], r["EP_NB_EXERCICES"] = ep_aff, (origine if pd.notna(ep_aff) else None), nb_ex
+    # Ventes / capitalisation : comparaison de dernier recours, quand la société n'a pas de bénéfice (CA des 12 derniers
+    # mois, sinon rapport cours / ventes récent donné par Yahoo, sinon CA du dernier exercice publié)
+    ca = valeurs["CA"]
+    r["SP"], origine_sp = (ca * fx_comptes / me, "12_mois") if pd.notna(ca) and ca > 0 else (np.nan, None)
+    ps_yahoo = info.get("priceToSalesTrailing12Months")
+    if pd.isna(r["SP"]) and isinstance(ps_yahoo, (int, float)) and ps_yahoo > 0:
+        r["SP"], origine_sp = 1.0 / ps_yahoo, "yahoo"
+    ca_ex = annuel["CA"].dropna()
+    if pd.isna(r["SP"]) and len(ca_ex) and ca_ex.iloc[0] > 0:
+        r["SP"], origine_sp = ca_ex.iloc[0] * fx_comptes / me, "exercice"
+    r["SP_ORIGINE"] = origine_sp if pd.notna(r["SP"]) else None
     ebitda = valeurs["EBITDA"]
     if pd.isna(dette) or pd.isna(cash) or pd.isna(ebitda):
         r["DN_EBITDA"] = np.nan                                               # un poste manque

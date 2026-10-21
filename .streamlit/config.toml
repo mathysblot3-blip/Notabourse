@@ -1,10 +1,48 @@
-# Apparence du site (thème sombre). Le vert, l'orange et le rouge sont réservés au garde-fou [M] cahier des charges.
+# Apparence du site « Bourse à lunettes » : noir et jaune [M] 20/10/2026, version sombre (le papier crème était trop
+# clair, avis de Mathys du 20/10/2026) : fond charbon chaud, texte crème, jaune moutarde moins vif.
+# Style inspiré d'une planche imprimée (fournie par Mathys) : angles droits, filets de 1 pixel, aucune ombre, titres
+# dans une police à points (Doto), aucun émoji. Le vert, l'orange et le rouge restent réservés au garde-fou [M].
+# Mêmes teintes que dans vues/commun.py.
 [theme]
 base = "dark"
-primaryColor = "#5B8DEF"              # bleu : barres, jauge, boutons
-backgroundColor = "#0F1117"           # fond de page
-secondaryBackgroundColor = "#1B1F2A"  # fond des encadrés
-textColor = "#E8EAED"                 # texte
+primaryColor = "#D8AE48"              # jaune moutarde : barres de progression, sélection, contours actifs
+backgroundColor = "#15140f"           # charbon chaud : fond de toutes les pages
+secondaryBackgroundColor = "#211f18"  # un cran plus clair : fond des champs et des tableaux
+textColor = "#ebe4cf"                 # crème : texte courant (contraste 14 pour 1 sur le fond)
+linkColor = "#D8AE48"                 # liens en jaune, soulignés
+linkUnderline = true
+borderColor = "#4d4838"               # filets de 1 pixel, discrets
+showWidgetBorder = true               # champs de saisie entourés d'un filet
+showSidebarBorder = true              # filet entre le menu et la page
+baseRadius = "none"                   # angles droits partout
+buttonRadius = "none"
+blueBackgroundColor = "#2b2614"       # encadrés d'information : jaune très sombre
+blueTextColor = "#ebe4cf"             #   texte crème dessus
+font = "Inter, sans-serif"            # texte courant (police hébergée avec le site, voir [[theme.fontFaces]])
+headingFont = "Doto, monospace"       # titres à points (idem)
+headingFontWeights = [900, 900, 900, 900, 900, 900]   # points serrés : lisibles en petit
+headingFontSizes = ["4.2rem", "2.6rem", "1.8rem", "1.4rem", "1.2rem", "1rem"]   # grands titres, comme une affiche
+
+# Polices hébergées avec le site (dossier static/) plutôt que chez Google Fonts : le navigateur du visiteur ne contacte
+# plus Google [M] 21/10/2026. Fichiers woff2 de Google Fonts (alphabet latin), licence SIL Open Font License.
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/Inter-latin.woff2"
+weight = "400 600"                    # une seule police variable couvre le normal et le demi-gras
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Doto"
+url = "app/static/Doto-latin.woff2"
+weight = "600 900"
+style = "normal"
+
+[theme.sidebar]
+backgroundColor = "#15140f"           # même fond que la page : une seule surface
+secondaryBackgroundColor = "#211f18"
+
+[server]
+enableStaticServing = true            # sert le dossier static/ (les polices) à l'adresse app/static/
 
 [client]
 toolbarMode = "minimal"               # menu de Streamlit réduit pour les visiteurs

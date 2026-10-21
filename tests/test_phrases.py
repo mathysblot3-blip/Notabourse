@@ -99,7 +99,7 @@ def detail(ratio, valeur, centile):
 def test_bilan_cite_les_ratios_en_cause():
     c = {"code": "R2", "nom": "bilan", "note": 75.0,
          "detail": [detail("TLMTA", 0.2, 90.0), detail("CASHMTA", 0.01, 10.0), detail("TAILLE", 5e11, 95.0)]}
-    texte = textes(phrases_bilan(fiche(), c))
+    texte = [t.replace(" ", " ") for t in textes(phrases_bilan(fiche(), c))]   # espaces insécables lues comme des espaces
     assert texte[0] == "Bilan solide : peu de dettes et une très grande taille, mais peu de trésorerie de côté."
     assert texte[1].startswith("Sa trésorerie représente 1 %")
 
@@ -118,9 +118,9 @@ def test_mediane_resiste_a_une_annee_hors_norme():
 
 
 def test_taux_borne_a_100_pourcents():
-    assert _taux(2.5, "fr") == "> +100 %"
-    assert _taux(-3.0, "en") == "< -100%"
-    assert _taux(0.123, "fr") == "+12,3 %"
+    assert _taux(2.5, "fr") == "> +100 %"                                # espace insécable avant « % »
+    assert _taux(-3.0, "en") == "< −100%"                                # vrai signe moins
+    assert _taux(0.123, "fr") == "+12,3 %"
 
 
 def test_croissance_ventes_en_hausse_resultat_en_baisse():
@@ -161,6 +161,6 @@ def test_page_methode_meme_structure_dans_les_deux_langues():
     pages = {lg: (SITE / "traductions" / f"methode_{lg}.md").read_text(encoding="utf-8") for lg in ("fr", "en")}
     titres = {lg: [l for l in p.splitlines() if l.startswith("### ")] for lg, p in pages.items()}
     lignes_tableau = {lg: sum(l.startswith("|") for l in p.splitlines()) for lg, p in pages.items()}
-    assert len(titres["fr"]) == len(titres["en"]) == 9                       # « En bref » + 8 parties
+    assert len(titres["fr"]) == len(titres["en"]) == 9                       # « En bref » + 8 parties (prix comparé au secteur et rôle de l'IA ajoutés le 21/10/2026)
     assert lignes_tableau["fr"] == lignes_tableau["en"]
     assert "—" not in pages["fr"] + pages["en"]                               # règle de rédaction : pas de tiret cadratin

@@ -1,0 +1,8 @@
+Polices hébergées avec le site Bourse à lunettes (téléchargées le 21/10/2026 depuis Google Fonts, alphabet latin).
+
+Inter-latin.woff2 : police Inter, Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter).
+Doto-latin.woff2  : police Doto, Copyright 2024 The Doto Project Authors (https://github.com/oliverlalan/Doto).
+
+Les deux polices sont distribuées sous la licence SIL Open Font License, version 1.1 :
+https://openfontlicense.org/open-font-license-official-text/
+Elles sont reprises sans modification. La licence MIT du code du site ne s'applique pas à ces fichiers.
