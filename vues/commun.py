@@ -66,7 +66,7 @@ def style():
         [data-testid="stMarkdownContainer"] table th, [data-testid="stMarkdownContainer"] table td {{
             font-size: .85rem; padding: .4rem .45rem; }}                      /* tenir sans défiler de côté (pages) */
         [data-testid="stTableStyledTable"] th, [data-testid="stTableStyledTable"] td {{
-            font-size: .75rem; padding: .3rem .35rem; }} }}                   /* et sur la fiche */
+            font-size: .75rem; padding: .3rem .22rem; }} }}                   /* et sur la fiche */
     .ba-bandeau {{ display: block; padding: .22em .3em .18em; border: 1px solid {FILET}; margin: 0;
                    font-family: 'Doto', monospace; font-weight: 700; line-height: 1.05;
                    font-size: clamp(2rem, 5.6vw, 6rem); }}
