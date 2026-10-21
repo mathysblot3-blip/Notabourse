@@ -5,7 +5,7 @@ avec le détail du calcul. Le site s'appelle **Bourse à lunettes** depuis le 20
 s'appelait NotaBourse, nom que gardent le dépôt GitHub, le dossier `notabourse/` du code et la recherche. La note vient du travail de recherche de Mathys Blot (formule C8) ; le site
 l'applique aux données de Yahoo Finance. **Ceci n'est pas un conseil en investissement.**
 
-Réalisé par Mathys Blot. **Site en ligne** : https://notabourse-muapxg2nhmeeq9txb3nyln.streamlit.app (Streamlit Community Cloud,
+Réalisé par Mathys Blot. **Site en ligne** : https://bourse-a-lunettes.streamlit.app (Streamlit Community Cloud,
 mis à jour automatiquement à chaque envoi sur GitHub).
 
 ## Ce que contient ce dossier
