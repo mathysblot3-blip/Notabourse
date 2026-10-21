@@ -275,7 +275,7 @@
   "ou_moins": "{x} ou moins",
   "moins_de": "moins de {x}",
   "ou_flux_positif": " (ou flux positif)",
-  "flux_negatif": "flux d'exploitation négatif",
+  "flux_negatif": "l'activité consomme de l'argent",
   "unite_an": "{x} an",
   "unite_ans": "{x} ans",
   "unite_fois": "{x} fois",
