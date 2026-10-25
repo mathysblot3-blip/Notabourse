@@ -298,3 +298,10 @@ Indicateur à part, sous le risque de faillite : il n'entre pas dans la note et 
 |---|---|
 | Inter et Doto hébergées dans `static/` (fichiers woff2 de Google Fonts, alphabet latin, 48 Ko et 5 Ko) au lieu d'être chargées depuis Google Fonts : le navigateur du visiteur ne transmet plus son adresse IP à Google pour les polices. Licence SIL Open Font License 1.1, droits d'auteur dans `static/LISEZ_MOI_POLICES.txt`, ligne ajoutée aux mentions légales | [M] 21/10/2026 |
 | `server.enableStaticServing = true` et deux tables `[[theme.fontFaces]]` dans `.streamlit/config.toml` | [P] |
+
+## 23. Petites corrections de l'expérience client (25/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Liste des cotations : saisie interdite (`filter_mode=None`), on choisit sans taper ; plus de « No results » en anglais ni de clavier qui s'ouvre sur téléphone | [M] 25/10/2026 |
+| Message quand Yahoo ne trouve aucune action (« Total » ne renvoie que des fonds indiciels) : conseil d'essayer le nom complet ou le symbole, affiché seulement dans ce cas | [M] 25/10/2026 |

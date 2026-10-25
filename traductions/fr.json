@@ -6,7 +6,7 @@
   "langue": "Langue",
   "champ_recherche": "Nom ou symbole d'une société cotée",
   "exemple_recherche": "Exemples : Apple, LVMH, Toyota, NESN.SW",
-  "aucun_resultat": "Aucune action trouvée pour cette recherche.",
+  "aucun_resultat": "Aucune action trouvée pour cette recherche. Essaie le nom complet de la société (par exemple TotalEnergies plutôt que Total) ou son symbole (TTE.PA).",
   "choisir_cotation": "Choisis la cotation (bourse, devise)",
   "cotation_principale": "cotation principale",
   "bouton_noter": "Calculer la note",

@@ -6,7 +6,7 @@
   "langue": "Language",
   "champ_recherche": "Name or ticker of a listed company",
   "exemple_recherche": "Examples: Apple, LVMH, Toyota, NESN.SW",
-  "aucun_resultat": "No stock found for this search.",
+  "aucun_resultat": "No stock found for this search. Try the company's full name (for example TotalEnergies rather than Total) or its ticker (TTE.PA).",
   "choisir_cotation": "Choose the listing (exchange, currency)",
   "cotation_principale": "primary listing",
   "bouton_noter": "Compute the score",

@@ -480,7 +480,8 @@ if texte.strip():
         st.stop()
     libelles = [f"{p['nom']} · {p['symbole']} · {p['bourse']} · {p['devise'] or '?'}"
                 + (f" ({T['cotation_principale']})" if p["principale"] else "") for p in props]
-    i = st.selectbox(T["choisir_cotation"], range(len(props)), format_func=lambda k: libelles[k])
+    i = st.selectbox(T["choisir_cotation"], range(len(props)), format_func=lambda k: libelles[k],
+                     filter_mode=None)                                        # on choisit, on ne tape pas [M] 25/10
     symbole = props[i]["symbole"]
     vues = st.session_state.setdefault("societes_vues", set())                # sociétés déjà affichées pendant la visite
     if symbole not in vues:                                                   # nouvelle société : limite par visite
