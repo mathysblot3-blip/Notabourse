@@ -9,8 +9,8 @@ As permitted by article 1-1, II of French law no. 2004-575 of 21 June 2004 on co
 I do not publish my home address or phone number: my personal identification details have been given to the host,
 which is bound by professional secrecy.
 
-To contact me or report an error: [the website's GitHub page](https://github.com/mathysblot3-blip/Notabourse/issues)
-(a free account is required).
+To contact me or report an error: "Questions?" button in the website's menu, no account needed. If you have a
+GitHub account, you can also use [the website's GitHub page](https://github.com/mathysblot3-blip/Notabourse/issues).
 
 ### 2. Hosting and data storage
 
@@ -49,16 +49,22 @@ To contact me or report an error: [the website's GitHub page](https://github.com
 
 ### 5. Personal data and cookies
 
-**What the website does.** It asks for no personal data, creates no account and shows no advertising. To see which
-companies interest visitors, it records only the date of a search and the ticker and name of the company searched, at
-Supabase: no IP address, no visitor identifier.
+**What the website does.** It creates no account and shows no advertising. To see which companies interest visitors,
+it records only the date of a search and the ticker and name of the company searched, at Supabase: no IP address,
+no visitor identifier.
+
+**Messages.** If you write to me with the "Questions?" button, the website records your message, its type, the
+website's language and, only if you give it, your e-mail address, at Supabase. Every Saturday, these messages are
+e-mailed to me (Google's Gmail). They are only used to reply to you and to improve the website, are neither sold nor
+passed on to anyone else, and are deleted after 12 months at most. You can ask at any time for a message to be
+deleted, with the same button.
 
 **What the host does.** Streamlit (Snowflake Inc.) receives the technical data of each visit (IP address, browser) and
 sets its own cookies and trackers. On 19 October 2026, these notably included audience measurement cookies: Google
 Analytics (`_ga`, `_gid`), Segment (`ajs_anonymous_id`) and Datadog (`_dd_s`). I do not choose them
 and cannot disable them, and they are set without asking for consent. More information: privacy policies of
 [Streamlit](https://streamlit.io/privacy-policy), [Snowflake](https://www.snowflake.com/en/legal/privacy/privacy-policy/),
-[Supabase](https://supabase.com/privacy) and, for the "Report an error" link,
+[Supabase](https://supabase.com/privacy), [Google](https://policies.google.com/privacy) for the e-mails and
 [GitHub](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
 **Your rights.** You can block or delete cookies in your browser settings. For data held by the host, contact it

@@ -79,6 +79,25 @@ Avec cette clé, la table accepte seulement des ajouts : personne ne peut lire, 
 clé fuitait. Pour lire le compteur : « SQL Editor », coller `supabase/lire_compteur.sql`, « Run » (ou « Table Editor »
 > `recherches`). Pour le site en ligne, les deux mêmes lignes vont dans les secrets de Streamlit Cloud.
 
+## Messages du bouton « Questions ? » et mail du samedi
+
+Le bouton « Questions ? » du menu ouvre une fenêtre où le visiteur écrit une question, une demande ou signale une erreur,
+avec son e-mail s'il veut une réponse. Le message est rangé dans la table Supabase `messages` (même projet et même clé
+publique que le compteur : ajout seulement). Chaque samedi, le robot GitHub (`.github/workflows/reference_hebdo.yml`,
+tâche `messages`) lance `supabase/resume_messages.py`, qui envoie tous les nouveaux messages en un seul mail, puis efface
+ceux de plus de 12 mois. Mise en place, une seule fois :
+
+1. Supabase, « SQL Editor » > « New query » : coller tout `supabase/creer_table_messages.sql`, « Run ».
+2. Supabase, réglages du projet, clés d'API : copier la clé **secrète** (« Secret key », `sb_secret_...`, ou l'ancienne
+   « service_role »). Elle ne va **que** dans les secrets de GitHub, jamais dans le code ni dans Streamlit.
+3. Google : activer la validation en deux étapes du compte Gmail, puis créer un « mot de passe d'application »
+   (myaccount.google.com, rubrique Sécurité, « Mots de passe des applications »), nommé par exemple « Bourse à lunettes ».
+4. GitHub, dépôt du site > « Settings » > « Secrets and variables » > « Actions » > « New repository secret », quatre
+   fois : `SUPABASE_URL` (la même adresse que plus haut), `SUPABASE_CLE_SECRETE`, `GMAIL_ADRESSE`, `GMAIL_MOT_DE_PASSE`.
+
+Pour tester sans attendre samedi : onglet « Actions » > « Référence hebdomadaire » > « Run workflow ». Tant que les
+secrets manquent, la tâche `messages` s'arrête sans erreur et sans envoyer de mail.
+
 ## Lancer les tests
 
 ```powershell

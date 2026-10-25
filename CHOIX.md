@@ -305,3 +305,14 @@ Indicateur à part, sous le risque de faillite : il n'entre pas dans la note et 
 |---|---|
 | Liste des cotations : saisie interdite (`filter_mode=None`), on choisit sans taper ; plus de « No results » en anglais ni de clavier qui s'ouvre sur téléphone | [M] 25/10/2026 |
 | Message quand Yahoo ne trouve aucune action (« Total » ne renvoie que des fonds indiciels) : conseil d'essayer le nom complet ou le symbole, affiché seulement dans ce cas | [M] 25/10/2026 |
+
+## 24. Bouton « Questions ? » et mail du samedi (25/10/2026)
+
+| Choix | Nature |
+|---|---|
+| Questions, demandes et erreurs envoyées depuis le site, sans compte ni GitHub ; le lien « Signaler une erreur » du bas de page renvoie vers ce bouton | [M] 25/10/2026 |
+| Bouton « Questions ? » sous le menu, qui ouvre une fenêtre par-dessus la page (la fiche reste derrière) ; « ? » à points à la place du numéro | [M] 25/10/2026 (fenêtre) ; style : [P] |
+| E-mail facultatif, seulement pour répondre ; messages effacés au bout de 12 mois au plus ; mentions légales complétées (Supabase, Gmail de Google) | [M] 25/10/2026 (e-mail facultatif) ; 12 mois : [P] |
+| Table Supabase `messages`, clé publique du site en ajout seulement ; lecture, marquage et effacement par le robot seul, avec la clé secrète rangée dans GitHub | [P] |
+| Contrôles : 5 à 2 000 caractères, adresse de forme valide, 3 messages au plus par visite | [P] |
+| Mail chaque samedi depuis le Gmail de Mathys vers lui-même (mot de passe d'application Google), tâche à part de la référence ; mail envoyé même sans message, pour montrer que tout fonctionne ; messages marqués « envoyés » après le mail, jamais perdus si un samedi échoue | [M] 25/10/2026 (Gmail) ; le reste : [P] |

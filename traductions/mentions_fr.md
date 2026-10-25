@@ -9,8 +9,9 @@ Comme le permet l'article 1-1, II de la loi n° 2004-575 du 21 juin 2004 pour l
 (LCEN), je ne publie ni mon domicile ni mon numéro de téléphone : mes éléments d'identification personnelle ont été
 communiqués à l'hébergeur, tenu au secret professionnel.
 
-Pour me contacter ou signaler une erreur : [page GitHub du site](https://github.com/mathysblot3-blip/Notabourse/issues)
-(un compte gratuit est nécessaire).
+Pour me contacter ou signaler une erreur : bouton « Questions ? » du menu du site, sans créer de
+compte. Si tu as un compte GitHub, tu peux aussi passer par la
+[page GitHub du site](https://github.com/mathysblot3-blip/Notabourse/issues).
 
 ### 2. Hébergement et stockage des données
 
@@ -51,17 +52,24 @@ Pour me contacter ou signaler une erreur : [page GitHub du site](https://github
 
 ### 5. Données personnelles et cookies
 
-**Ce que fait le site.** Il ne demande aucune donnée personnelle, ne crée aucun compte et n'affiche aucune publicité.
-Pour savoir quelles sociétés intéressent, il enregistre seulement la date d'une recherche, le symbole et le nom de la
-société cherchée, chez Supabase : ni adresse IP, ni identifiant de visiteur.
+**Ce que fait le site.** Il ne crée aucun compte et n'affiche aucune publicité. Pour savoir quelles sociétés
+intéressent, il enregistre seulement la date d'une recherche, le symbole et le nom de la société cherchée, chez
+Supabase : ni adresse IP, ni identifiant de visiteur.
+
+**Les messages.** Si tu m'écris avec le bouton « Questions ? », le site enregistre ton message, son type, la
+langue du site et, seulement si tu la donnes, ton adresse e-mail, chez Supabase. Chaque samedi, ces messages me sont
+envoyés par e-mail (messagerie Gmail de Google). Ils servent seulement à te répondre et à améliorer le site, ne sont
+ni vendus ni transmis à quelqu'un d'autre, et sont effacés au bout de 12 mois au plus. Tu peux demander à tout moment
+qu'un message soit effacé, avec le même bouton.
 
 **Ce que fait l'hébergeur.** Streamlit (Snowflake Inc.) reçoit les données techniques de chaque visite (adresse IP,
 navigateur) et dépose ses propres cookies et traceurs. Le 19/10/2026, on relevait notamment des cookies de mesure
 d'audience : Google Analytics (`_ga`, `_gid`), Segment (`ajs_anonymous_id`) et Datadog (`_dd_s`). Je ne les choisis
 pas, je ne peux pas les désactiver, et ils sont déposés sans demande d'accord. Pour en savoir plus : politiques de
 confidentialité de [Streamlit](https://streamlit.io/privacy-policy), de
-[Snowflake](https://www.snowflake.com/en/legal/privacy/privacy-policy/), de [Supabase](https://supabase.com/privacy) et,
-pour le lien « Signaler une erreur », de [GitHub](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+[Snowflake](https://www.snowflake.com/en/legal/privacy/privacy-policy/), de [Supabase](https://supabase.com/privacy), de
+[Google](https://policies.google.com/privacy) pour les e-mails et de
+[GitHub](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
 **Tes droits.** Tu peux bloquer ou effacer les cookies dans les réglages de ton navigateur. Pour les données détenues par
 l'hébergeur, adresse-toi à lui (politiques ci-dessus). Tu peux aussi adresser une plainte à la
