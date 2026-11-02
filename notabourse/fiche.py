@@ -83,9 +83,10 @@ def _detail(ligne, ref, code):
     for col, sens, fmt in RATIOS[code][groupe]:
         source = CALCULEES.get(col, col)                                      # colonne d'origine
         serie_g, serie_s = membres_groupe[source], membres_secteur[source]
+        bornee = winsoriser(serie_g)[membres_secteur.index]                   # valeurs extrêmes ramenées, comme la note
         v = _valeur(ligne, col)
         sortie.append({"ratio": col, "format": fmt, "valeur": v,
-                       "moyenne_secteur": float(serie_s.mean()) if serie_s.notna().any() else None,
+                       "moyenne_secteur": float(bornee.mean()) if bornee.notna().any() else None,   # [M] 02/11/2026
                        "mediane_secteur": float(serie_s.median()) if serie_s.notna().any() else None,   # phrases simples
                        "nb_secteur": int(serie_s.notna().sum()), "en_ecart": col in EN_ECART_SECTEUR,
                        "centile": (_centile_ecart(ligne, membres_groupe, col, sens, cle) if col in EN_ECART_SECTEUR

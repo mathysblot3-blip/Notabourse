@@ -316,3 +316,11 @@ Indicateur à part, sous le risque de faillite : il n'entre pas dans la note et 
 | Table Supabase `messages`, clé publique du site en ajout seulement ; lecture, marquage et effacement par le robot seul, avec la clé secrète rangée dans GitHub | [P] |
 | Contrôles : 5 à 2 000 caractères, adresse de forme valide, 3 messages au plus par visite | [P] |
 | Mail chaque samedi depuis le Gmail de Mathys vers lui-même (mot de passe d'application Google), tâche à part de la référence ; mail envoyé même sans message, pour montrer que tout fonctionne ; messages marqués « envoyés » après le mail, jamais perdus si un samedi échoue | [M] 25/10/2026 (Gmail) ; le reste : [P] |
+
+## 25. Corrections d'affichage de la fiche (02/11/2026)
+
+| Choix | Nature |
+|---|---|
+| Colonne « Moyenne du secteur » : moyenne après bornage aux 5e et 95e centiles du groupe, celle que la note utilise (la moyenne brute était faussée : ROE moyen de la technologie à 250 % à cause de GoDaddy et Mettler-Toledo, 29 % après bornage) | [M] 02/11/2026 |
+| Détail de la croissance : texte fixe, le même pour toutes les sociétés, puis un tableau (une colonne par mesure, une ligne par exercice, régularité, niveau, note) ; mesures en colonnes pour tenir sur un téléphone | [M] 02/11/2026 ; disposition : [P] |
+| Titre : « ours » dans le crème du logo (#FFF9DB, teinte dominante mesurée sur logo.png), pour que le jeu de mots se voie | [M] 02/11/2026 (version A) |

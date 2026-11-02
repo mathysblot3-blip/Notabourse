@@ -17,6 +17,8 @@ SURFACE = "#211f18"                                                           # 
 FILET = "#4d4838"                                                             # filets de 1 pixel
 TEXTE = "#ebe4cf"                                                             # crème : texte courant
 JAUNE = "#D8AE48"                                                             # jaune moutarde de la marque
+CREME_LOGO = "#FFF9DB"                                                        # crème du museau de l'ours du logo
+                                                                              # (teinte dominante mesurée sur logo.png)
 B_EN_JAUNE = False   # titre : False = « B » sombre dans un carré jaune, puis « ourse à lunettes » en jaune, sur le fond
                      # sombre (calme, 8,8 pour 1) ; True = l'inverse, sur un bandeau jaune (plus de jaune à l'écran)
 
@@ -122,7 +124,8 @@ def bandeau_titre(T):
     mots = " · ".join(T[k] for k in ("rentabilite", "croissance", "bilan", "dynamique"))
     st.html(f'<h1 class="ba-bandeau" style="background:{fond}">'
             f'<span class="ba-b" style="background:{b_fond};color:{b_lettre}">{titre[0]}</span>'
-            f'<span style="color:{reste}">{titre[1:]}</span></h1>'
+            f'<span style="color:{CREME_LOGO}">{titre[1:5]}</span>'           # « ours » en crème : le jeu de mots
+            f'<span style="color:{reste}">{titre[5:]}</span></h1>'
             f'<div class="ba-bande" aria-hidden="true"><span>{(mots + " · ") * 8}</span></div>')   # 2 moitiés égales :
                                                                               # le défilement boucle sans saut
 

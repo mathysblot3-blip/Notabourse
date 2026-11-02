@@ -12,7 +12,7 @@ from notabourse.classement import charger_correspondance_yahoo
 from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.fiche import fiche_hors_indice, fiche_membre
-from notabourse.formats import echapper
+from notabourse.formats import echapper, pct_signe
 from notabourse.limites import autoriser
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.prix import position_barre
@@ -193,10 +193,8 @@ def etapes_composante(f, c, T, L):
         cle = "calc_rent_fin" if f["groupe"] == "FIN" else "calc_rent_nf"
         return T[cle].format(v=pct(v, L, 1), secteur=secteur, note=note)
     if c["code"] == "G1":
-        serie = lambda col: T["serie_" + col.split("_", 1)[1]]                # PERS_CA -> « ventes »
-        pers = ", ".join(f"{serie(col)} {nombre(x, L, 2)}" for col, x in k["PERS"].items()) + " " + T["calc_pers_suffixe"]
-        gs = ", ".join(f"{serie(col)} {pct(x, L, 0)}" for col, x in k["GS"].items()) + " " + T["calc_gs_suffixe"]
-        return T["calc_croiss"].format(pers=pers, gs=gs, note=note)
+        return T["calc_croiss"]                                               # même texte pour toutes les sociétés,
+                                                                              # les chiffres sont dans le tableau [M]
     if c["code"] == "R2":
         return T["calc_bilan_" + f["groupe"]].format(note=note)
     m = k["M1"]                                                               # dynamique
@@ -208,18 +206,49 @@ def etapes_composante(f, c, T, L):
                                 etape4=etape4, note=note)
 
 
+# Lignes du tableau de la croissance, par groupe : (libellé, série des taux, régularité, niveau) [M] 02/11/2026
+LIGNES_CROISSANCE = {
+    "NF": [("lig_CA", "GS_CA", "PERS_CA", "GS_CA"), ("lig_EBITDA", "GS_EBITDA", "PERS_EBITDA", "GS_EBITDA")],
+    "REIT": [("lig_CA", "GS_CA", "PERS_CA", "GS_CA"), ("lig_FFO", "PERS_FFOPA", "PERS_FFO", None),
+             ("lig_EBITDA", None, None, "GS_EBITDA")],
+    "FIN": [("lig_REV", "GS_REV_FIN", "PERS_REV", "GS_REV")],
+}
+
+
+def tableau_croissance(f, c, T, L):
+    """Tableau des chiffres de la croissance : une colonne par mesure (ventes, EBITDA...), une ligne par exercice,
+    puis la régularité, le niveau et la note. Mesures en colonnes : le tableau tient sur un téléphone."""
+    k = f["calcul"]
+    lignes_noms = [T["col_ex0"], T["col_ex1"], T["col_ex2"], T["col_regularite"], T["col_niveau"]]
+    colonnes = {}
+    for libelle, serie, regul, niveau in LIGNES_CROISSANCE[f["groupe"]]:
+        taux = (c["croissances"] or {}).get(serie, []) if serie else []
+        valeurs = [pct_signe(taux[i], L) if i < len(taux) and taux[i] is not None else "" for i in range(3)]
+        r, n = k["PERS"].get(regul) if regul else None, k["GS"].get(niveau) if niveau else None
+        valeurs += [nombre(r, L, 2) if r is not None else "", pct(n, L, 0) if n is not None else ""]
+        colonnes[T[libelle]] = valeurs
+    if not any(v for vals in colonnes.values() for v in vals):
+        return None                                                           # aucun chiffre : rien à montrer
+    note = "-" if c["note"] is None else f"**{nombre(c['note'], L, 0)} / 100**"
+    lignes_noms.append(f"**{T['lig_note_croissance']}**")                     # note, dans la première colonne
+    for i, nom in enumerate(colonnes):
+        colonnes[nom].append(note if i == 0 else "")
+    return pd.DataFrame({"": lignes_noms, **colonnes})
+
+
 def detail_composante(f, c, T, L, dp):
     """Menu dépliant d'une partie : ce qu'elle mesure, le calcul étape par étape, puis ses chiffres."""
     cle = f"phrase_{c['nom']}_fin" if f["groupe"] == "FIN" and c["nom"] in ("rentabilite", "bilan") else f"phrase_{c['nom']}"
-    st.markdown(f"**{T['ce_que_mesure']}**{dp}" + T[cle] + (f" ({T['historique_court']})" if c["code"] == "G1" else ""))
+    st.markdown(f"**{T['ce_que_mesure']}**{dp}" + T[cle])
     st.markdown(f"**{T['calcul_etapes']}**")
     st.markdown(md(etapes_composante(f, c, T, L)))
     st.markdown(f"**{T['chiffres_societe']}**")
     if c["code"] == "G1":
-        if not c["croissances"]:
+        tableau = tableau_croissance(f, c, T, L)
+        if tableau is None:
             st.write(T["donnees_insuffisantes"])
-        for serie, taux in c["croissances"].items():
-            st.markdown(f"**{T[serie]}** ({T['annees']}){dp}" + " ; ".join(pct(x, L) for x in taux))
+        else:
+            st.table(tableau)
     else:
         st.table(pd.DataFrame([{T["col_ratio"]: T[d["ratio"]], T["col_valeur"]: valeur_ratio(d["valeur"], d["format"], L),
                                 T["col_moyenne_secteur"]: valeur_ratio(d["moyenne_secteur"], d["format"], L),
