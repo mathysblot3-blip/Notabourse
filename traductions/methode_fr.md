@@ -107,11 +107,10 @@ J'ai mené ce projet avec Claude Code (modèle Opus 5.5 d'Anthropic), une intell
 les miens ou ont été validés par moi ; l'IA a fait les choses suivantes :
 
 - mener des recherches en ligne ;
-- écrire tout le code Python, de la recherche comme du site ;
-- télécharger les données gratuites (comptes déposés à la SEC, cours, indices) et vérifier qu'aucune donnée du futur
-  n'est utilisée ;
+- écrire tout le code Python du site ;
+- télécharger les données gratuites (comptes déposés à la SEC, cours, indices) ;
 - lancer les calculs : backtests, test réservé, 211 essais, tests statistiques ;
-- produire les graphiques, les rapports et les textes, que j'ai relus et corrigés.
+- produire les graphiques et certains textes, que j'ai relus et corrigés.
 
 L'IA s'est trompée plusieurs fois (données manquantes, mois oublié dans un calcul). Chaque erreur trouvée a été
 corrigée, mais l'IA est imparfaite : des erreurs peuvent subsister.

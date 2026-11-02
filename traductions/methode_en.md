@@ -104,10 +104,10 @@ I carried out this project with Claude Code (Anthropic's Opus 5.5 model), an art
 mine or were approved by me; the AI did the following:
 
 - run online research;
-- write all the Python code, for the research and for the website;
-- download the free data (accounts filed with the SEC, prices, indices) and check that no future data is used;
+- write all the Python code for the website;
+- download the free data (accounts filed with the SEC, prices, indices);
 - run the calculations: backtests, reserved test, 211 trials, statistical tests;
-- produce the charts, reports and texts, which I reread and corrected.
+- produce the charts and some of the texts, which I reread and corrected.
 
 The AI made mistakes several times (missing data, a month left out of a calculation). Every error found was
 corrected, but the AI is imperfect: errors may remain.
