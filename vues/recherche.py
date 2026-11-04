@@ -489,7 +489,12 @@ def afficher_fiche(f, T, L, bourse=None):
 T = textes()
 L = st.session_state.get("langue", "fr")
 bandeau_titre(T)                                                             # « B » + « ourse à lunettes », bande défilante
-texte = st.text_input(T["champ_recherche"], placeholder=T["exemple_recherche"], max_chars=60)   # saisie bornée
+if "ouvrir_symbole" in st.session_state:                                      # venue du classement : la société
+    cible = st.session_state.pop("ouvrir_symbole")                            # cliquée est tapée à la place du
+    st.session_state["recherche_texte"] = cible                               # visiteur [M] 04/11/2026
+    st.session_state["recherche_choix"] = (cible, cible)                      # (texte tapé, cotation choisie)
+texte = st.text_input(T["champ_recherche"], placeholder=T["exemple_recherche"], max_chars=60,
+                      key="recherche_texte")                                  # saisie bornée
 st.session_state["accueil_vide"] = not texte.strip()                          # pied de page plus bas sur l'accueil vide
 if not texte.strip():                                                         # ce que fait le site [M] 20/10/2026 :
     presentation = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", T["presentation"])   # plus gros, centré entre la barre
@@ -509,9 +514,13 @@ if texte.strip():
         st.stop()
     libelles = [f"{p['nom']} · {p['symbole']} · {p['bourse']} · {p['devise'] or '?'}"
                 + (f" ({T['cotation_principale']})" if p["principale"] else "") for p in props]
+    memo = st.session_state.get("recherche_choix")                            # dernière cotation choisie pour ce
+    depart = next((k for k, p in enumerate(props)                             # texte (classement, ou visite d'une
+                   if memo and memo[0] == texte.strip() and p["symbole"] == memo[1]), 0)   # autre page) [M] 04/11
     i = st.selectbox(T["choisir_cotation"], range(len(props)), format_func=lambda k: libelles[k],
-                     filter_mode=None)                                        # on choisit, on ne tape pas [M] 25/10
+                     index=depart, filter_mode=None)                          # on choisit, on ne tape pas [M] 25/10
     symbole = props[i]["symbole"]
+    st.session_state["recherche_choix"] = (texte.strip(), symbole)            # retrouvée au retour sur la page
     vues = st.session_state.setdefault("societes_vues", set())                # sociétés déjà affichées pendant la visite
     if symbole not in vues:                                                   # nouvelle société : limite par visite
         ok, st.session_state["calculs"] = autoriser(st.session_state.get("calculs", []), time.time())

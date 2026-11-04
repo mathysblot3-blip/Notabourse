@@ -20,7 +20,7 @@ mis à jour automatiquement à chaque envoi sur GitHub).
 | `supabase/` | Scripts SQL du compteur des recherches : création de la table (`creer_table.sql`), lecture (`lire_compteur.sql`) |
 | `LICENSE` | Licence MIT du code |
 | `CHOIX.md` | Tous les choix de conception, avec leur nature (repris de la recherche, avis de Mathys, proposé, résultat de test) |
-| `.github/workflows/` | Robot hebdomadaire de GitHub (`reference_hebdo.yml`) : recalcule et publie la référence chaque samedi |
+| `.github/workflows/` | Robots de GitHub : `reference_hebdo.yml` recalcule et publie la référence chaque samedi ; `classement_nuit.yml` met à jour le classement mondial chaque nuit |
 | `pytest.ini` | Réglage des tests : seuls les fichiers `test_*.py` sont lancés |
 | `requirements.txt` | Bibliothèques Python et leurs versions |
 
@@ -156,6 +156,21 @@ git push -u origin main
 À savoir : dans un dépôt public, GitHub désactive les tâches planifiées après 60 jours sans activité dans le dépôt. Sa
 documentation ne dit pas si les commits du robot comptent comme activité (incertain). Si le robot s'arrête : onglet
 « Actions », « Référence hebdomadaire », « Enable workflow ».
+
+## Robot de nuit du classement mondial (GitHub Actions)
+
+Le fichier `.github/workflows/classement_nuit.yml` lance `reference/construire_classement.py` **chaque nuit à 01:30
+UTC**, pendant 110 minutes au plus : il relit chez Yahoo les sociétés lues il y a le plus longtemps (environ 1 900 par
+nuit, chacune une fois par semaine), les note avec le calcul du site, et range `classement.parquet` et
+`univers_classement.csv` dans la release « classement » du dépôt (onglet « Releases »), pas dans son historique. La
+page Classement télécharge ce fichier (relu au plus une fois par heure). Rien à mettre en place : le robot crée la
+release à son premier passage. Lancement à la main : onglet « Actions », « Classement de nuit », « Run workflow ».
+
+En local, pour remplir le classement à partir de calculs déjà faits (fichiers `.pkl` d'un essai) :
+
+```powershell
+.\.venv\Scripts\python.exe reference\construire_classement.py --depuis-cache DOSSIER
+```
 
 ## Mise en ligne (Streamlit Community Cloud)
 

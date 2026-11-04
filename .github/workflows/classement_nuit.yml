@@ -1,0 +1,53 @@
+# Robot de nuit du classement mondial (04/11/2026) : relit chez Yahoo les sociétés lues il y a le plus longtemps
+# (environ 1 900 par nuit, chacune une fois par semaine), recalcule leur note avec le calcul du site, et range le
+# classement dans la « release » classement du dépôt, d'où le site le télécharge. Le dépôt lui-même ne change pas :
+# son historique ne grossit pas chaque nuit. Si une étape échoue, l'ancien classement reste en ligne.
+
+name: Classement de nuit
+
+on:
+  schedule:
+    - cron: "30 1 * * *"         # chaque nuit à 01:30 UTC (le robot du samedi passe à 06:00) [P]
+  workflow_dispatch:             # bouton « Run workflow » : lancement à la main
+
+permissions:
+  contents: write                # droit de ranger les fichiers dans la release, et rien d'autre
+
+concurrency:
+  group: reference-hebdo         # jamais en même temps que le robot du samedi (Yahoo)
+  cancel-in-progress: false
+
+jobs:
+  classement:
+    runs-on: ubuntu-latest       # ordinateur prêté par GitHub, effacé après chaque passage
+    timeout-minutes: 150         # arrêt de sécurité (le calcul s'arrête de lui-même au bout de 110 minutes)
+    env:
+      GH_TOKEN: ${{ github.token }}                   # jeton du robot, donné par GitHub pour ce passage seulement
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262   # v4.4.0, figée par son commit
+
+      - name: Installer Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5.6.0, figée par son commit
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les bibliothèques
+        run: pip install -r requirements.txt
+
+      - name: Reprendre le classement de la nuit précédente
+        run: |
+          gh release view classement > /dev/null 2>&1 || gh release create classement --latest=false \
+            --title "Données du classement" --notes "Fichiers du classement mondial, remplacés chaque nuit par le robot."
+          gh release download classement --dir reference --clobber \
+            --pattern classement.parquet --pattern univers_classement.csv || echo "Premier passage : rien à reprendre."
+
+      - name: Relire les sociétés les plus anciennes (110 minutes au plus)
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}   # en-tête demandé par la SEC (secret du dépôt)
+          DUREE_MINUTES: "110"
+        run: python reference/construire_classement.py
+
+      - name: Ranger le classement dans la release
+        run: gh release upload classement reference/classement.parquet reference/univers_classement.csv --clobber

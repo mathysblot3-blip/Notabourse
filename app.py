@@ -22,10 +22,20 @@ with zone_questions:
     bouton_questions()                                                        # « Questions ? » [M] 25/10/2026
 T = textes()                                                                  # textes dans la langue choisie
 pages = [st.Page("vues/recherche.py", title=T["page_recherche"], default=True),
+         st.Page("vues/classement.py", title="Classement" if st.session_state.get("langue", "fr") == "fr"
+                 else "Ranking"),                                             # PROTOTYPE local, valeurs fictives
          st.Page("vues/methode.py", title=T["page_methode"]),
          st.Page("vues/tests.py", title=T["page_tests"]),
          st.Page("vues/sources.py", title=T["page_sources"]),
          st.Page("vues/mentions.py", title=T["page_mentions"])]   # sans émojis : menu numéroté 01 à 05 [M]
+# Choix gardés d'une page à l'autre [M] 04/11/2026 : sans cela, Streamlit vide un champ dès qu'on quitte sa page.
+# Réécrire la valeur à chaque passage la protège (méthode donnée par la documentation de Streamlit). Jamais les
+# tableaux cliquables (le clic renverrait sans fin vers la fiche) ni les boutons.
+GARDES = ["recherche_texte", "cl_zones", "cl_pays", "cl_secteurs", "cl_tailles", "cl_indice", "cl_tri1", "cl_ordre1",
+          "cl_nombre", "cl_ecartees", "cl_completes", "cl_detail"]
+for cle in GARDES:
+    if cle in st.session_state:
+        st.session_state[cle] = st.session_state[cle]                         # valeur conservée
 page = st.navigation(pages)
 if page.title != T["page_recherche"]:
     st.session_state["accueil_vide"] = False                               # espace seulement sur l'accueil

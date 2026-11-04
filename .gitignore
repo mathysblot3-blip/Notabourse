@@ -16,3 +16,8 @@ cache/
 
 # Logo provisoire de Mathys (image de remplacement de licence inconnue) : jamais publié sur GitHub
 images/logo_provisoire.png
+
+# Classement mondial : rangé dans la release « classement » par le robot de nuit, jamais dans le dépôt
+reference/classement.parquet
+reference/univers_classement.csv
+reference/classement.tmp
