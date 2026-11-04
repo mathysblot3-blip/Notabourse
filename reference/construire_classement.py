@@ -170,15 +170,16 @@ def lignes_membres(ref):
     return sortie
 
 
-def nuit(univers, anciennes, ref, cr, sauver=None):
+def nuit(univers, anciennes, ref, cr, sauver=None, reessayer=False):
     """Relit chez Yahoo les sociétés les plus anciennes, pendant DUREE_MINUTES au plus. Renvoie les nouvelles lignes.
-    sauver(nouvelles) : appelée toutes les SAUVEGARDE sociétés, pour qu'un arrêt brutal ne perde presque rien."""
+    sauver(nouvelles) : appelée toutes les SAUVEGARDE sociétés, pour qu'un arrêt brutal ne perde presque rien.
+    reessayer : retente aussi les sociétés déjà ratées aujourd'hui (lancement à la main seulement)."""
     D = pd.Timestamp.today().normalize()                                      # date du calcul
     vues = anciennes.set_index("symbole") if len(anciennes) else pd.DataFrame()
     lu = univers["symbole"].map(vues["date_lecture"]) if len(vues) else pd.Series(pd.NaT, index=univers.index)
     essai = univers["symbole"].map(vues["date_essai"]) if len(vues) else pd.Series(pd.NaT, index=univers.index)
     a_lire = univers[(lu.isna() | (lu < D - pd.Timedelta(days=JOURS_RELECTURE)))      # vieille de 6 jours ou plus
-                     & (essai.isna() | (essai < D))]                          # pas déjà ratée aujourd'hui
+                     & (reessayer | essai.isna() | (essai < D))]              # pas déjà ratée aujourd'hui
     a_lire = a_lire.assign(_lu=lu).sort_values("_lu", na_position="first")    # jamais lues d'abord, puis les plus vieilles
     journal(f"nuit : {len(a_lire)} sociétés à relire, {DUREE_MINUTES:.0f} min au plus")
 
@@ -287,6 +288,7 @@ def assembler(anciennes, nouvelles, membres, univers):
 def main():
     options = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     options.add_argument("--depuis-cache", help="dossier de calculs déjà faits (.pkl)")
+    options.add_argument("--reessayer", action="store_true", help="retenter aussi les sociétés ratées aujourd'hui")
     args = options.parse_args()
     ref, cr = calcul.charger_reference()                                      # référence S&P 500 de la semaine
     univers = charger_univers(ref)
@@ -301,7 +303,7 @@ def main():
         provisoire.replace(FICHIER)                                           # jamais de fichier à moitié écrit
 
     nouvelles = (depuis_cache(args.depuis_cache, univers, ref, cr) if args.depuis_cache
-                 else nuit(univers, anciennes, ref, cr, sauver))
+                 else nuit(univers, anciennes, ref, cr, sauver, args.reessayer))
     sauver(nouvelles)
     t = pd.read_parquet(FICHIER)
     notees = t["note"].notna()
