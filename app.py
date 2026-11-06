@@ -32,7 +32,7 @@ pages = [st.Page("vues/recherche.py", title=T["page_recherche"], default=True),
 # Réécrire la valeur à chaque passage la protège (méthode donnée par la documentation de Streamlit). Jamais les
 # tableaux cliquables (le clic renverrait sans fin vers la fiche) ni les boutons.
 GARDES = ["recherche_texte", "cl_zones", "cl_pays", "cl_secteurs", "cl_tailles", "cl_indice", "cl_tri1", "cl_ordre1",
-          "cl_nombre", "cl_ecartees", "cl_completes", "cl_detail"]
+          "cl_nombre", "cl_ecartees", "cl_completes", "cl_detail", "cl_accessibles"]
 for cle in GARDES:
     if cle in st.session_state:
         st.session_state[cle] = st.session_state[cle]                         # valeur conservée

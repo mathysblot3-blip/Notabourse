@@ -183,6 +183,7 @@ def preparer(brut):
     t["capi"] = t["capi_usd"] / 1e9                                           # milliards de dollars
     t["ecartee"] = ~t["gardee"].fillna(True).astype(bool)                     # écartée pour risque de faillite
     t["sp500"] = t["membre"].fillna(False).astype(bool)
+    t["accessible"] = t["accessible"].fillna(True).astype(bool) if "accessible" in t.columns else True
     t["pays"] = t["pays"].where(t["pays"].isin(list(PAYS)), "us")
     t["zone"] = t["pays"].map(lambda p: PAYS[p][2])
     t["symbole_fiche"] = t["symbole"]                                         # clic : fiche de cette société
@@ -210,6 +211,9 @@ def taille(capi):
 TXT["fr"].update({
     "fictif": "Prototype : valeurs fictives.", "en_perte": "en perte",
     "seuil": "Seules les sociétés de plus de 1 milliard de dollars de capitalisation sont classées.",
+    "accessibles": "Seulement les actions accessibles depuis la France",
+    "aide_accessibles": "Sociétés cotées en Europe ou aux États-Unis, ou à Francfort pour les autres : on les trouve "
+                        "en général chez les courtiers français. C'est une approximation : vérifie chez ton courtier.",
     "aide_pays": "Code du pays de la bourse principale (FR France, US États-Unis, GB Royaume-Uni, DE Allemagne, "
                  "JP Japon, CN Chine...). Les membres du S&P 500 sont classés aux États-Unis.",
     "aide_facteur": "Multiplie la note : 1,00 = même prix que son secteur ; plafond {haut} (au moins {moins} % "
@@ -231,6 +235,9 @@ TXT["fr"].update({
 TXT["en"].update({
     "fictif": "Prototype: made-up values.", "en_perte": "loss",
     "seuil": "Only companies with a market cap above $1 billion are ranked.",
+    "accessibles": "Only stocks available from France",
+    "aide_accessibles": "Companies listed in Europe or the United States, or in Frankfurt for the others: French brokers "
+                        "usually offer them. This is an approximation: check with your broker.",
     "aide_pays": "Country code of the main exchange (FR France, US United States, GB United Kingdom, DE Germany, "
                  "JP Japan, CN China...). S&P 500 members are listed under the United States.",
     "aide_facteur": "Multiplies the score: 1.00 = same price as its sector; cap {haut} (at least {moins}% "
@@ -250,7 +257,7 @@ TXT["en"].update({
                      "only 1.2 points a year (not significant). Loss-making companies and scores below 50 left out.",
 })
 CLES_FILTRES = ["cl_zones", "cl_pays", "cl_secteurs", "cl_tailles", "cl_indice", "cl_ecartees",
-                "cl_completes"]                                               # remis à zéro par « Effacer les filtres »
+                "cl_completes", "cl_accessibles"]                                               # remis à zéro par « Effacer les filtres »
 
 
 def effacer_filtres():
@@ -310,6 +317,7 @@ with st.container(border=True, key="cl_filtres"):
                              format_func=lambda s: T[f"secteur_{s}"], key="cl_secteurs", filter_mode=None, placeholder=X["tout"])
     tailles = d.multiselect(X["taille"], ["grande", "moyenne", "petite"], format_func=lambda k: X[f"taille_{k}"],
                             key="cl_tailles", filter_mode=None, help=X["aide_taille"], placeholder=X["toutes"])
+    accessibles = st.toggle(X["accessibles"], key="cl_accessibles", help=X["aide_accessibles"])   # [M] 06/11/2026
     h, i, j = st.columns(3, vertical_alignment="center")
     with i.popover(X["plus"], width="stretch"):                               # options moins courantes, à part
         indice = st.selectbox(X["indice"], ["tout", "sp", "hors", *INDICES], key="cl_indice", filter_mode=None,
@@ -341,10 +349,12 @@ elif indice != "tout":                                                        # 
     f = f[[indice in indices_de(s, n) for s, n in zip(f["symbole"], f["nom"])]]
 if not ecartees:
     f = f[~f["ecartee"]]
+if accessibles:
+    f = f[f["accessible"]]
 if completes:
     f = f[f["nb_composantes"] == 4]
 actifs = sum(bool(v) for v in (zones, pays, secteurs, tailles, indice != "tout", ecartees,
-                                completes))                                   # nombre de filtres choisis
+                                completes, accessibles))                                   # nombre de filtres choisis
 h.markdown(X["actifs"].format(n=len(f), k=actifs))
 
 

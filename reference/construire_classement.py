@@ -61,10 +61,14 @@ BOURSES = {"us": {"NMS", "NYQ", "NGM", "NCM", "ASE"}, "ca": {"TOR"}, "br": {"SAO
            "kr": {"KSC", "KOE"}, "hk": {"HKG"}, "cn": {"SHH", "SHZ"}, "tw": {"TAI", "TWO"}, "in": {"NSI"},
            "au": {"ASX"}, "nz": {"NZE"}, "sg": {"SES"}, "id": {"JKT"}, "th": {"SET"}, "my": {"KLS"},
            "za": {"JNB"}, "il": {"TLV"}, "sa": {"SAU"}, "qa": {"DOH"}}
+# Accessible depuis la France [M] 06/11/2026 : cotée dans ces pays, ou à Francfort pour les autres. Approximation [T] :
+# aucune liste publique des courtiers ; à Francfort figurent 65 à 99 % des sociétés européennes et japonaises, 2 à 7 %
+# des sociétés chinoises, indiennes, coréennes et taïwanaises, celles qu'on ne trouve pas chez les courtiers français.
+PAYS_ACCESSIBLES = {"us", "fr", "de", "gb", "ch", "nl", "se", "it", "es", "dk", "no", "fi", "be", "at", "pt", "ie"}
 CENTIMES = {"GBp": ("GBP", 100), "GBX": ("GBP", 100), "ZAc": ("ZAR", 100), "ILA": ("ILS", 100)}   # cours en centimes
 COLONNES = ["symbole", "nom", "pays", "bourse", "groupe", "secteur", "sous_secteur", "note", *COMPOSANTES_C8,
-            "nb_composantes", "gardee", "capi_usd", "ratio_prix", "perte", "membre", "statut", "date_lecture",
-            "date_essai"]
+            "nb_composantes", "gardee", "capi_usd", "ratio_prix", "perte", "membre", "accessible", "statut",
+            "date_lecture", "date_essai"]
 verrou = threading.Lock()  # un seul calcul à la fois modifie les compteurs
 
 
@@ -81,6 +85,19 @@ def dollars_par_unite(devise):
         return 1.0 / diviseur
     h = yf.Ticker(f"{base}USD=X").history(period="10d")                       # par exemple EURUSD=X
     return float(h["Close"].dropna().iloc[-1]) / diviseur if len(h) else None
+
+
+def noms_a_francfort():
+    """Noms simplifiés des sociétés cotées à Francfort (les plus grosses d'abord, jusqu'au rang 9 500)."""
+    requete = yf.EquityQuery("and", [yf.EquityQuery("eq", ["region", "de"]), yf.EquityQuery("is-in", ["exchange", "FRA"])])
+    noms = set()
+    for debut in range(0, RANG_MAX, 250):
+        page = yf.screen(requete, offset=debut, size=250, sortField="intradaymarketcap", sortAsc=False).get("quotes", [])
+        if not page:
+            break
+        noms |= {cle_nom(x.get("longName") or x.get("shortName")) for x in page}
+        time.sleep(0.5)                                                       # petite pause entre deux pages
+    return noms
 
 
 def construire_univers(ref):
@@ -128,8 +145,9 @@ def construire_univers(ref):
     # cotation dans la devise des comptes, puis hors de Vienne, puis la plus échangée (dollars par jour sur 3 mois)
     u = pd.DataFrame(lignes).sort_values(["dans_indice", "meme_devise", "vienne", "echange_usd"],
                                          ascending=[False, False, True, False])
-    u = u.drop_duplicates("cle").drop_duplicates("symbole").drop(columns=["cle", "echange_usd", "meme_devise",
-                                                                         "vienne", "dans_indice"])
+    u = u.drop_duplicates("cle").drop_duplicates("symbole")
+    u["accessible"] = u["pays"].isin(PAYS_ACCESSIBLES) | u["cle"].isin(noms_a_francfort())
+    u = u.drop(columns=["cle", "echange_usd", "meme_devise", "vienne", "dans_indice"])
     u = u.sort_values("capi_usd", ascending=False)
     u["date_univers"] = pd.Timestamp.today().normalize()
     u.to_csv(UNIVERS, index=False)
@@ -141,7 +159,8 @@ def charger_univers(ref):
     """Liste des sociétés : relue sur le disque si elle a moins de 7 jours, refaite sinon."""
     if UNIVERS.exists():
         u = pd.read_csv(UNIVERS, parse_dates=["date_univers"])
-        if len(u) and u["date_univers"].iloc[0] > pd.Timestamp.today() - pd.Timedelta(days=JOURS_UNIVERS):
+        recente = len(u) and u["date_univers"].iloc[0] > pd.Timestamp.today() - pd.Timedelta(days=JOURS_UNIVERS)
+        if recente and "accessible" in u.columns:
             return u
     return construire_univers(ref)
 
@@ -175,7 +194,7 @@ def lignes_membres(ref):
                        "groupe": m["groupe"], "secteur": m["secteur"], "sous_secteur": m["sous_secteur"],
                        "note": m["note_aff"], **{k: m[k + "_aff"] for k in COMPOSANTES_C8},
                        "nb_composantes": m["nb_aff"], "gardee": bool(m["gardee"]), "capi_usd": m["TAILLE"],
-                       "ratio_prix": p["ratio"], "perte": bool(p["perte"]), "membre": True,
+                       "ratio_prix": p["ratio"], "perte": bool(p["perte"]), "membre": True, "accessible": True,
                        "statut": "notée" if pd.notna(m["note_aff"]) else "pas de note",
                        "date_lecture": pd.Timestamp(m["date"]), "date_essai": pd.Timestamp(m["date"])})
     return sortie
@@ -286,10 +305,12 @@ def assembler(anciennes, nouvelles, membres, univers):
         else:
             t.loc[s["symbole"], [k for k in COLONNES if k != "symbole"]] = [s.get(k) for k in COLONNES[1:]]
     t = t[t.index.isin(univers["symbole"])].reset_index()                     # sociétés sorties de l'univers retirées
+    if "accessible" in univers.columns:                                       # d'après la liste de la semaine
+        t["accessible"] = t["symbole"].map(univers.set_index("symbole")["accessible"])
     t = pd.concat([pd.DataFrame(membres), t], ignore_index=True)[COLONNES]
     for k in ["note", *COMPOSANTES_C8, "nb_composantes", "capi_usd", "ratio_prix"]:
         t[k] = pd.to_numeric(t[k], errors="coerce")
-    for k in ["gardee", "perte", "membre"]:
+    for k in ["gardee", "perte", "membre", "accessible"]:
         t[k] = t[k].astype("boolean")
     for k in ["date_lecture", "date_essai"]:
         t[k] = pd.to_datetime(t[k])

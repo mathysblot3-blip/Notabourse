@@ -98,7 +98,20 @@ Finance or, as a last resort, price relative to sales against the same ratio in 
 This benchmark describes the price, it predicts nothing: over 2010-2026, it had no clear link with the return of the
 following 12 months.
 
-### 7. Role of AI
+### 7. The ranking
+
+The Ranking page brings together stocks with a market cap above $1 billion, on their home exchange: about 9,000
+companies. Each one has the score of its sheet, calculated the same way. A robot rereads them at night, each one once a
+week.
+
+- **Best scores**: companies sorted by their score out of 100.
+- **Good deals**: the score multiplied by a price factor, the sector P/E divided by the company P/E. This factor is capped
+  like the ratios of the score, at the 5th and 95th percentiles of S&P 500 members: an extreme price often comes from a
+  one-off profit or a doubtful figure. Only profitable companies scored 50 or more appear here.
+- **Available from France**: this filter keeps companies listed in Europe or the United States, or in Frankfurt for the
+  others. It is an approximation: always check with your broker.
+
+### 8. Role of AI
 
 I carried out this project with Claude Code (Anthropic's Opus 5.5 model), an artificial intelligence. All choices are
 mine or were approved by me; the AI did the following:
@@ -112,7 +125,7 @@ mine or were approved by me; the AI did the following:
 The AI made mistakes several times (missing data, a month left out of a calculation). Every error found was
 corrected, but the AI is imperfect: errors may remain.
 
-### 8. Limits
+### 9. Limits
 
 - **This is not investment advice.** I am not a licensed financial adviser.
 - **Nothing has been proven in real life.** A first formula, frozen before the test, failed on the reserved test period

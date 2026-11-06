@@ -101,7 +101,21 @@ Finance ou, en dernier recours, prix rapporté aux ventes face au même rapport 
 Ce repère décrit le prix, il ne prédit rien : sur 2010-2026, il n'a eu aucun lien net avec le rendement des 12 mois
 suivants.
 
-### 7. Rôle de l'IA
+### 7. Le classement
+
+La page Classement réunit les actions dont la capitalisation dépasse 1 milliard de dollars, sur leur bourse d'origine,
+soit environ 9 000 sociétés. Chacune a la note de sa fiche, calculée de la même façon. Un robot les relit la nuit,
+chacune une fois par semaine.
+
+- **Meilleures notes** : les sociétés rangées par leur note sur 100.
+- **Bonnes affaires** : la note multipliée par un facteur de prix, le PER du secteur divisé par le PER de la société.
+  Ce facteur est borné comme les ratios de la note, aux 5e et 95e centiles des membres du S&P 500 : un prix extrême
+  vient souvent d'un bénéfice exceptionnel ou d'une donnée douteuse. Seules les sociétés bénéficiaires notées 50 ou plus
+  y figurent.
+- **Accessibles depuis la France** : ce filtre garde les sociétés cotées en Europe ou aux États-Unis, ou à Francfort
+  pour les autres. C'est une approximation : vérifie toujours chez ton courtier.
+
+### 8. Rôle de l'IA
 
 J'ai mené ce projet avec Claude Code (modèle Opus 5.5 d'Anthropic), une intelligence artificielle. Tous les choix sont
 les miens ou ont été validés par moi ; l'IA a fait les choses suivantes :
@@ -115,7 +129,7 @@ les miens ou ont été validés par moi ; l'IA a fait les choses suivantes :
 L'IA s'est trompée plusieurs fois (données manquantes, mois oublié dans un calcul). Chaque erreur trouvée a été
 corrigée, mais l'IA est imparfaite : des erreurs peuvent subsister.
 
-### 8. Limites
+### 9. Limites
 
 - **Ce n'est pas un conseil en investissement.** Je ne suis pas conseiller financier agréé.
 - **Rien n'est prouvé en réel.** Une première formule, fixée avant le test, a échoué sur la période de test réservée

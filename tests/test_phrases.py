@@ -161,6 +161,6 @@ def test_page_methode_meme_structure_dans_les_deux_langues():
     pages = {lg: (SITE / "traductions" / f"methode_{lg}.md").read_text(encoding="utf-8") for lg in ("fr", "en")}
     titres = {lg: [l for l in p.splitlines() if l.startswith("### ")] for lg, p in pages.items()}
     lignes_tableau = {lg: sum(l.startswith("|") for l in p.splitlines()) for lg, p in pages.items()}
-    assert len(titres["fr"]) == len(titres["en"]) == 9                       # « En bref » + 8 parties (prix comparé au secteur et rôle de l'IA ajoutés le 21/10/2026)
+    assert len(titres["fr"]) == len(titres["en"]) == 10                      # « En bref » + 9 parties (classement ajouté le 06/11/2026)
     assert lignes_tableau["fr"] == lignes_tableau["en"]
     assert "—" not in pages["fr"] + pages["en"]                               # règle de rédaction : pas de tiret cadratin
