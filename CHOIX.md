@@ -351,3 +351,4 @@ Indicateur à part, sous le risque de faillite : il n'entre pas dans la note et 
 | Fiche : indices à la suite de la capitalisation, « Hors du S&P 500... » ou « Membre du S&P 500 » seul à la ligne, sans le mot « Indices » | [M] 06/11/2026 |
 | Filtre « Seulement les actions accessibles depuis la France » : cotée en Europe de l'Ouest ou aux États-Unis, ou à Francfort pour les autres (5 048 des 9 168 sociétés notées) ; approximation signalée, aucune liste publique des courtiers | Filtre : [M] 06/11/2026 ; définition : [P] ; Francfort comme repère : [T] (2 à 7 % des sociétés chinoises, indiennes, coréennes et taïwanaises y sont cotées, 65 à 99 % des européennes et japonaises) |
 | Page Méthode : partie 7 « Le classement » ajoutée, parties suivantes renumérotées ; texte de Mathys | [M] 06/11/2026 |
+| Onglet « Meilleures notes » ou « Bonnes affaires » gardé d'une page à l'autre, comme les filtres | [M] 06/11/2026 |

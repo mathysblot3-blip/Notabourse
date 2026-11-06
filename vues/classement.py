@@ -396,7 +396,10 @@ def afficher(tableau, cle, avec_score):
         st.switch_page("vues/recherche.py")
 
 
-onglet1, onglet2 = st.tabs([X["onglet_notes"], X["onglet_prix"]])
+onglets = [X["onglet_notes"], X["onglet_prix"]]
+if st.session_state.get("cl_onglet") not in onglets:                          # langue changée : nom de l'onglet
+    st.session_state.pop("cl_onglet", None)                                   # inconnu, retour au premier
+onglet1, onglet2 = st.tabs(onglets, key="cl_onglet", on_change="rerun")       # onglet gardé d'une page à l'autre [M]
 
 with onglet1:
     g = f.sort_values([tri, "note"], ascending=[bool(croissant), False], na_position="last").copy()
