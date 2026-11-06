@@ -17,6 +17,7 @@ import requests         # téléchargement du classement
 import streamlit as st  # interface web
 
 from notabourse.constantes import PRIX_BON_MARCHE, PRIX_CHERE, WINSOR_BAS, WINSOR_HAUT   # seuils du site
+from notabourse.indices import INDICES, indices_de                # Nikkei 225, CAC 40...
 from vues.commun import FILET, JAUNE, SITE, SURFACE, textes
 
 # --- Textes du prototype (passeront dans traductions/fr.json et en.json une fois la page validée) -------------------
@@ -208,6 +209,7 @@ def taille(capi):
 # --- Textes ajoutés par la deuxième version (04/11/2026), mêmes règles que TXT -------------------------------------
 TXT["fr"].update({
     "fictif": "Prototype : valeurs fictives.", "en_perte": "en perte",
+    "seuil": "Seules les sociétés de plus de 1 milliard de dollars de capitalisation sont classées.",
     "aide_pays": "Code du pays de la bourse principale (FR France, US États-Unis, GB Royaume-Uni, DE Allemagne, "
                  "JP Japon, CN Chine...). Les membres du S&P 500 sont classés aux États-Unis.",
     "aide_facteur": "Multiplie la note : 1,00 = même prix que son secteur ; plafond {haut} (au moins {moins} % "
@@ -228,6 +230,7 @@ TXT["fr"].update({
 })
 TXT["en"].update({
     "fictif": "Prototype: made-up values.", "en_perte": "loss",
+    "seuil": "Only companies with a market cap above $1 billion are ranked.",
     "aide_pays": "Country code of the main exchange (FR France, US United States, GB United Kingdom, DE Germany, "
                  "JP Japan, CN China...). S&P 500 members are listed under the United States.",
     "aide_facteur": "Multiplies the score: 1.00 = same price as its sector; cap {haut} (at least {moins}% "
@@ -309,8 +312,8 @@ with st.container(border=True, key="cl_filtres"):
                             key="cl_tailles", filter_mode=None, help=X["aide_taille"], placeholder=X["toutes"])
     h, i, j = st.columns(3, vertical_alignment="center")
     with i.popover(X["plus"], width="stretch"):                               # options moins courantes, à part
-        indice = st.selectbox(X["indice"], ["tout", "sp", "hors"], key="cl_indice", filter_mode=None,
-                              format_func=lambda k: X["toutes"] if k == "tout" else X[f"indice_{k}"])
+        indice = st.selectbox(X["indice"], ["tout", "sp", "hors", *INDICES], key="cl_indice", filter_mode=None,
+                              format_func=lambda k: X["toutes"] if k == "tout" else X.get(f"indice_{k}", k))
         tri = st.selectbox(X["tri"], list(TRIS), format_func=lambda k: TRIS[k], key="cl_tri1", filter_mode=None)
         croissant = st.selectbox(X["ordre"], [False, True], key="cl_ordre1", filter_mode=None,
                                  format_func=lambda v: X["croissant"] if v else X["decroissant"])
@@ -334,6 +337,8 @@ if indice == "sp":
     f = f[f["sp500"]]
 elif indice == "hors":
     f = f[~f["sp500"]]
+elif indice != "tout":                                                        # Nikkei 225, CAC 40... [M] 06/11/2026
+    f = f[[indice in indices_de(s, n) for s, n in zip(f["symbole"], f["nom"])]]
 if not ecartees:
     f = f[~f["ecartee"]]
 if completes:
@@ -387,6 +392,7 @@ with onglet1:
     g = f.sort_values([tri, "note"], ascending=[bool(croissant), False], na_position="last").copy()
     g["rang"] = range(1, len(g) + 1)
     afficher(g, "cl_tableau1", avec_score=False)
+    st.caption(X["seuil"])                                                    # [M] 04/11/2026
 
 with onglet2:
     g = f[f["ratio_prix"].notna() & (f["note"] >= NOTE_MIN_AFFAIRES)].copy()   # une note faible mais très bon
@@ -402,3 +408,4 @@ with onglet2:
     afficher(g, "cl_tableau2", avec_score=True)
     st.markdown(X["explication_prix"].format(**chiffres))                     # explications sous le tableau [M]
     st.caption(X["prudence_prix"])
+    st.caption(X["seuil"])

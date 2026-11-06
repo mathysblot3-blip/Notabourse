@@ -38,6 +38,7 @@ sys.path.insert(0, str(SITE))                                                 # 
 import notabourse.calcul as calcul  # noqa: E402  calcul complet d'une société
 from notabourse.classement import charger_correspondance_yahoo  # noqa: E402  industrie Yahoo -> groupe
 from notabourse.constantes import COMPOSANTES_C8                # noqa: E402  Q1, G1, R2, M1
+from notabourse.indices import cle_nom, table_indices           # noqa: E402  nom simplifié, membres des indices
 from notabourse.prix import prix_secteur                        # noqa: E402  prix comparé au secteur
 from notabourse.sources import marche_sp500tr, table_cik_sec    # noqa: E402
 
@@ -72,13 +73,6 @@ def journal(texte):
     print(time.strftime("%H:%M:%S ") + texte, flush=True)
 
 
-def cle_nom(nom):
-    """Nom simplifié pour repérer une même société cotée deux fois : « ASML Holding N.V. » -> « asml »."""
-    nom = re.sub(r"[^a-z0-9 ]", "", str(nom).lower().replace("-", " "))      # « N.V. » -> « nv », sans ponctuation
-    nom = re.sub(r"\b(inc|corp|corporation|plc|ltd|limited|sa|se|nv|ag|co|company|holdings?|group|the)\b", "", nom)
-    return nom.replace(" ", "")                                               # mots juridiques retirés, puis collé
-
-
 @lru_cache(maxsize=None)
 def dollars_par_unite(devise):
     """Combien de dollars vaut 1 unité de la devise (dernier cours connu) ; None si Yahoo ne le donne pas."""
@@ -94,13 +88,18 @@ def construire_univers(ref):
     deja = set(ref["ticker"]) | set(ref["nom"].map(cle_nom))                  # membres du S&P 500 : à part
     lignes = []
     for pays, bourses in BOURSES.items():
+        # Bourse principale demandée dès la requête : sinon les cotations étrangères (Apple à Francfort...) remplissent
+        # les pages et les sociétés locales moyennes passent au-delà du rang 9 500 [T] 04/11/2026
+        requete = yf.EquityQuery("and", [yf.EquityQuery("eq", ["region", pays]),
+                                         yf.EquityQuery("is-in", ["exchange", *sorted(bourses)])])
         for debut in range(0, RANG_MAX, 250):                                 # pages de 250, les plus grosses d'abord
-            r = yf.screen(yf.EquityQuery("eq", ["region", pays]), offset=debut, size=250,
-                          sortField="intradaymarketcap", sortAsc=False)
+            r = yf.screen(requete, offset=debut, size=250, sortField="intradaymarketcap", sortAsc=False)
             page = r.get("quotes", [])
             assez_grosse = False                                              # au moins une société au-dessus du seuil ?
             for x in page:
-                taux = dollars_par_unite(x.get("currency"))
+                base, diviseur = CENTIMES.get(x.get("currency"), (x.get("currency"), 1))
+                taux = dollars_par_unite(base)                                # capitalisation : en livres, même si
+                                                                              # le cours est en pence [T] 06/11/2026
                 capi = x.get("marketCap")
                 capi_usd = capi * taux if capi and taux else None
                 if capi_usd is None or capi_usd < SEUIL_USD:
@@ -112,14 +111,26 @@ def construire_univers(ref):
                           and "-P" not in x["symbol"]                         # pas d'action de préférence
                           and x["symbol"] not in deja and cle_nom(nom) not in deja)
                 if garder:
+                    echange = ((x.get("averageDailyVolume3Month") or 0) * (x.get("regularMarketPrice") or 0)
+                               * taux / diviseur)                             # cours en pence : divisé par 100
                     lignes.append({"symbole": x["symbol"], "nom": nom, "pays": pays, "bourse": x.get("exchange"),
-                                   "capi_usd": capi_usd, "cle": cle_nom(nom)})
+                                   "capi_usd": capi_usd, "echange_usd": echange, "cle": cle_nom(nom),
+                                   "meme_devise": base == x.get("financialCurrency"),   # cours dans la devise
+                                   "dans_indice": x["symbol"] in table_indices()[0],   # AZN.L, pas AZN
+                                   "vienne": pays == "at"})                   # des comptes ; Vienne cote beaucoup
+                                                                              # de sociétés étrangères
             time.sleep(0.5)                                                   # petite pause entre deux pages
             if not page or not assez_grosse or len(page) < 250:
                 break                                                         # plus rien au-dessus du seuil
         journal(f"univers : {pays} lu ({len(lignes)} cotations en tout)")
-    u = pd.DataFrame(lignes).sort_values("capi_usd", ascending=False)
-    u = u.drop_duplicates("cle").drop_duplicates("symbole").drop(columns="cle")   # une cotation par société
+    # Une cotation par société, celle de son pays d'origine autant que possible [T] 04/11/2026 (sinon Tencent était
+    # gardé à Vienne et Roche à Francfort) : d'abord celle qui figure dans un indice (AstraZeneca à Londres), puis une
+    # cotation dans la devise des comptes, puis hors de Vienne, puis la plus échangée (dollars par jour sur 3 mois)
+    u = pd.DataFrame(lignes).sort_values(["dans_indice", "meme_devise", "vienne", "echange_usd"],
+                                         ascending=[False, False, True, False])
+    u = u.drop_duplicates("cle").drop_duplicates("symbole").drop(columns=["cle", "echange_usd", "meme_devise",
+                                                                         "vienne", "dans_indice"])
+    u = u.sort_values("capi_usd", ascending=False)
     u["date_univers"] = pd.Timestamp.today().normalize()
     u.to_csv(UNIVERS, index=False)
     journal(f"univers : {len(u)} sociétés distinctes hors S&P 500 d'au moins {SEUIL_USD / 1e9:.0f} Md$")

@@ -38,6 +38,11 @@ jobs:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}   # en-tête demandé par la SEC, rangé dans les secrets du dépôt
         run: python reference/construire_reference.py
 
+      - name: Refaire la liste des membres des grands indices (Nikkei 225, CAC 40...)
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: python reference/construire_indices.py
+
       - name: Contrôler la référence
         run: python reference/controler_reference.py
 
@@ -48,7 +53,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reference/reference.parquet reference/croissances.parquet reference/membres_sp500.csv reference/reference_info.json
+          git add reference/reference.parquet reference/croissances.parquet reference/membres_sp500.csv reference/reference_info.json reference/indices.csv
           if git diff --cached --quiet; then
             echo "Rien de nouveau à publier."
           else

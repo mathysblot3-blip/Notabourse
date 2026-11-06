@@ -13,6 +13,7 @@ from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.formats import echapper, pct_signe
+from notabourse.indices import indices_de
 from notabourse.limites import autoriser
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.prix import position_barre
@@ -434,8 +435,10 @@ def afficher_fiche(f, T, L, bourse=None):
     secteur = T[f"secteur_{f['secteur']}"] + (f" ({T['sous_' + f['sous_secteur']]})" if f["groupe"] == "FIN" else "")
     # En-tête
     st.header(echapper(f["nom"]))                                            # nom fourni par Yahoo : échappé
-    st.caption(f"**{echapper(f['symbole'])}** · {echapper(bourse or f['bourse'])} · {secteur} · {md(dollars(f['capitalisation_usd'], L))} · "
-               f"{T['membre'] if f['membre'] else T['hors_indice']}")
+    autres = indices_de(f["symbole"], f["nom"])                               # Nikkei 225, CAC 40... [M] 06/11/2026
+    indices = " · " + md(", ".join(autres)) if autres else ""                 # à la suite de la capitalisation
+    st.caption(f"**{echapper(f['symbole'])}** · {echapper(bourse or f['bourse'])} · {secteur} · {md(dollars(f['capitalisation_usd'], L))}"
+               f"{indices}  \n{T['membre'] if f['membre'] else T['hors_indice']}")   # S&P 500 : à la ligne
     if f["garde_fou"]["exclue"]:                                              # bandeau « exclue », raisons dans Santé
         st.markdown(f'<div style="border:2px solid {VIOLET};padding:8px 14px;margin:4px 0 10px">'
                     f'<b>{T["av_exclue"]}</b></div>', unsafe_allow_html=True)

@@ -47,3 +47,9 @@ def test_echec_d_une_societe_jamais_lue_garde_une_ligne_relisible():
                                                           "echec": True}], [], _univers("NEW"))
     assert t.loc[0, "statut"] == "erreur" and pd.isna(t.loc[0, "note"])
     assert not t["membre"].fillna(False).astype(bool).any()                   # ce que lisent la page et le robot
+
+
+def test_capitalisation_en_pence_non_divisee():
+    # Yahoo donne la capitalisation en livres même si le cours est en pence : seul le cours est divisé par 100
+    assert cc.CENTIMES["GBp"] == ("GBP", 100)
+    assert cc.dollars_par_unite("USD") == 1.0
