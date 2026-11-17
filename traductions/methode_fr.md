@@ -108,10 +108,9 @@ soit environ 9 000 sociétés. Chacune a la note de sa fiche, calculée de la m
 chacune une fois par semaine.
 
 - **Meilleures notes** : les sociétés rangées par leur note sur 100.
-- **Bonnes affaires** : la note multipliée par un facteur de prix, le PER du secteur divisé par le PER de la société.
-  Ce facteur est borné comme les ratios de la note, aux 5e et 95e centiles des membres du S&P 500 : un prix extrême
-  vient souvent d'un bénéfice exceptionnel ou d'une donnée douteuse. Seules les sociétés bénéficiaires notées 50 ou plus
-  y figurent.
+- **Bien notées, moins chères que leur secteur** : les sociétés notées 50 ou plus dont le PER est inférieur d'au
+  moins 20 % à celui de leur secteur, triées par leur note. Ce n'est pas une liste d'achats : le prix décrit, il ne
+  prédit pas.
 - **Accessibles depuis la France** : ce filtre garde les sociétés cotées en Europe ou aux États-Unis, ou à Francfort
   pour les autres. C'est une approximation : vérifie toujours chez ton courtier.
 

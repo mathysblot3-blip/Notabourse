@@ -137,6 +137,18 @@ def _charger_textes(langue, signature):
     return json.loads((SITE / "traductions" / f"{langue}.json").read_text(encoding="utf-8"))
 
 
+def code_langue_page(lg):
+    """Petit script qui écrit la langue (fr ou en) dans l'attribut lang de la page (S-A01, WCAG 3.1.1)."""
+    lg = lg if lg in ("fr", "en") else "fr"                                   # seules valeurs permises
+    # Le script s'exécute dans un cadre de même origine que la page : il peut modifier le <html> du parent.
+    return f"<script>window.parent.document.documentElement.lang = '{lg}';</script>"
+
+
+def appliquer_langue_page(lg):
+    """Fait passer l'attribut lang de la page de « en » (valeur de Streamlit) à la langue choisie."""
+    st.components.v1.html(code_langue_page(lg), height=0)                     # cadre invisible de hauteur nulle
+
+
 def langue():
     """Langue choisie par le visiteur : français par défaut [M], bouton dans la barre latérale."""
     if "langue" not in st.session_state:
@@ -145,6 +157,7 @@ def langue():
                                          default=st.session_state["langue"].upper(), key="choix_langue")
     if choix:                                                                 # un clic sur le bouton déjà choisi le vide
         st.session_state["langue"] = choix.lower()
+    appliquer_langue_page(st.session_state["langue"])                         # S-A01 : lang="fr" ou lang="en"
     return st.session_state["langue"]
 
 

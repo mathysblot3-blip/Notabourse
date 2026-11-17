@@ -105,9 +105,8 @@ companies. Each one has the score of its sheet, calculated the same way. A robot
 week.
 
 - **Best scores**: companies sorted by their score out of 100.
-- **Good deals**: the score multiplied by a price factor, the sector P/E divided by the company P/E. This factor is capped
-  like the ratios of the score, at the 5th and 95th percentiles of S&P 500 members: an extreme price often comes from a
-  one-off profit or a doubtful figure. Only profitable companies scored 50 or more appear here.
+- **Well rated, cheaper than their sector**: companies scored 50 or more whose P/E is at least 20% below their
+  sector's, sorted by score. This is not a shopping list: price describes, it does not predict.
 - **Available from France**: this filter keeps companies listed in Europe or the United States, or in Frankfurt for the
   others. It is an approximation: always check with your broker.
 

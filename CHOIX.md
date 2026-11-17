@@ -352,3 +352,16 @@ Indicateur à part, sous le risque de faillite : il n'entre pas dans la note et 
 | Filtre « Seulement les actions accessibles depuis la France » : cotée en Europe de l'Ouest ou aux États-Unis, ou à Francfort pour les autres (5 048 des 9 168 sociétés notées) ; approximation signalée, aucune liste publique des courtiers | Filtre : [M] 06/11/2026 ; définition : [P] ; Francfort comme repère : [T] (2 à 7 % des sociétés chinoises, indiennes, coréennes et taïwanaises y sont cotées, 65 à 99 % des européennes et japonaises) |
 | Page Méthode : partie 7 « Le classement » ajoutée, parties suivantes renumérotées ; texte de Mathys | [M] 06/11/2026 |
 | Onglet « Meilleures notes » ou « Bonnes affaires » gardé d'une page à l'autre, comme les filtres | [M] 06/11/2026 |
+
+## 27. Correctifs issus de l'audit (17/11/2026)
+
+Source : `Audit_Bourse_a_lunettes/ameliorations/correctifs_code/` (un `.diff` et un `.md` par correctif), appliqués à la suite sur la branche `correctifs-audit` ; 143 tests réussis.
+
+| Choix | Nature |
+|---|---|
+| Couleurs des pastilles au contraste WCAG 2.1 AA (charbon sur vert et orange, rouge #D24444) | [P] audit S-A03 ; accepté par Mathys |
+| Texte alternatif des graphiques de la page Backtesting | [P] audit S-A02 ; accepté par Mathys |
+| Classement : un bouton « Ouvrir la fiche » remplace l'ouverture au simple clic sur une case | [P] audit S-A04 ; accepté par Mathys |
+| Attribut `lang` de la page réglé sur la langue choisie (script dans un cadre) ; à contrôler en ligne | [M] 17/11/2026 (audit S-A01) |
+| Société écartée **seulement** pour fonds propres négatifs : barre en orange « Risque potentiel », toujours écartée de la sélection ; phrase de santé sans « ses dettes dépassent tout ce qu'elle possède » ; si une autre condition manque, la barre reste rouge | [M] 17/11/2026 ; cohérence : [R] audit R-F02 (30 des 32 membres concernés ont des comptes sains) |
+| Deuxième onglet du classement : « Bien notées, moins chères que leur secteur » (note de 50 ou plus et PER au moins 20 % sous celui du secteur, triées par la note) ; facteur de prix multiplicatif retiré | [M] 17/11/2026 (variante B de l'audit) ; raison : [R] 47 des 50 premières lignes étaient au plafond du facteur |
