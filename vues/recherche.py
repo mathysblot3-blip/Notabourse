@@ -14,7 +14,8 @@ from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, 
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
-from notabourse.limites import autoriser
+from notabourse.limites import (FENETRE_GLOBALE, MAXIMUM_CALCULS_GLOBAL, MAXIMUM_RECHERCHES_GLOBAL, Compteur,
+                                MemoireEchecs, autoriser)
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.prix import position_barre
 from notabourse.risque import position_risque, seulement_fonds_propres
@@ -53,9 +54,20 @@ def renvois_categories():
     return m.dropna(subset=["autre_categorie_de"]).set_index("symbole")["autre_categorie_de"].to_dict()
 
 
+@st.cache_resource(show_spinner=False)
+def compteurs():
+    """Plafonds partagés par tous les visiteurs du serveur (audit du 17/11/2026, S-C01 et S-C04) : un seul objet."""
+    return {"calculs": Compteur(MAXIMUM_CALCULS_GLOBAL, FENETRE_GLOBALE),       # nouvelles sociétés calculées
+            "recherches": Compteur(MAXIMUM_RECHERCHES_GLOBAL, FENETRE_GLOBALE),  # textes nouveaux envoyés à Yahoo
+            "echecs": MemoireEchecs()}                                          # recherches qui viennent d'échouer
+
+
 @st.cache_data(ttl=24 * 3600, max_entries=1000, show_spinner=False)          # bornée : pas de saturation de la mémoire
 def propositions(texte):
-    """Cotations proposées pour une recherche (24 heures en mémoire)."""
+    """Cotations proposées pour une recherche (24 heures en mémoire). Seul un texte NOUVEAU (absent de la mémoire)
+    arrive ici : il compte dans le plafond global des recherches. Une erreur n'est pas gardée en mémoire par Streamlit."""
+    if not compteurs()["recherches"].autoriser(time.time()):
+        raise DonneesIndisponibles("plafond global des recherches atteint")
     return cotations(texte)
 
 
@@ -514,9 +526,14 @@ if not texte.strip():                                                         # 
     presentation = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", T["presentation"])   # plus gros, centré entre la barre
     st.html(f'<div class="ba-presentation"><p>{presentation}</p></div>')      # et l'avertissement (textes du site)
 if texte.strip():
+    echecs = compteurs()["echecs"]
+    if echecs.recent(texte.strip(), time.time()):                             # échec récent : on ne relance pas Yahoo
+        st.info(T["erreur_donnees"])                                          # (3 essais et 25 s d'attente) [P] 17/11
+        st.stop()
     try:
         props = propositions(texte.strip())
     except DonneesIndisponibles:
+        echecs.noter(texte.strip(), time.time())                              # retenu 5 minutes
         st.info(T["erreur_donnees"])
         st.stop()
     except Exception:                                                         # imprévu : message simple au visiteur,
@@ -540,6 +557,9 @@ if texte.strip():
         ok, st.session_state["calculs"] = autoriser(st.session_state.get("calculs", []), time.time())
         if not ok:
             st.info(T["trop_de_recherches"])
+            st.stop()
+        if not compteurs()["calculs"].autoriser(time.time()):                 # plafond de tout le site [P] 17/11
+            st.info(T["site_occupe"])
             st.stop()
     with st.spinner(T["attente"]):
         try:

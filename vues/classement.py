@@ -11,6 +11,7 @@ Données : reference/classement.parquet, construit chaque nuit par reference/con
 robot dans la release « classement » du dépôt ; le site le télécharge de là (le fichier local sert aux essais).
 """
 import io               # lire un fichier téléchargé sans l'écrire sur le disque
+import logging          # erreurs notées dans le journal du serveur
 import unicodedata      # lettres sans accent, pour trier les pays (Suède avant Suisse)
 
 import pandas as pd     # tableaux de données
@@ -138,18 +139,32 @@ URL_CLASSEMENT = ("https://github.com/mathysblot3-blip/Notabourse/releases/downl
 FICHIER_LOCAL = SITE / "reference" / "classement.parquet"                     # essais en local
 
 
+COLONNES_CLASSEMENT = ["symbole", "nom", "pays", "secteur", "note", "Q1", "G1", "R2", "M1", "nb_composantes", "gardee",
+                       "capi_usd", "ratio_prix", "perte", "membre", "date_lecture"]   # colonnes lues par la page
+
+
+def classement_valide(t):
+    """Vrai si le fichier a toutes les colonnes dont la page a besoin et au moins une société notée (audit S-C05) :
+    un fichier partiel ou d'une autre forme est refusé au lieu de faire planter la page."""
+    return (isinstance(t, pd.DataFrame) and set(COLONNES_CLASSEMENT) <= set(t.columns)
+            and bool(t["note"].notna().any()))
+
+
 @st.cache_data(ttl=3600, show_spinner=False)                                  # relu au plus une fois par heure
 def charger_classement(signature):
-    """Classement : fichier local s'il existe (essais), sinon celui du robot (release GitHub). None si indisponible.
-    `signature` change toutes les heures ou quand le fichier local change : force la relecture."""
-    try:
-        if FICHIER_LOCAL.exists():
-            return pd.read_parquet(FICHIER_LOCAL)
+    """Classement : fichier local s'il existe (essais), sinon celui du robot (release GitHub).
+    `signature` change toutes les heures ou quand le fichier local change : force la relecture.
+    Lève une erreur si le fichier est absent ou incomplet : Streamlit ne garde pas les erreurs en mémoire, donc une panne
+    passagère n'est plus affichée pendant une heure (audit S-C05, 17/11/2026)."""
+    if FICHIER_LOCAL.exists():
+        t = pd.read_parquet(FICHIER_LOCAL)
+    else:
         r = requests.get(URL_CLASSEMENT, timeout=30)
         r.raise_for_status()
-        return pd.read_parquet(io.BytesIO(r.content))
-    except Exception:
-        return None                                                           # la page le dit au visiteur
+        t = pd.read_parquet(io.BytesIO(r.content))
+    if not classement_valide(t):
+        raise ValueError("classement incomplet ou d'une autre forme")
+    return t
 
 
 def preparer(brut):
@@ -257,9 +272,13 @@ st.html(f"""<style>
                                                        ligne sur téléphone */
 </style>""")
 st.title(X["titre"])
-brut = charger_classement((FICHIER_LOCAL.stat().st_mtime if FICHIER_LOCAL.exists() else 0,
-                           pd.Timestamp.now().floor("h")))                     # relu chaque heure
-if brut is None or brut["note"].notna().sum() == 0:
+try:
+    brut = charger_classement((FICHIER_LOCAL.stat().st_mtime if FICHIER_LOCAL.exists() else 0,
+                               pd.Timestamp.now().floor("h")))                 # relu chaque heure
+except Exception:
+    logging.exception("Classement indisponible")                              # détail dans le journal du serveur
+    brut = None
+if brut is None:
     st.info(X["indisponible"])                                                # robot pas encore passé, ou panne
     st.stop()
 t = preparer(brut)

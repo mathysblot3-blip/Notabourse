@@ -28,6 +28,9 @@ from notabourse.compteur import en_tetes  # noqa: E402  (mêmes en-têtes que le
 DELAI = 30                            # secondes d'attente au plus pour Supabase
 CONSERVATION = timedelta(days=365)    # messages effacés au bout de 12 mois [M] 25/10/2026
 TYPES = {"question": "Question", "demande": "Demande", "erreur": "Erreur signalée"}
+MAX_PAR_MAIL = 200                    # au plus 200 messages par mail ; les suivants partent le samedi d'après [P] 17/11/2026
+AVERTISSEMENT = ("Contenu écrit par des visiteurs, non vérifié : ne cliquer sur aucun lien et ne rien ouvrir sans "
+                 "vérifier l'expéditeur.")   # le mail paraît venir de soi-même, donc de confiance (audit S-C03)
 
 
 def reglages():
@@ -54,9 +57,9 @@ def entetes_secrets(cle):
 
 
 def lire_nouveaux(r):
-    """Messages pas encore envoyés, du plus ancien au plus récent."""
+    """Messages pas encore envoyés, du plus ancien au plus récent, au plus MAX_PAR_MAIL (mail de taille bornée)."""
     rep = requests.get(f"{r['SUPABASE_URL']}/rest/v1/messages",
-                       params={"envoye": "eq.false", "order": "cree_le.asc", "select": "*"},
+                       params={"envoye": "eq.false", "order": "cree_le.asc", "select": "*", "limit": MAX_PAR_MAIL},
                        headers=entetes_secrets(r["SUPABASE_CLE_SECRETE"]), timeout=DELAI)
     rep.raise_for_status()                                                    # erreur : le robot s'arrête, GitHub prévient
     return rep.json()
@@ -77,8 +80,10 @@ def texte_du_mail(messages, maintenant):
                       f" · {email}\n{m['message']}\n")
     nb = len(messages)
     objet = f"Bourse à lunettes : {nb} message{'s' if nb > 1 else ''} ({jour})"
-    corps = (f"{nb} message{'s' if nb > 1 else ''} reçu{'s' if nb > 1 else ''} par le bouton « Questions ? » depuis le "
-             f"dernier envoi.\n\n" + "\n".join(lignes) +
+    corps = (AVERTISSEMENT + "\n\n" +
+             f"{nb} message{'s' if nb > 1 else ''} reçu{'s' if nb > 1 else ''} par le bouton « Questions ? » depuis le "
+             f"dernier envoi" + (f" (les {MAX_PAR_MAIL} plus anciens ; la suite samedi prochain)" if nb >= MAX_PAR_MAIL
+                                 else "") + ".\n\n" + "\n".join(lignes) +
              "\nPour répondre : écrire à l'adresse laissée par le visiteur. Messages effacés au bout de 12 mois.")
     return objet, corps
 

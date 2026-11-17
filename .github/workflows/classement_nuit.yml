@@ -21,11 +21,13 @@ jobs:
   classement:
     runs-on: ubuntu-latest       # ordinateur prêté par GitHub, effacé après chaque passage
     timeout-minutes: 150         # arrêt de sécurité (le calcul s'arrête de lui-même au bout de 110 minutes)
-    env:
-      GH_TOKEN: ${{ github.token }}                   # jeton du robot, donné par GitHub pour ce passage seulement
+    # Jeton du robot (droit d'écriture) : donné SEULEMENT aux deux étapes qui parlent à la release, pas à
+    # l'installation des bibliothèques ni au calcul (audit du 17/11/2026, constat S-C06)
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262   # v4.4.0, figée par son commit
+        with:
+          persist-credentials: false   # le jeton n'est pas laissé dans le dossier pour les étapes suivantes
 
       - name: Installer Python 3.12
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5.6.0, figée par son commit
@@ -37,6 +39,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Reprendre le classement de la nuit précédente
+        env:
+          GH_TOKEN: ${{ github.token }}               # jeton du robot, pour cette étape seulement
         run: |
           gh release view classement > /dev/null 2>&1 || gh release create classement --latest=false \
             --title "Données du classement" --notes "Fichiers du classement mondial, remplacés chaque nuit par le robot."
@@ -50,4 +54,6 @@ jobs:
         run: python reference/construire_classement.py
 
       - name: Ranger le classement dans la release
+        env:
+          GH_TOKEN: ${{ github.token }}               # jeton du robot, pour cette étape seulement
         run: gh release upload classement reference/classement.parquet reference/univers_classement.csv --clobber

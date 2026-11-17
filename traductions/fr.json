@@ -284,6 +284,7 @@
   "note_rang_ecart": "Rentabilité, et fonds propres des financières : le rang porte sur l'écart à la moyenne du secteur, comme la note.",
   "erreur_inattendue": "Calcul impossible pour cette société pour le moment. Réessaie plus tard ou choisis une autre cotation.",
   "trop_de_recherches": "Beaucoup de sociétés différentes en peu de temps : patiente quelques minutes avant une nouvelle recherche.",
+  "site_occupe": "Le site reçoit beaucoup de demandes en ce moment : réessaie dans quelques minutes.",
   "page_mentions": "Mentions légales",
   "page_sources": "Sources",
   "presentation": "Bourse à lunettes donne une note sur 100 à chaque action cotée, selon quatre critères : sa **rentabilité**, sa **croissance**, la solidité de son **bilan** et la **dynamique** de son cours. Tape le nom ou le symbole d'une société pour voir sa note et le détail du calcul.",

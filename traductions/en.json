@@ -284,6 +284,7 @@
   "note_rang_ecart": "Profitability, and equity of financials: the rank is based on the gap to the sector average, as in the score.",
   "erreur_inattendue": "This company cannot be computed right now. Please try again later or choose another listing.",
   "trop_de_recherches": "Many different companies in a short time: please wait a few minutes before a new search.",
+  "site_occupe": "The site is receiving many requests right now: please try again in a few minutes.",
   "page_mentions": "Legal notice",
   "page_sources": "Sources",
   "presentation": "Bourse à lunettes gives every listed stock a score out of 100, based on four criteria: its **profitability**, its **growth**, the strength of its **balance sheet** and the **momentum** of its share price. Type a company's name or ticker to see its score and how it is computed.",
