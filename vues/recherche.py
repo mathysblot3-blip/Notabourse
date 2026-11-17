@@ -14,18 +14,23 @@ from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, 
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
-from notabourse.limites import autoriser
+from notabourse.limites import (FENETRE_GLOBALE, MAXIMUM_CALCULS_GLOBAL, MAXIMUM_RECHERCHES_GLOBAL, Compteur,
+                                MemoireEchecs, autoriser)
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.prix import position_barre
-from notabourse.risque import position_risque
+from notabourse.risque import position_risque, seulement_fonds_propres
 from notabourse.sources import DonneesIndisponibles, cotations, table_cik_sec
 from vues.commun import FILET, JAUNE, SITE, SURFACE, TEXTE, bandeau_titre, date, dollars, nombre, pct, textes
 
-COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D64545", None: "#4A4F5C"}   # réservées au garde-fou
+COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444", None: "#4A4F5C"}   # réservées au garde-fou
                                                                               # et au prix comparé au secteur [M] 21/10
 PRIX_COULEURS = {"chere": "rouge", "norme": "orange", "bon_marche": "vert", "pertes": None, "manquant": None,
                  "reference_ancienne": None}
 VIOLET = "#8E7CC3"                                                            # bandeau « exclue » (pas une couleur du garde-fou)
+# Couleur du texte posé sur chaque fond (contrastes WCAG calculés : charbon sur vert 5,41, sur orange 7,48,
+# sur violet 5,11 ; blanc sur rouge 4,52, sur gris 8,19). Un fond absent de la liste garde le texte blanc.
+CHARBON = "#15140f"                                                           # même charbon que le fond des pages
+TEXTE_SUR = {"#2E9E5B": CHARBON, "#E8912D": CHARBON, VIOLET: CHARBON}        # fonds clairs : texte sombre
 STATUTS = {"bonne": COULEURS["vert"], "vigilance": COULEURS["orange"],        # point de vigilance : orange [M] 19/10
            "exclue": VIOLET, "inconnue": COULEURS[None]}
 
@@ -49,9 +54,20 @@ def renvois_categories():
     return m.dropna(subset=["autre_categorie_de"]).set_index("symbole")["autre_categorie_de"].to_dict()
 
 
+@st.cache_resource(show_spinner=False)
+def compteurs():
+    """Plafonds partagés par tous les visiteurs du serveur (audit du 17/11/2026, S-C01 et S-C04) : un seul objet."""
+    return {"calculs": Compteur(MAXIMUM_CALCULS_GLOBAL, FENETRE_GLOBALE),       # nouvelles sociétés calculées
+            "recherches": Compteur(MAXIMUM_RECHERCHES_GLOBAL, FENETRE_GLOBALE),  # textes nouveaux envoyés à Yahoo
+            "echecs": MemoireEchecs()}                                          # recherches qui viennent d'échouer
+
+
 @st.cache_data(ttl=24 * 3600, max_entries=1000, show_spinner=False)          # bornée : pas de saturation de la mémoire
 def propositions(texte):
-    """Cotations proposées pour une recherche (24 heures en mémoire)."""
+    """Cotations proposées pour une recherche (24 heures en mémoire). Seul un texte NOUVEAU (absent de la mémoire)
+    arrive ici : il compte dans le plafond global des recherches. Une erreur n'est pas gardée en mémoire par Streamlit."""
+    if not compteurs()["recherches"].autoriser(time.time()):
+        raise DonneesIndisponibles("plafond global des recherches atteint")
     return cotations(texte)
 
 
@@ -108,10 +124,15 @@ def jauge(note):
     return fig
 
 
+def texte_sur(fond):
+    """Renvoie la couleur de texte lisible (contraste d'au moins 4,5) sur le fond donné."""
+    return TEXTE_SUR.get(fond, "white")                                       # blanc par défaut (rouge, gris)
+
+
 def pastille(texte, couleur):
     """Petit encadré coloré (voyant du garde-fou)."""
     return (f'<div style="background:{COULEURS[couleur]};padding:10px 12px;margin-bottom:6px;'
-            f'color:white">{texte}</div>')
+            f'color:{texte_sur(COULEURS[couleur])}">{texte}</div>')
 
 
 def valeur_ratio(x, fmt, L):
@@ -351,9 +372,11 @@ def barre_risque(f, T):
     pos, statut = position_risque(f)
     if pos is None:
         return None
-    zones = [("exclue", T["risque_zone_exclue"], 100 / 3), ("vigilance", T["risque_zone_vigilance"], 100 / 3),
+    # [M] 17/11/2026 : écartée pour fonds propres négatifs seulement : zone orange « Risque potentiel »
+    milieu = T["risque_zone_potentiel"] if seulement_fonds_propres(f) else T["risque_zone_vigilance"]
+    zones = [("exclue", T["risque_zone_exclue"], 100 / 3), ("vigilance", milieu, 100 / 3),
              ("bonne", T["risque_zone_bonne"], 100 / 3)]
-    return barre(pos, zones, statut, T["risque_aide_barre"].format(x=T["risque_zone_" + statut]))
+    return barre(pos, zones, statut, T["risque_aide_barre"].format(x=dict((z[0], z[1]) for z in zones)[statut]))
 
 
 def detail_prix(f, T, L):
@@ -423,7 +446,7 @@ def afficher_prix(f, T, L):
 
 def badge(texte, couleur):
     """Étiquette colorée (statut de santé financière)."""
-    return (f'<span style="background:{couleur};color:white;padding:3px 10px;font-size:0.9rem;'
+    return (f'<span style="background:{couleur};color:{texte_sur(couleur)};padding:3px 10px;font-size:0.9rem;'
             f'font-weight:600">{texte}</span>')
 
 
@@ -503,9 +526,14 @@ if not texte.strip():                                                         # 
     presentation = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", T["presentation"])   # plus gros, centré entre la barre
     st.html(f'<div class="ba-presentation"><p>{presentation}</p></div>')      # et l'avertissement (textes du site)
 if texte.strip():
+    echecs = compteurs()["echecs"]
+    if echecs.recent(texte.strip(), time.time()):                             # échec récent : on ne relance pas Yahoo
+        st.info(T["erreur_donnees"])                                          # (3 essais et 25 s d'attente) [P] 17/11
+        st.stop()
     try:
         props = propositions(texte.strip())
     except DonneesIndisponibles:
+        echecs.noter(texte.strip(), time.time())                              # retenu 5 minutes
         st.info(T["erreur_donnees"])
         st.stop()
     except Exception:                                                         # imprévu : message simple au visiteur,
@@ -529,6 +557,9 @@ if texte.strip():
         ok, st.session_state["calculs"] = autoriser(st.session_state.get("calculs", []), time.time())
         if not ok:
             st.info(T["trop_de_recherches"])
+            st.stop()
+        if not compteurs()["calculs"].autoriser(time.time()):                 # plafond de tout le site [P] 17/11
+            st.info(T["site_occupe"])
             st.stop()
     with st.spinner(T["attente"]):
         try:

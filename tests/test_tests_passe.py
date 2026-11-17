@@ -30,3 +30,11 @@ def test_avertissement_et_echantillon():
     assert "en échantillon" in PAGES["fr"] and "in sample" in PAGES["en"]     # jamais présentés comme hors échantillon
     for page in PAGES.values():
         assert "—" not in page and "garde-fou" not in page.lower() and "safeguard" not in page.lower()
+
+
+def test_chaque_graphique_a_un_texte_alternatif_dans_les_deux_langues():
+    """S-A02 (WCAG 1.1.1) : chaque graphique de la page a un texte alternatif non vide, en français et en anglais."""
+    for lg, page in PAGES.items():
+        textes = json.loads((SITE / "traductions" / f"{lg}.json").read_text(encoding="utf-8"))
+        for nom, _ in APPEL.findall(page):
+            assert len(textes.get("alt_" + nom, "")) > 20, f"alt_{nom} manquant en {lg}"

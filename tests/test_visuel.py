@@ -24,7 +24,7 @@ def test_logo_provisoire_jamais_publie():
 
 def test_couleurs_du_garde_fou_inchangees():
     code = (SITE / "vues" / "recherche.py").read_text(encoding="utf-8")
-    assert '"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D64545"' in code   # réservées au garde-fou [M]
+    assert '"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444"' in code   # réservées au garde-fou [M]
 
 
 def test_aucun_emoji_dans_le_menu():
@@ -51,3 +51,28 @@ def test_marges_de_la_jauge():
     m = re.search(r"margin=dict\(l=(\d+), r=(\d+), t=(\d+), b=(\d+)\)", code)
     l, r, t, b = map(int, m.groups())
     assert min(l, r) >= 40 and t >= 40 and b >= 30
+
+
+def _luminance(hexa):
+    """Luminance relative d'une couleur (formule WCAG 2.1) : 0 pour le noir, 1 pour le blanc."""
+    canaux = [int(hexa.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4)]     # rouge, vert, bleu entre 0 et 1
+    canaux = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in canaux]
+    return 0.2126 * canaux[0] + 0.7152 * canaux[1] + 0.0722 * canaux[2]
+
+
+def _contraste(a, b):
+    """Rapport de contraste WCAG entre deux couleurs : de 1 (identiques) à 21 (noir sur blanc)."""
+    claire, sombre = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (claire + 0.05) / (sombre + 0.05)
+
+
+def test_texte_des_pastilles_lisible_au_moins_4_5():
+    """S-A03 (WCAG 1.4.3) : le texte posé sur chaque pastille de couleur a un contraste d'au moins 4,5."""
+    import re
+    code = (SITE / "vues" / "recherche.py").read_text(encoding="utf-8")
+    couleurs = re.search(r"COULEURS = \{(.*?)\}", code).group(1)               # le dictionnaire des couleurs
+    fonds = re.findall(r"#[0-9A-Fa-f]{6}", couleurs) + re.findall(r'VIOLET = "(#[0-9A-Fa-f]{6})"', code)
+    ligne_texte_sur = re.search(r"TEXTE_SUR = \{.*\}", code).group(0)           # fonds qui reçoivent le texte sombre
+    for fond in fonds:
+        texte = "#15140f" if fond in ligne_texte_sur or "VIOLET" in ligne_texte_sur and fond == fonds[-1] else "#ffffff"
+        assert _contraste(fond, texte) >= 4.5, (fond, texte)

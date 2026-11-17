@@ -35,6 +35,20 @@ def test_exclue_dans_le_rouge():
     assert statut == "exclue" and pos < 100 / 3
 
 
+def test_fonds_propres_negatifs_seuls_dans_l_orange():
+    """[M] 17/11/2026 : écartée pour fonds propres négatifs seulement : risque potentiel (orange), toujours écartée."""
+    exclue = {**BON, "fonds_propres_ok": False, "gardee": False}             # rachats d'actions, comptes sains
+    f = fiche(exclusion=exclue)
+    pos, statut = position_risque(f)
+    assert statut == "vigilance" and 100 / 3 < pos < 200 / 3
+    assert f["garde_fou"]["exclue"]                                           # la sélection ne change pas
+
+
+def test_fonds_propres_et_pertes_dans_le_rouge():
+    exclue = {**BON, "fonds_propres_ok": False, "benefices_ok": False, "gardee": False}   # deux raisons : rouge
+    assert position_risque(fiche(exclusion=exclue))[1] == "exclue"
+
+
 def test_flux_negatif_jamais_vert():
     v = {"voyant": "trésorerie", "note": 1.0, "mesure": {"annees": 5.0, "flux_positif": False}}
     assert note_affichee(v) < 1 / 3                                           # 5 ans de trésorerie, mais l'activité

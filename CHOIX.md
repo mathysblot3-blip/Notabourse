@@ -352,3 +352,22 @@ Indicateur à part, sous le risque de faillite : il n'entre pas dans la note et 
 | Filtre « Seulement les actions accessibles depuis la France » : cotée en Europe de l'Ouest ou aux États-Unis, ou à Francfort pour les autres (5 048 des 9 168 sociétés notées) ; approximation signalée, aucune liste publique des courtiers | Filtre : [M] 06/11/2026 ; définition : [P] ; Francfort comme repère : [T] (2 à 7 % des sociétés chinoises, indiennes, coréennes et taïwanaises y sont cotées, 65 à 99 % des européennes et japonaises) |
 | Page Méthode : partie 7 « Le classement » ajoutée, parties suivantes renumérotées ; texte de Mathys | [M] 06/11/2026 |
 | Onglet « Meilleures notes » ou « Bonnes affaires » gardé d'une page à l'autre, comme les filtres | [M] 06/11/2026 |
+
+## 27. Correctifs issus de l'audit (17/11/2026)
+
+Source : `Audit_Bourse_a_lunettes/ameliorations/correctifs_code/` (un `.diff` et un `.md` par correctif), appliqués à la suite sur la branche `correctifs-audit` ; 143 tests réussis.
+
+| Choix | Nature |
+|---|---|
+| Couleurs des pastilles au contraste WCAG 2.1 AA (charbon sur vert et orange, rouge #D24444) | [P] audit S-A03 ; accepté par Mathys |
+| Texte alternatif des graphiques de la page Backtesting | [P] audit S-A02 ; accepté par Mathys |
+| Classement : un bouton « Ouvrir la fiche » remplace l'ouverture au simple clic sur une case | [P] audit S-A04 ; accepté par Mathys |
+| Attribut `lang` de la page réglé sur la langue choisie (script dans un cadre) ; à contrôler en ligne | [M] 17/11/2026 (audit S-A01) |
+| Société écartée **seulement** pour fonds propres négatifs : barre en orange « Risque potentiel », toujours écartée de la sélection ; phrase de santé sans « ses dettes dépassent tout ce qu'elle possède » ; si une autre condition manque, la barre reste rouge | [M] 17/11/2026 ; cohérence : [R] audit R-F02 (30 des 32 membres concernés ont des comptes sains) |
+| Deuxième onglet du classement : « Bien notées, moins chères que leur secteur » (note de 50 ou plus et PER au moins 20 % sous celui du secteur, triées par la note) ; facteur de prix multiplicatif retiré | [M] 17/11/2026 (variante B de l'audit) ; raison : [R] 47 des 50 premières lignes étaient au plafond du facteur |
+| Sécurité (audit S-C01, S-C04) : plafonds pour tout le serveur, en plus de la limite par visite : 300 nouvelles sociétés calculées et 1 500 recherches nouvelles envoyées à Yahoo par heure ; une recherche qui vient d'échouer n'est pas relancée avant 5 minutes ; message « Le site reçoit beaucoup de demandes » | Principe : [M] 17/11/2026 ; valeurs : [P] |
+| Sécurité (audit S-C05) : le fichier du classement est refusé s'il lui manque une colonne lue par la page ; une panne n'est plus gardée en mémoire une heure | [M] 17/11/2026 |
+| Sécurité (audit S-C06) : le jeton du robot de nuit n'est donné qu'aux deux étapes qui parlent à la release ; le dépôt est récupéré sans garder le jeton | [M] 17/11/2026 |
+| Sécurité (audit S-C03, S-C02) : mail du samedi borné à 200 messages, précédé d'un avertissement « contenu non vérifié » ; `supabase/limiter_tables.sql` (format de l'e-mail contrôlé par la base ; au plus 60 messages et 2 000 recherches comptées par heure), **à lancer par Mathys dans Supabase** | [M] 17/11/2026 |
+| Sécurité (audit S-C07) : Streamlit 1.67.0 (1.66.0 interdisait Pillow 13), planchers `pillow>=13.0.0` et `soupsieve>=4.0.0` (failles connues dans les versions précédentes, `pip-audit`) | [M] 17/11/2026 |
+| En local (audit 4.4) : si le chemin du fichier de certificats contient un accent (dossier « BàL »), le paquet `notabourse` le copie dans le dossier temporaire ; sans effet en ligne | [M] 17/11/2026 |

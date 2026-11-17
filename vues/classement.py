@@ -2,21 +2,23 @@
 
 Deux classements :
   1. les meilleures notes ;
-  2. les meilleures notes et les moins chères : note × facteur de prix, où facteur = PER du secteur ÷ PER de la société,
-     plafonné entre 0,67 et 1,5 [M] 04/11/2026 (valeurs : [P]).
+  2. « Bien notées, moins chères que leur secteur » : notes de 50 ou plus et PER au moins 20 % sous celui du secteur,
+     triées par la note (variante B de l'audit, choisie par Mathys le 17/11/2026 [M] ; remplace « note × facteur de
+     prix » du 04/11/2026, dont 47 des 50 premières lignes étaient au plafond du facteur).
 Des filtres communs aux deux : zone, pays (de A à Z), secteur, taille, puis dans « Plus d'options » : indice,
 sociétés écartées, données complètes. Tri au choix, ou d'un clic sur le titre d'une colonne.
 Données : reference/classement.parquet, construit chaque nuit par reference/construire_classement.py et rangé par le
 robot dans la release « classement » du dépôt ; le site le télécharge de là (le fichier local sert aux essais).
 """
 import io               # lire un fichier téléchargé sans l'écrire sur le disque
+import logging          # erreurs notées dans le journal du serveur
 import unicodedata      # lettres sans accent, pour trier les pays (Suède avant Suisse)
 
 import pandas as pd     # tableaux de données
 import requests         # téléchargement du classement
 import streamlit as st  # interface web
 
-from notabourse.constantes import PRIX_BON_MARCHE, PRIX_CHERE, WINSOR_BAS, WINSOR_HAUT   # seuils du site
+from notabourse.constantes import PRIX_BON_MARCHE, PRIX_CHERE   # seuils du site
 from notabourse.indices import INDICES, indices_de                # Nikkei 225, CAC 40...
 from vues.commun import FILET, JAUNE, SITE, SURFACE, textes
 
@@ -30,7 +32,7 @@ TXT = {
                  "classées par leur note sur 100. La note se lit toujours avec sa fiche : cliquez sur une ligne.",
         "filtres": "Filtres et tri", "recherche": "Nom ou symbole", "zone": "Zone", "pays": "Pays",
         "secteur": "Secteur", "taille": "Taille", "prix": "Prix comparé au secteur", "indice": "Indice",
-        "etoiles_min": "Étoiles au minimum", "ecartees": "Montrer les sociétés écartées pour risque de faillite",
+        "etoiles_min": "Étoiles au minimum", "ecartees": "Montrer les sociétés écartées de la sélection (risque de faillite ou fonds propres négatifs)",
         "completes": "Seulement les notes complètes (4 composantes sur 4)", "tri": "Trier par",
         "ordre": "Ordre", "decroissant": "Du plus haut au plus bas", "croissant": "Du plus bas au plus haut",
         "nombre": "Nombre de lignes", "tout": "Tous", "toutes": "Toutes",
@@ -39,7 +41,7 @@ TXT = {
         "indice_sp": "Membres du S&P 500", "indice_hors": "Hors S&P 500",
         "prix_bon_marche": "Bon marché", "prix_norme": "Dans la norme", "prix_chere": "Chère",
         "prix_pertes": "En perte (pas de PER)",
-        "onglet_notes": "Meilleures notes", "onglet_prix": "Bonnes affaires",
+        "onglet_notes": "Meilleures notes", "onglet_prix": "Bien notées, moins chères que leur secteur",
         "explication_notes": "Classement par la note sur 100 (rang parmi les sociétés notées).",
         "explication_prix": "**Score prix compris = note × facteur de prix.** Facteur = PER du secteur ÷ PER de la "
                             "société, borné entre 0,5 et 2 : une société notée 80 et 25 % moins chère que son "
@@ -66,7 +68,7 @@ TXT = {
                  "by their score out of 100. Always read a score with its sheet: click a row.",
         "filtres": "Filters and sorting", "recherche": "Name or ticker", "zone": "Region", "pays": "Country",
         "secteur": "Sector", "taille": "Size", "prix": "Price compared with the sector", "indice": "Index",
-        "etoiles_min": "Minimum stars", "ecartees": "Show companies excluded for bankruptcy risk",
+        "etoiles_min": "Minimum stars", "ecartees": "Show companies left out of the selection (bankruptcy risk or negative equity)",
         "completes": "Complete scores only (4 components out of 4)", "tri": "Sort by",
         "ordre": "Order", "decroissant": "Highest first", "croissant": "Lowest first",
         "nombre": "Number of rows", "tout": "All", "toutes": "All",
@@ -75,7 +77,7 @@ TXT = {
         "indice_sp": "S&P 500 members", "indice_hors": "Outside the S&P 500",
         "prix_bon_marche": "Cheap", "prix_norme": "In line", "prix_chere": "Expensive",
         "prix_pertes": "Loss-making (no P/E)",
-        "onglet_notes": "Best scores", "onglet_prix": "Good deals",
+        "onglet_notes": "Best scores", "onglet_prix": "Well rated, cheaper than their sector",
         "explication_notes": "Ranked by the score out of 100 (rank among scored companies).",
         "explication_prix": "**Price-adjusted score = score × price factor.** Factor = sector P/E ÷ company P/E, "
                             "capped between 0.5 and 2: a company scored 80 and 25% cheaper than its sector gets "
@@ -127,32 +129,9 @@ SECTEURS_COURTS = {"BusEq": ("Tech", "Tech"), "Other": ("Autres", "Other"), "FIN
                    "Enrgy": ("Énergie", "Energy"), "Telcm": ("Télécoms", "Telecom"),
                    "Durbl": ("Conso. durable", "Durables")}
 COMPOSANTES = ["rentabilite", "croissance", "bilan", "dynamique"]           # noms des 4 composantes (fr.json)
-# Bornes du facteur de prix [M] 04/11/2026 (principe : un prix extrême ne doit pas emporter le classement).
-# Valeurs [R] : la même winsorisation que la note, aux 5e et 95e centiles (MSCI 2013, Quality Indices Methodology,
-# p. 4 ; constantes WINSOR_BAS et WINSOR_HAUT), appliquée au rapport PER / PER du secteur des membres du S&P 500, la
-# population de référence de tout le site. Recalculées à chaque nouvelle référence. Pourquoi borner surtout le côté
-# bon marché : Liu, Nissim et Thomas (2002, p. 153) notent que l'écart au prix donné par le multiple du secteur est
-# borné d'un côté mais pas de l'autre ; le facteur peut donc devenir aussi grand qu'on veut.
-FACTEUR_SECOURS = (1 / 1.5, 1.5)                                              # si trop peu de membres ont un prix
-
-
-def virgule(x):
-    """1.5 -> « 1,50 » en français, « 1.50 » en anglais."""
-    texte = f"{x:.2f}"
-    return texte.replace(".", ",") if st.session_state.get("langue", "fr") == "fr" else texte
-
-
-def bornes_facteur(brut):
-    """(plancher, plafond) du facteur = 1 / (95e et 5e centiles du rapport PER / PER du secteur des membres)."""
-    garde = (brut["membre"].fillna(False).astype(bool) & brut["gardee"].fillna(False).astype(bool)
-             & ~brut["perte"].fillna(True).astype(bool))                      # membres gardés et bénéficiaires
-    membres = brut.loc[garde, "ratio_prix"].dropna()
-    if len(membres) < 100:
-        return FACTEUR_SECOURS
-    return 1 / membres.quantile(WINSOR_HAUT), 1 / membres.quantile(WINSOR_BAS)
-
-
-NOTE_MIN_AFFAIRES = 50     # « Bonnes affaires » : notes de 50 ou plus seulement [M] 04/11/2026
+# Le facteur de prix borné (note × PER du secteur ÷ PER de la société, 04/11/2026) est retiré le 17/11/2026 :
+# variante B de l'audit, choisie par Mathys [M]. Le prix sert de filtre (seuil PRIX_BON_MARCHE), pas de multiplicateur.
+NOTE_MIN_AFFAIRES = 50     # deuxième onglet : notes de 50 ou plus seulement [M] 04/11/2026
 
 
 URL_CLASSEMENT = ("https://github.com/mathysblot3-blip/Notabourse/releases/download/classement/"
@@ -160,18 +139,32 @@ URL_CLASSEMENT = ("https://github.com/mathysblot3-blip/Notabourse/releases/downl
 FICHIER_LOCAL = SITE / "reference" / "classement.parquet"                     # essais en local
 
 
+COLONNES_CLASSEMENT = ["symbole", "nom", "pays", "secteur", "note", "Q1", "G1", "R2", "M1", "nb_composantes", "gardee",
+                       "capi_usd", "ratio_prix", "perte", "membre", "date_lecture"]   # colonnes lues par la page
+
+
+def classement_valide(t):
+    """Vrai si le fichier a toutes les colonnes dont la page a besoin et au moins une société notée (audit S-C05) :
+    un fichier partiel ou d'une autre forme est refusé au lieu de faire planter la page."""
+    return (isinstance(t, pd.DataFrame) and set(COLONNES_CLASSEMENT) <= set(t.columns)
+            and bool(t["note"].notna().any()))
+
+
 @st.cache_data(ttl=3600, show_spinner=False)                                  # relu au plus une fois par heure
 def charger_classement(signature):
-    """Classement : fichier local s'il existe (essais), sinon celui du robot (release GitHub). None si indisponible.
-    `signature` change toutes les heures ou quand le fichier local change : force la relecture."""
-    try:
-        if FICHIER_LOCAL.exists():
-            return pd.read_parquet(FICHIER_LOCAL)
+    """Classement : fichier local s'il existe (essais), sinon celui du robot (release GitHub).
+    `signature` change toutes les heures ou quand le fichier local change : force la relecture.
+    Lève une erreur si le fichier est absent ou incomplet : Streamlit ne garde pas les erreurs en mémoire, donc une panne
+    passagère n'est plus affichée pendant une heure (audit S-C05, 17/11/2026)."""
+    if FICHIER_LOCAL.exists():
+        t = pd.read_parquet(FICHIER_LOCAL)
+    else:
         r = requests.get(URL_CLASSEMENT, timeout=30)
         r.raise_for_status()
-        return pd.read_parquet(io.BytesIO(r.content))
-    except Exception:
-        return None                                                           # la page le dit au visiteur
+        t = pd.read_parquet(io.BytesIO(r.content))
+    if not classement_valide(t):
+        raise ValueError("classement incomplet ou d'une autre forme")
+    return t
 
 
 def preparer(brut):
@@ -220,15 +213,13 @@ TXT["fr"].update({
                     "moins chère) ; plancher {bas} (au moins {plus} % plus chère).",
     "mise_a_jour": "{n} sociétés notées. Chacune est relue environ une fois par semaine ; dernière lecture le {date}.",
     "indisponible": "Le classement n'est pas disponible pour le moment. Réessayez un peu plus tard.", "filtrer": "Filtrer", "recherche": "Rechercher une société",
-    "plus": "Plus d'options", "effacer": "Effacer les filtres", "actifs": "{n} sociétés · {k} filtre(s) actif(s)",
+    "ouvrir": "Ouvrir la fiche : {nom}", "plus": "Plus d'options", "effacer": "Effacer les filtres", "actifs": "{n} sociétés · {k} filtre(s) actif(s)",
     "taille_grande": "Grandes", "taille_moyenne": "Moyennes", "taille_petite": "Petites",
     "aide_taille": "Capitalisation : grandes plus de 10 Md$, moyennes 2 à 10 Md$, petites moins de 2 Md$.",
     "tri": "Trier les meilleures notes par",
-    "explication_prix": "Note × facteur de prix (PER du secteur ÷ PER de la société). Exemple : notée 80 et 25 % "
-                        "moins chère que son secteur : 80 × 1,33 = 107. Facteur plafonné à {haut} ({moins} % moins "
-                        "chère ou plus) et à {bas} ({plus} % plus chère ou plus) : les 5 % des membres du S&P 500 "
-                        "les moins chers et les 5 % les plus chers, la même règle que pour la note (MSCI, 2013). Un "
-                        "prix extrême vient souvent d'un bénéfice exceptionnel ou d'une donnée douteuse.",
+    "explication_prix": "Sociétés notées 50 ou plus et au moins 20 % moins chères que leur secteur (PER de la "
+                        "société sous 0,8 fois celui du secteur), triées par leur note sur 100. Ce n'est pas une "
+                        "liste d'achats.",
     "prudence_prix": "Le prix décrit, il ne prédit pas : de 2010 à 2026, les actions bon marché n'ont fait que "
                      "1,2 point par an de mieux que les chères (écart non significatif). Sociétés en perte ou notées moins de 50 exclues.",
 })
@@ -244,15 +235,12 @@ TXT["en"].update({
                     "cheaper); floor {bas} (at least {plus}% more expensive).",
     "mise_a_jour": "{n} companies scored. Each one is reread about once a week; last read on {date}.",
     "indisponible": "The ranking is not available right now. Please try again a little later.", "filtrer": "Filter", "recherche": "Search for a company",
-    "plus": "More options", "effacer": "Clear filters", "actifs": "{n} companies · {k} active filter(s)",
+    "ouvrir": "Open the page: {nom}", "plus": "More options", "effacer": "Clear filters", "actifs": "{n} companies · {k} active filter(s)",
     "taille_grande": "Large", "taille_moyenne": "Mid", "taille_petite": "Small",
     "aide_taille": "Market cap: large over $10bn, mid $2bn to $10bn, small under $2bn.",
     "tri": "Sort the best scores by",
-    "explication_prix": "Score × price factor (sector P/E ÷ company P/E). Example: scored 80 and 25% cheaper than "
-                        "its sector: 80 × 1.33 = 107. Factor capped at {haut} ({moins}% cheaper or more) and {bas} "
-                        "({plus}% more expensive or more): the cheapest 5% and the most expensive 5% of S&P 500 "
-                        "members, the same rule as for the score (MSCI, 2013). An extreme price often comes from a "
-                        "one-off profit or a doubtful figure.",
+    "explication_prix": "Companies scored 50 or more and at least 20% cheaper than their sector (P/E below 0.8 times "
+                        "the sector's), sorted by score out of 100. This is not a shopping list.",
     "prudence_prix": "Price describes, it does not predict: from 2010 to 2026, cheap stocks beat expensive ones by "
                      "only 1.2 points a year (not significant). Loss-making companies and scores below 50 left out.",
 })
@@ -284,9 +272,13 @@ st.html(f"""<style>
                                                        ligne sur téléphone */
 </style>""")
 st.title(X["titre"])
-brut = charger_classement((FICHIER_LOCAL.stat().st_mtime if FICHIER_LOCAL.exists() else 0,
-                           pd.Timestamp.now().floor("h")))                     # relu chaque heure
-if brut is None or brut["note"].notna().sum() == 0:
+try:
+    brut = charger_classement((FICHIER_LOCAL.stat().st_mtime if FICHIER_LOCAL.exists() else 0,
+                               pd.Timestamp.now().floor("h")))                 # relu chaque heure
+except Exception:
+    logging.exception("Classement indisponible")                              # détail dans le journal du serveur
+    brut = None
+if brut is None:
     st.info(X["indisponible"])                                                # robot pas encore passé, ou panne
     st.stop()
 t = preparer(brut)
@@ -390,10 +382,14 @@ def afficher(tableau, cle, avec_score):
                          row_height=44, height=min(42 + 44 * len(tableau), 750),   # lignes plus hautes, plus lisibles
                          on_select="rerun", selection_mode="single-cell", key=cle)   # un clic sur une case
     cases = choix.selection.get("cells", [])                                  # case cliquée (ou aucune)
-    if cases:                                                                 # un clic : analyse complète de la
-        ligne = cases[0][0] if isinstance(cases[0], (list, tuple)) else cases[0]["row"]   # société, page Recherche
-        st.session_state["ouvrir_symbole"] = tableau.iloc[int(ligne)]["symbole_fiche"]   # [M] 04/11/2026
-        st.switch_page("vues/recherche.py")
+    if cases:                                                                 # une case choisie : on propose un bouton
+        ligne = cases[0][0] if isinstance(cases[0], (list, tuple)) else cases[0]["row"]   # (S-A04, WCAG 3.2.2)
+        choisie = tableau.iloc[int(ligne)]                                    # la société de la ligne choisie
+        # Avant : le simple choix d'une case (ou une flèche du clavier) changeait de page. Maintenant, seul ce
+        # bouton, que le visiteur déclenche exprès, ouvre la fiche : la sélection ne change plus rien d'elle-même.
+        if st.button(X["ouvrir"].format(nom=choisie["nom"]), key=cle + "_ouvrir"):
+            st.session_state["ouvrir_symbole"] = choisie["symbole_fiche"]     # [M] 04/11/2026
+            st.switch_page("vues/recherche.py")
 
 
 onglets = [X["onglet_notes"], X["onglet_prix"]]
@@ -408,17 +404,13 @@ with onglet1:
     st.caption(X["seuil"])                                                    # [M] 04/11/2026
 
 with onglet2:
-    g = f[f["ratio_prix"].notna() & (f["note"] >= NOTE_MIN_AFFAIRES)].copy()   # une note faible mais très bon
-    bas, haut = bornes_facteur(brut)                                          # 95e et 5e centiles des membres
-    g["facteur"] = (1 / g["ratio_prix"]).clip(bas, haut)                          # marché ne passe pas devant ;
-    g["score_prix"] = (g["note"] * g["facteur"]).round()                          # PER secteur ÷ PER société, borné
-    g["facteur_txt"] = g["facteur"].map(lambda v: "× " + virgule(v))
-    g = g.sort_values(["score_prix", "note"], ascending=False)
+    # Variante B [M] 17/11/2026 : note de 50 ou plus ET au moins 20 % moins chère que son secteur (même seuil que la
+    # zone « bon marché » de la fiche), triée par la note. Plus de multiplication note × prix : le prix filtre, il ne
+    # classe pas (le facteur saturait : 47 des 50 premières lignes au plafond, audit 3.4).
+    g = f[f["ratio_prix"].notna() & (f["note"] >= NOTE_MIN_AFFAIRES) & (f["ratio_prix"] <= PRIX_BON_MARCHE)].copy()
+    g = g.sort_values(["note", "ratio_prix"], ascending=[False, True])        # à note égale, la moins chère d'abord
     g["rang"] = range(1, len(g) + 1)
-    chiffres = {"haut": virgule(haut), "bas": virgule(bas), "moins": round(100 * (1 - 1 / haut)),
-                "plus": round(100 * (1 / bas - 1))}                           # bornes dites au visiteur
-    X = {**X, "aide_facteur": X["aide_facteur"].format(**chiffres)}           # aide du titre de la colonne
-    afficher(g, "cl_tableau2", avec_score=True)
-    st.markdown(X["explication_prix"].format(**chiffres))                     # explications sous le tableau [M]
+    afficher(g, "cl_tableau2", avec_score=False)                              # mêmes colonnes que le 1er onglet
+    st.markdown(X["explication_prix"])                                        # explications sous le tableau [M]
     st.caption(X["prudence_prix"])
     st.caption(X["seuil"])

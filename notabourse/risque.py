@@ -55,10 +55,24 @@ def note_affichee(v):
     return v["note"]                                                          # repli : note de la formule
 
 
+def seulement_fonds_propres(f):
+    """Vrai si la société est écartée UNIQUEMENT parce que ses fonds propres sont négatifs (audit R-F02)."""
+    gf = f["garde_fou"]
+    if not gf["exclue"]:
+        return False
+    manquantes = [c["condition"] for c in gf["conditions"] if not c["remplie"]]   # conditions non remplies
+    return manquantes == ["fonds_propres"]                                    # c'est la seule : règle comptable
+
+
 def position_risque(f):
     """Place du curseur (0 à 100, à gauche le plus risqué) et état montré (« exclue », « vigilance », « bonne »).
     Renvoie (None, état) si l'état est inconnu : pas de barre."""
     statut = sante(f)["statut"]
+    if statut == "exclue" and seulement_fonds_propres(f):
+        # [M] 17/11/2026 : fonds propres négatifs seuls = risque potentiel (orange), pas risque de faillite (rouge).
+        # La société reste écartée de la sélection (règle de C8, inchangée) ; seul l'affichage de la barre change.
+        # Les autres voyants (trésorerie, dettes, intérêts) étaient bons, sinon une autre condition manquerait.
+        statut = "vigilance"
     if statut not in ZONES:
         return None, statut
     gf = f["garde_fou"]
