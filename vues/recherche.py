@@ -1,4 +1,5 @@
 """Page principale : recherche d'une société, puis fiche de sa note (cahier des charges §3 et §4)."""
+import base64                          # drapeau glissé dans la page (adresse « data: »)
 import logging                         # erreurs inattendues notées dans le journal du serveur
 import re                              # mots en gras du texte d'accueil
 import time                            # limite du nombre de calculs par visite
@@ -16,14 +17,18 @@ from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
 from notabourse.limites import (FENETRE_GLOBALE, MAXIMUM_CALCULS_GLOBAL, MAXIMUM_RECHERCHES_GLOBAL, Compteur,
                                 MemoireEchecs, autoriser)
+from notabourse.logos import adresse_data, logo_jaune, telecharger_logo
+from notabourse.nuances import degrade_css, nuance
+from notabourse.pays import DOSSIER_DRAPEAUX, a_un_drapeau, pays_de
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
 from notabourse.prix import position_barre
 from notabourse.risque import position_risque, seulement_fonds_propres
 from notabourse.sources import DonneesIndisponibles, cotations, table_cik_sec
 from vues.commun import FILET, JAUNE, SITE, SURFACE, TEXTE, bandeau_titre, date, dollars, nombre, pct, textes
 
-COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444", None: "#4A4F5C"}   # réservées au garde-fou
-                                                                              # et au prix comparé au secteur [M] 21/10
+COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444", None: "#4A4F5C"}   # réservées au garde-fou,
+                                                                              # au prix comparé au secteur [M] 21/10
+                                                                              # et aux titres des composantes [M] 20/11
 PRIX_COULEURS = {"chere": "rouge", "norme": "orange", "bon_marche": "vert", "pertes": None, "manquant": None,
                  "reference_ancienne": None}
 VIOLET = "#8E7CC3"                                                            # bandeau « exclue » (pas une couleur du garde-fou)
@@ -93,6 +98,23 @@ def calculer_fiche(symbole, signature):
     if ligne["groupe"] is None:
         return {"erreur": "classement"}
     return fiche_hors_indice(noter_hors_indice(ligne, c, ref, cr), c, ref)
+
+
+@st.cache_data(ttl=7 * 24 * 3600, max_entries=500, show_spinner=False)       # une semaine en mémoire, bornée
+def logo_de(symbole):
+    """Logo de la société redessiné en jaune (adresse « data: »), ou None [M] 20/11/2026. Téléchargé par le serveur :
+    le navigateur du visiteur ne contacte pas le service des logos. Seulement après un calcul de fiche (déjà limité)."""
+    octets = telecharger_logo(symbole)
+    png = logo_jaune(octets, JAUNE) if octets else None
+    return adresse_data(png) if png else None
+
+
+@st.cache_data(show_spinner=False)
+def drapeau_de(code):
+    """Drapeau du pays (adresse « data: », quelques centaines d'octets), ou None s'il n'y a pas d'image."""
+    if not a_un_drapeau(code):
+        return None
+    return "data:image/png;base64," + base64.b64encode((DOSSIER_DRAPEAUX / f"{code}.png").read_bytes()).decode("ascii")
 
 
 # --- Petits éléments d'affichage --------------------------------------------------------------------------------
@@ -349,8 +371,8 @@ def barre(pos, zones, actif, aide, valeur=None, seuils=()):
     bas = ('<div class="ba-prix-seuils">' + "".join(f'<span style="left:{s:.1f}%">{nom}</span>' for s, nom in seuils)
            + "</div>") if seuils else ""
     return (f'<div class="ba-prix{"" if valeur is not None else " ba-barre-simple"}" role="img" aria-label="{aide}">'
-            f'{haut}<div class="ba-prix-barre" style="background:linear-gradient(90deg,{COULEURS["rouge"]} 0%,'
-            f'{COULEURS["rouge"]} 18%,{COULEURS["orange"]} 50%,{COULEURS["vert"]} 82%,{COULEURS["vert"]} 100%)">'
+            f'{haut}<div class="ba-prix-barre" style="background:{degrade_css(COULEURS)}">'   # même dégradé que
+                                                                              # les titres des composantes
             f'{reperes}<div class="ba-prix-curseur" style="left:{min(max(pos, 0.6), 99.4):.1f}%"></div></div>'
             f'<div class="ba-prix-zones">{noms}</div>{bas}</div>')
 
@@ -444,6 +466,30 @@ def afficher_prix(f, T, L):
             detail_prix(f, T, L)
 
 
+def titre_md(nom, logo):
+    """Titre de la fiche en Markdown, sans HTML brut : logo jaune (s'il existe) puis nom de la société [M] 20/11/2026.
+    Le nom vient de Yahoo : échappé, comme avant (il ne peut pas insérer de lien ni d'image)."""
+    image = f"![]({logo}) " if logo else ""                                   # texte de remplacement vide : le nom
+    return f"## {image}{echapper(nom)}"                                       # suit, l'image n'ajoute rien à lire
+
+
+def pays_md(nom_yahoo, L):
+    """« [drapeau] États-Unis » en Markdown pour le sous-titre de la fiche [M] 20/11/2026 ; vide si le pays manque."""
+    code, nom = pays_de(nom_yahoo, L)
+    if nom is None:
+        return ""
+    image = drapeau_de(code) if code else None
+    return (f"![]({image}) " if image else "") + echapper(nom)               # nom de Yahoo (pays rare) : échappé
+
+
+def titre_composante(numero, nom, note):
+    """« 1 Rentabilité » : numéro en jaune, nom dans la nuance de sa note (rouge bas, orange vers 50, vert haut),
+    comme les barres de la fiche [M] 20/11/2026. Sans note : couleur du texte courant."""
+    couleur = TEXTE if note is None else nuance(note, COULEURS)
+    return (f'<p class="ba-composante"><span class="ba-num">{numero}</span>'
+            f'<span style="color:{couleur}">{nom}</span></p>')
+
+
 def badge(texte, couleur):
     """Étiquette colorée (statut de santé financière)."""
     return (f'<span style="background:{couleur};color:{texte_sur(couleur)};padding:3px 10px;font-size:0.9rem;'
@@ -457,11 +503,15 @@ def afficher_fiche(f, T, L, bourse=None):
     P = phrases(f)                                                            # phrases simples de chaque partie
     secteur = T[f"secteur_{f['secteur']}"] + (f" ({T['sous_' + f['sous_secteur']]})" if f["groupe"] == "FIN" else "")
     # En-tête
-    st.header(echapper(f["nom"]))                                            # nom fourni par Yahoo : échappé
+    st.container(key="fiche_titre").markdown(titre_md(f["nom"], logo_de(f["symbole"])))   # logo jaune + nom
     autres = indices_de(f["symbole"], f["nom"])                               # Nikkei 225, CAC 40... [M] 06/11/2026
     indices = " · " + md(", ".join(autres)) if autres else ""                 # à la suite de la capitalisation
-    st.caption(f"**{echapper(f['symbole'])}** · {echapper(bourse or f['bourse'])} · {secteur} · {md(dollars(f['capitalisation_usd'], L))}"
-               f"{indices}  \n{T['membre'] if f['membre'] else T['hors_indice']}")   # S&P 500 : à la ligne
+    pays = pays_md(f.get("pays"), L)                                          # drapeau et pays du siège [M] 20/11
+    pays = f" · {pays}" if pays else ""
+    st.container(key="fiche_sous_titre").caption(
+        f"**{echapper(f['symbole'])}** · {echapper(bourse or f['bourse'])}{pays} · {secteur} · "
+        f"{md(dollars(f['capitalisation_usd'], L))}{indices}  \n"
+        f"{T['membre'] if f['membre'] else T['hors_indice']}")                # S&P 500 : à la ligne
     if f["garde_fou"]["exclue"]:                                              # bandeau « exclue », raisons dans Santé
         st.markdown(f'<div style="border:2px solid {VIOLET};padding:8px 14px;margin:4px 0 10px">'
                     f'<b>{T["av_exclue"]}</b></div>', unsafe_allow_html=True)
@@ -482,9 +532,10 @@ def afficher_fiche(f, T, L, bourse=None):
             detail_note(f, T, L, dp)
     # Les quatre parties
     st.subheader(T["composantes"])
-    for c in f["composantes"]:
-        g1, g2 = st.columns([1, 3])
-        g1.markdown(f"**{T[c['nom']]}**")
+    for numero, c in enumerate(f["composantes"], start=1):                    # 1 à 4 [M] 20/11/2026
+        g1, g2 = st.columns([1, 3], vertical_alignment="center")
+        libelle = T[c["nom"]]                                                 # « Rentabilité » : texte du site
+        g1.markdown(titre_composante(numero, libelle, c["note"]), unsafe_allow_html=True)   # (rien de Yahoo)
         if c["note"] is None:
             g2.caption(T["donnees_insuffisantes"])
         else:

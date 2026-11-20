@@ -76,3 +76,18 @@ def test_texte_des_pastilles_lisible_au_moins_4_5():
     for fond in fonds:
         texte = "#15140f" if fond in ligne_texte_sur or "VIOLET" in ligne_texte_sur and fond == fonds[-1] else "#ffffff"
         assert _contraste(fond, texte) >= 4.5, (fond, texte)
+
+
+def test_titres_des_composantes_lisibles():
+    """[M] 20/11/2026 : le titre de chaque composante prend la nuance de sa note (rouge, orange, vert). Titre de 19 px
+    en gras, donc « grand texte » au sens du WCAG 1.4.3 : contraste d'au moins 3 sur le fond, pour toute note."""
+    import sys
+    sys.path.insert(0, str(SITE))
+    from notabourse.nuances import nuance
+    couleurs = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444"}   # celles de vues/recherche.py
+    assert nuance(0, couleurs) == "#D24444" and nuance(100, couleurs) == "#2E9E5B"   # extrémités du dégradé
+    assert nuance(50, couleurs) == "#E8912D"                                  # orange au milieu
+    for note in range(0, 101):
+        assert _contraste(nuance(note, couleurs), "#15140f") >= 3, note       # lisible sur le fond charbon
+    code = (SITE / "vues" / "commun.py").read_text(encoding="utf-8")
+    assert "p.ba-composante {{ margin: 0; font-size: 1.2rem; font-weight: 700" in code   # 19 px en gras

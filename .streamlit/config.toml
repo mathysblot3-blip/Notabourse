@@ -1,7 +1,8 @@
 # Apparence du site « Bourse à lunettes » : noir et jaune [M] 20/10/2026, version sombre (le papier crème était trop
 # clair, avis de Mathys du 20/10/2026) : fond charbon chaud, texte crème, jaune moutarde moins vif.
 # Style inspiré d'une planche imprimée (fournie par Mathys) : angles droits, filets de 1 pixel, aucune ombre, titres
-# dans une police à points (Doto), aucun émoji. Le vert, l'orange et le rouge restent réservés au garde-fou [M].
+# dans une police à points (Doto), aucun émoji. Le vert, l'orange et le rouge restent réservés au garde-fou [M], au prix
+# comparé au secteur et aux titres des composantes [M] 20/11/2026.
 # Mêmes teintes que dans vues/commun.py.
 [theme]
 base = "dark"

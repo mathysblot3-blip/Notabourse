@@ -111,6 +111,18 @@ def style():
     .ba-prix-avertissement {{ border: 1px solid {FILET}; border-left: 3px solid {JAUNE}; padding: .5rem .8rem;
                               margin: .2rem 0 .6rem; font-size: .9rem; }}       /* estimation : valeur peu fiable */
     .ba-prix-seuils span {{ position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }}
+    .st-key-fiche_titre h2 img {{ height: .9em; width: auto; max-width: 3.6em; object-fit: contain;
+        margin-right: .4em; vertical-align: -0.12em; }}                      /* fiche : logo jaune puis nom [M] 20/11 */
+    .st-key-fiche_sous_titre img {{ height: .95em; width: auto; vertical-align: -0.12em; margin-right: .3em;
+        outline: 1px solid {FILET}; }}                                        /* drapeau du pays, filet autour (le
+                                                                              blanc du drapeau reste visible) */
+    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.2rem; font-weight: 700;
+        line-height: 1.3; }}                                                  /* 19 px en gras :
+                                                                              « grand texte » WCAG, contraste 3 suffit */
+    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.5rem; color: {JAUNE};
+               margin-right: .45rem; }}                                  /* numéro 1 à 4 en jaune [M] 20/11/2026 */
+    .st-key-pied_avertissement {{ border: 1px solid {FILET} !important; padding: .9rem 1.1rem; margin-top: 2rem; }}
+    .st-key-pied_avertissement p {{ margin-bottom: .15rem; }}                 /* avertissement dans un cadre [M] */
     @keyframes ba-defile {{ from {{ transform: translateX(0); }} to {{ transform: translateX(-50%); }} }}
     @media (prefers-reduced-motion: reduce) {{ .ba-bande span {{ animation: none; }} }}
     </style>""")
@@ -170,9 +182,9 @@ def textes():
 def pied_de_page():
     """Mentions obligatoires (cahier des charges §6), en bas de chaque page."""
     T = textes()
-    st.divider()
-    st.caption(f"{T['mention_conseil']}  \n{T['mention_recherche']}  \n{T['mention_donnees']}  \n"
-               f"{T['mention_auteur']} · {T['contact_pied']}")              # plus de lien GitHub [M] 25/10/2026
+    with st.container(border=True, key="pied_avertissement"):                # dans un cadre [M] 20/11/2026
+        st.caption(f"{T['mention_conseil']}  \n{T['mention_recherche']}  \n{T['mention_donnees']}  \n"
+                   f"{T['mention_auteur']} · {T['contact_pied']}")          # plus de lien GitHub [M] 25/10/2026
 
 
 # --- Bouton « Questions ? » : questions, demandes et erreurs, sans passer par GitHub [M] 25/10/2026 ---------------

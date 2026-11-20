@@ -371,3 +371,14 @@ Source : `Audit_Bourse_a_lunettes/ameliorations/correctifs_code/` (un `.diff` et
 | Sécurité (audit S-C03, S-C02) : mail du samedi borné à 200 messages, précédé d'un avertissement « contenu non vérifié » ; `supabase/limiter_tables.sql` (format de l'e-mail contrôlé par la base ; au plus 60 messages et 2 000 recherches comptées par heure), **à lancer par Mathys dans Supabase** | [M] 17/11/2026 |
 | Sécurité (audit S-C07) : Streamlit 1.67.0 (1.66.0 interdisait Pillow 13), planchers `pillow>=13.0.0` et `soupsieve>=4.0.0` (failles connues dans les versions précédentes, `pip-audit`) | [M] 17/11/2026 |
 | En local (audit 4.4) : si le chemin du fichier de certificats contient un accent (dossier « BàL »), le paquet `notabourse` le copie dans le dossier temporaire ; sans effet en ligne | [M] 17/11/2026 |
+
+## 28. Retouches visuelles de la fiche et du classement (20/11/2026)
+
+| Choix | Nature |
+|---|---|
+| Les quatre composantes numérotées 1 à 4, numéro en jaune (police à points Doto) devant le nom | [M] 20/11/2026 |
+| Titre de chaque composante dans la nuance de sa note, sur le même dégradé que les barres de la fiche (rouge plein jusqu'à 18, orange à 50, vert plein dès 82) ; titre de 19 px en gras pour rester lisible (contraste d'au moins 3 pour toute note, testé) ; le vert, l'orange et le rouge ne sont donc plus réservés au garde-fou et au prix | Principe : [M] 20/11/2026 ; points du dégradé et taille : [P] |
+| Avertissement du bas de page dans un cadre (filet de 1 pixel, angles droits) | [M] 20/11/2026 |
+| Drapeau devant le pays : fiche (pays du siège donné par Yahoo, traduit, nouveau dans le sous-titre) et classement (pays de la bourse principale, devant le code). Images PNG de flagcdn.com (domaine public), rangées dans `static/` et servies par le site ; pas d'émoji (Windows n'affiche pas les drapeaux en émoji) | Principe : [M] 20/11/2026 ; source et images : [P] |
+| Logo de la société devant son nom, redessiné tout en jaune (le « G » de Google devient un « G » jaune). Source : service public d'images de Financial Modeling Prep, téléchargé par le serveur (le navigateur du visiteur ne le contacte pas), gardé une semaine en mémoire ; sans logo trouvé, la fiche s'affiche comme avant. Fond transparent : les parties presque blanches deviennent des trous ; fond plein : la couleur du bord est retirée | Principe : [M] 20/11/2026 ; source et méthode : [P] ; rendu vérifié sur 18 logos [R] |
+| Titre et sous-titre restés en Markdown échappé (pas de HTML brut avec un texte de Yahoo, règle de l'audit de sécurité du 19/10/2026) | [P] |

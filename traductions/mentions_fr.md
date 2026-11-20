@@ -31,6 +31,9 @@ compte. Si tu as un compte GitHub, tu peux aussi passer par la
 - La méthode de notation vient de mon travail de recherche : toute reprise doit me citer (Mathys Blot).
 - Les données financières viennent de Yahoo Finance et de la SEC (autorité des marchés américaine) et restent soumises
   aux conditions de ces sources. Les noms et marques des sociétés appartiennent à leurs propriétaires.
+- Les logos des sociétés sont des marques de leurs propriétaires, montrés seulement pour reconnaître la société :
+  images de Financial Modeling Prep, redessinées en jaune par le site. Les drapeaux viennent de flagcdn.com
+  (domaine public). Ces images sont téléchargées par le serveur du site : votre navigateur ne contacte pas ces services.
 - Le code et une partie des textes ont été produits avec l'aide d'une intelligence artificielle (Claude Code,
   Anthropic), puis relus et validés par moi, qui en assume la responsabilité (voir la page Méthode, partie 7).
 

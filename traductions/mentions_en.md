@@ -30,6 +30,9 @@ GitHub account, you can also use [the website's GitHub page](https://github.com/
 - The scoring method comes from my research: any reuse must cite me (Mathys Blot).
 - Financial data come from Yahoo Finance and the SEC (the US market regulator) and remain subject to these sources'
   terms. Company names and trademarks belong to their owners.
+- Company logos are trademarks of their owners, shown only to identify the company: images from Financial
+  Modeling Prep, redrawn in yellow by the website. Flags come from flagcdn.com (public domain). These images are
+  downloaded by the website's server: your browser does not contact these services.
 - The code and part of the texts were produced with the help of an artificial intelligence (Claude Code, Anthropic),
   then reread and approved by me, and I take responsibility for them (see the Method page, part 7).
 

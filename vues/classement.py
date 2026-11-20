@@ -20,6 +20,7 @@ import streamlit as st  # interface web
 
 from notabourse.constantes import PRIX_BON_MARCHE, PRIX_CHERE   # seuils du site
 from notabourse.indices import INDICES, indices_de                # Nikkei 225, CAC 40...
+from notabourse.pays import adresse_drapeau                       # petit drapeau servi par le site
 from vues.commun import FILET, JAUNE, SITE, SURFACE, textes
 
 # --- Textes du prototype (passeront dans traductions/fr.json et en.json une fois la page validée) -------------------
@@ -291,6 +292,8 @@ t["ecart_prix"] = (t["ratio_prix"] - 1) * 100                                 # 
 t["prix_txt"] = [X["en_perte"] if perte else ("-" if pd.isna(e) else f"{e:+.0f} %")   # texte affiché
                  for e, perte in zip(t["ecart_prix"], t["perte"].fillna(False))]
 t["code_pays"] = t["pays"].str.upper()                                       # FR, US, JP... (codes ISO)
+DRAPEAUX = {p: adresse_drapeau(p) for p in PAYS}                              # une adresse par pays [M] 20/11/2026
+t["drapeau"] = t["pays"].map(DRAPEAUX)                                        # image affichée devant le code
 t["secteur_court"] = t["secteur"].map(lambda s: SECTEURS_COURTS[s][i_lg])
 
 # --- Filtres : un cadre toujours visible, les plus utiles en premier ----------------------------------------------
@@ -355,7 +358,8 @@ def colonnes(avec_score):
     """Réglages d'affichage des colonnes (titres, barres, formats)."""
     c = {"rang": st.column_config.NumberColumn(X["col_rang"], width=45),
          "nom": st.column_config.TextColumn(X["col_societe"], width=160),   # la note reste visible sur téléphone
-         "code_pays": st.column_config.TextColumn(X["col_pays"], help=X["aide_pays"], width=55),
+         "drapeau": st.column_config.ImageColumn(X["col_pays"], help=X["aide_pays"], width=45),   # drapeau [M] 20/11
+         "code_pays": st.column_config.TextColumn(" ", width=40),             # code à côté du drapeau
          "secteur_court": st.column_config.TextColumn(X["col_secteur"], width=125),
          "note": st.column_config.ProgressColumn(X["col_note"], min_value=0, max_value=100, format="%d", width=110),
          "prix_txt": st.column_config.TextColumn(X["col_prix"], help=X["aide_prix"], width=95),
@@ -377,7 +381,7 @@ def afficher(tableau, cle, avec_score):
         tableau = tableau.head(int(nombre or 50))
     ordre = (["rang", "nom"]                                                 # l'essentiel à gauche : visible
              + (["score_prix", "note", "facteur_txt"] if avec_score else ["note"])   # sans défiler sur téléphone
-             + ["code_pays", "secteur_court"] + (COMPOSANTES if detail else []) + ["prix_txt", "capi"])
+             + ["drapeau", "code_pays", "secteur_court"] + (COMPOSANTES if detail else []) + ["prix_txt", "capi"])
     choix = st.dataframe(tableau[ordre], column_config=colonnes(avec_score), hide_index=True, width="stretch",
                          row_height=44, height=min(42 + 44 * len(tableau), 750),   # lignes plus hautes, plus lisibles
                          on_select="rerun", selection_mode="single-cell", key=cle)   # un clic sur une case
