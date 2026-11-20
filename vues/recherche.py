@@ -1,5 +1,6 @@
 """Page principale : recherche d'une société, puis fiche de sa note (cahier des charges §3 et §4)."""
 import base64                          # drapeau glissé dans la page (adresse « data: »)
+import html                            # texte pour lecteurs d'écran rendu inoffensif
 import logging                         # erreurs inattendues notées dans le journal du serveur
 import re                              # mots en gras du texte d'accueil
 import time                            # limite du nombre de calculs par visite
@@ -13,6 +14,7 @@ from notabourse.classement import charger_correspondance_yahoo
 from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.courbe import cotee_recemment, preparer_courbe, resume, telecharger_cours
+from notabourse.liens import lien_cours
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
@@ -193,10 +195,15 @@ def afficher_courbe(f, T, L):
     prix = lambda x: f"{nombre(x, L, 2)} {devise}"                       # 268,40 USD (espace insécable)
     v = r["variation"]
     variation = ("+" if round(100 * v) > 0 else "") + nombre(100 * v, L, 0) + (" %" if L == "fr" else "%")   # +1 150 %
-    st.markdown(md(T["courbe_resume"].format(
+    # Phrase retirée de l'écran [M] 20/11/2026, gardée pour les lecteurs d'écran seulement : sans elle, la courbe
+    # n'aurait aucun texte de remplacement (WCAG 1.1.1). Textes du site, nombres, dates et code de devise (3 lettres).
+    st.html('<p class="ba-lecteur-ecran">' + html.escape(T["courbe_resume"].format(
         debut=prix(r["debut"]), date_debut=date(r["date_debut"], L), fin=prix(r["fin"]), date_fin=date(r["date_fin"], L),
         variation=variation, bas=prix(r["bas"]), date_bas=date(r["date_bas"], L),
-        haut=prix(r["haut"]), date_haut=date(r["date_haut"], L))))
+        haut=prix(r["haut"]), date_haut=date(r["date_haut"], L))) + "</p>")
+    adresse, site = lien_cours(f["symbole"], f.get("bourse"), L)              # TradingView, sinon Yahoo [M] 20/11
+    if adresse:                                                               # adresse sûre : caractères contrôlés
+        st.markdown(f"[{T['courbe_lien'].format(site=site)}]({adresse})")     # s'ouvre dans un nouvel onglet
     if cotee_recemment(table, pd.Timestamp.today()):
         st.caption(T["courbe_depuis"].format(date=date(r["date_debut"], L)))
     st.caption(T["courbe_mise_en_garde"])

@@ -38,6 +38,8 @@ def preparer_courbe(table, devise):
     if devise in DEVISES_CENTIMES:                                            # cours en centimes (pence, cents)
         t = t.assign(cours=t["cours"] / 100)                                  # -> unités (livres, rands...)
         devise = DEVISES_CENTIMES[devise]
+    if not (isinstance(devise, str) and len(devise) == 3 and devise.isalpha() and devise.isascii()):
+        devise = ""                                                           # code de devise inattendu : non affiché
     if len(t) < POINTS_MIN:
         return None, devise
     return t, devise

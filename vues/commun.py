@@ -132,6 +132,8 @@ def style():
     .ba-sur {{ font-size: 1rem; color: {TEXTE}; }}                            /* « / 100 » plus petit */
     .ba-composante-barre {{ height: 8px; background: {SURFACE}; margin: .4rem 0 .5rem; }}
     .ba-composante-barre > div {{ height: 100%; }}                            /* barre dans la couleur de la note */
+    .ba-lecteur-ecran {{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+        white-space: nowrap; margin: -1px; }}                                 /* lu par les lecteurs d'écran, invisible */
     @media (max-width: 380px) {{ [data-testid="stMarkdownContainer"] p.ba-composante,
         .ba-num {{ font-size: 1.35rem !important; }} }}                       /* petit téléphone : tient sur une ligne */
     .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_TITRES};

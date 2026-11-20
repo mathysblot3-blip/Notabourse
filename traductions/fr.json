@@ -389,5 +389,6 @@
   "courbe_resume": "Le cours est passé de {debut} le {date_debut} à {fin} le {date_fin}, soit {variation}. Plus bas : {bas} le {date_bas} ; plus haut : {haut} le {date_haut}.",
   "courbe_depuis": "Cotée depuis moins de 10 ans : la courbe commence le {date}.",
   "courbe_mise_en_garde": "Cours seul, sans les dividendes versés. Les performances passées ne préjugent pas des performances futures.",
-  "courbe_indisponible": "La courbe du cours n'est pas disponible pour le moment."
+  "courbe_indisponible": "La courbe du cours n'est pas disponible pour le moment.",
+  "courbe_lien": "Voir le cours détaillé sur {site}"
 }
