@@ -394,3 +394,4 @@ Mêmes jour, seconde série (retours de Mathys sur le rendu) :
 | Tous les titres des pages (dont « Risque de faillite ») en crème du logo au lieu du blanc cassé du texte | [M] 20/11/2026 |
 | Titre de la partie prix sur la fiche : « L'action est-elle chère ? » (« Is the stock expensive? ») ; la page Méthode et le classement gardent « prix comparé au secteur » | [M] 20/11/2026 |
 | Avertissement du bas de page : texte centré, marges égales, cadre crème | [M] 20/11/2026 |
+| Noms des composantes (« Rentabilité », « Croissance »...) dans la police à points des titres (Doto), 26 px | [M] 20/11/2026 |

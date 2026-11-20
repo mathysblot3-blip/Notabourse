@@ -117,9 +117,9 @@ def style():
     .st-key-fiche_sous_titre img {{ height: .95em; width: auto; vertical-align: -0.12em; margin-right: .3em;
         outline: 1px solid {FILET}; }}                                        /* drapeau du pays, filet autour (le
                                                                               blanc du drapeau reste visible) */
-    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.4rem; font-weight: 700;
-        line-height: 1.3; }}                                                  /* 22 px en gras :
-                                                                              « grand texte » WCAG, contraste 3 suffit */
+    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.6rem; font-weight: 900;
+        font-family: 'Doto', monospace; line-height: 1.2; }}                 /* police à points des titres [M] 20/11 ;
+                                                                              26 px : « grand texte » WCAG, contraste 3 */
     .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_LOGO};
                margin-right: .7rem; }}                                   /* « 1) » crème, police des titres [M] 20/11 */
     [data-testid="stMainBlockContainer"] h1, [data-testid="stMainBlockContainer"] h2,
