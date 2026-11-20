@@ -382,22 +382,20 @@ def afficher(tableau, cle, avec_score):
     ordre = (["rang", "nom"]                                                 # l'essentiel à gauche : visible
              + (["score_prix", "note", "facteur_txt"] if avec_score else ["note"])   # sans défiler sur téléphone
              + ["drapeau", "code_pays", "secteur_court"] + (COMPOSANTES if detail else []) + ["prix_txt", "capi"])
-    zone_bouton = st.container()                                              # place réservée AU-DESSUS du tableau :
-    # sous un tableau de 750 pixels, le bouton n'était pas visible après le clic et le lien paraissait cassé
-    # (signalé par Mathys le 20/11/2026)
     choix = st.dataframe(tableau[ordre], column_config=colonnes(avec_score), hide_index=True, width="stretch",
                          row_height=44, height=min(42 + 44 * len(tableau), 750),   # lignes plus hautes, plus lisibles
                          on_select="rerun", selection_mode="single-cell", key=cle)   # un clic sur une case
     cases = choix.selection.get("cells", [])                                  # case cliquée (ou aucune)
-    if cases:                                                                 # une case choisie : on propose un bouton
-        ligne = cases[0][0] if isinstance(cases[0], (list, tuple)) else cases[0]["row"]   # (S-A04, WCAG 3.2.2)
-        choisie = tableau.iloc[int(ligne)]                                    # la société de la ligne choisie
-        # Avant : le simple choix d'une case (ou une flèche du clavier) changeait de page. Maintenant, seul ce
-        # bouton, que le visiteur déclenche exprès, ouvre la fiche : la sélection ne change plus rien d'elle-même.
-        bouton = dict(key=cle + "_ouvrir", type="primary", icon=":material/arrow_forward:")   # jaune, bien visible
-        if zone_bouton.button(X["ouvrir"].format(nom=choisie["nom"]), **bouton):   # au-dessus du tableau
-            st.session_state["ouvrir_symbole"] = choisie["symbole_fiche"]     # [M] 04/11/2026
-            st.switch_page("vues/recherche.py")
+    if cases:                                                                 # un clic : fiche de la société, direct
+        ligne = cases[0][0] if isinstance(cases[0], (list, tuple)) else cases[0]["row"]
+        choisie = tableau.iloc[int(ligne)]                                    # la société de la ligne cliquée
+        # Clic direct vers la fiche, rétabli par Mathys le 20/11/2026 [M] : le bouton intermédiaire (audit S-A04,
+        # WCAG 3.2.2 « pas de changement de page sur une simple sélection ») est retiré. Conséquence connue : au
+        # clavier, choisir une case avec les flèches ouvre aussi la fiche.
+        st.session_state.pop(cle, None)                                       # sélection oubliée : au retour sur le
+                                                                              # classement, pas de nouveau départ
+        st.session_state["ouvrir_symbole"] = choisie["symbole_fiche"]         # la fiche lira ce symbole [M] 04/11
+        st.switch_page("vues/recherche.py")
 
 
 onglets = [X["onglet_notes"], X["onglet_prix"]]
