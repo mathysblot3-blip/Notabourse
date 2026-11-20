@@ -298,7 +298,7 @@
   "alt_9_baisses": "Chart: deepest drops, −30.2% for the simulation (in 2022) against −23.9% for the S&P 500.",
   "alt_8_hors_indice": "Chart: score of a company rated from outside the S&P 500 compared with its score among the members; average gap of 0.26 point over 4,197 cases.",
   "alt_5_robustesse": "Chart: the simulation's lead under different portfolio settings, from +2.5 to +4.9 points a year over 10 years, +3.6 for the settings chosen.",
-  "prix_titre": "Price compared with the sector",
+  "prix_titre": "Is the stock expensive?",
   "prix_verdict_chere": "Expensive compared with its sector",
   "prix_verdict_norme": "Price in line with its sector",
   "prix_verdict_bon_marche": "Cheap compared with its sector",

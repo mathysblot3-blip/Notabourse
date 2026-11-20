@@ -298,7 +298,7 @@
   "alt_9_baisses": "Graphique : plus fortes baisses, −30,2 % pour la simulation (en 2022) contre −23,9 % pour le S&P 500.",
   "alt_8_hors_indice": "Graphique : note d'une société évaluée hors du S&P 500 comparée à sa note parmi les membres ; écart moyen de 0,26 point sur 4 197 cas.",
   "alt_5_robustesse": "Graphique : avance de la simulation selon les réglages du portefeuille, de +2,5 à +4,9 points par an sur 10 ans, +3,6 pour les réglages retenus.",
-  "prix_titre": "Prix comparé au secteur",
+  "prix_titre": "L'action est-elle chère ?",
   "prix_verdict_chere": "Chère par rapport à son secteur",
   "prix_verdict_norme": "Prix dans la norme de son secteur",
   "prix_verdict_bon_marche": "Bon marché par rapport à son secteur",

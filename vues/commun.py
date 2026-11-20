@@ -111,18 +111,25 @@ def style():
     .ba-prix-avertissement {{ border: 1px solid {FILET}; border-left: 3px solid {JAUNE}; padding: .5rem .8rem;
                               margin: .2rem 0 .6rem; font-size: .9rem; }}       /* estimation : valeur peu fiable */
     .ba-prix-seuils span {{ position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }}
-    .st-key-fiche_titre h2 img {{ height: .9em; width: auto; max-width: 3.6em; object-fit: contain;
-        margin-right: .4em; vertical-align: -0.12em; }}                      /* fiche : logo jaune puis nom [M] 20/11 */
+    .st-key-fiche_titre h2 img {{ float: right; height: 1.15em; width: auto; max-width: 4em; object-fit: contain;
+        margin: 0 0 .2em .6em; }}                                             /* fiche : nom à gauche, logo jaune (ou
+                                                                              initiales) à droite [M] 20/11/2026 */
     .st-key-fiche_sous_titre img {{ height: .95em; width: auto; vertical-align: -0.12em; margin-right: .3em;
         outline: 1px solid {FILET}; }}                                        /* drapeau du pays, filet autour (le
                                                                               blanc du drapeau reste visible) */
-    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.2rem; font-weight: 700;
-        line-height: 1.3; }}                                                  /* 19 px en gras :
+    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.4rem; font-weight: 700;
+        line-height: 1.3; }}                                                  /* 22 px en gras :
                                                                               « grand texte » WCAG, contraste 3 suffit */
-    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.5rem; color: {JAUNE};
-               margin-right: .45rem; }}                                  /* numéro 1 à 4 en jaune [M] 20/11/2026 */
-    .st-key-pied_avertissement {{ border: 1px solid {FILET} !important; padding: .9rem 1.1rem; margin-top: 2rem; }}
-    .st-key-pied_avertissement p {{ margin-bottom: .15rem; }}                 /* avertissement dans un cadre [M] */
+    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_LOGO};
+               margin-right: .7rem; }}                                   /* « 1) » crème, police des titres [M] 20/11 */
+    [data-testid="stMainBlockContainer"] h1, [data-testid="stMainBlockContainer"] h2,
+    [data-testid="stMainBlockContainer"] h3 {{ color: {CREME_LOGO}; }}       /* titres crème du logo [M] 20/11/2026 */
+    .st-key-pied_avertissement {{ border: 1px solid {CREME_LOGO} !important; padding: 1rem 1.2rem !important;
+        margin-top: 2rem; text-align: center; }}                              /* avertissement centré dans un cadre
+                                                                              crème [M] 20/11/2026 */
+    .st-key-pied_avertissement [data-testid="stCaptionContainer"],
+    .st-key-pied_avertissement p {{ margin: 0 !important; padding: 0; text-align: center; }}   /* centré, aucune
+                                                                              marge en trop en bas */
     @keyframes ba-defile {{ from {{ transform: translateX(0); }} to {{ transform: translateX(-50%); }} }}
     @media (prefers-reduced-motion: reduce) {{ .ba-bande span {{ animation: none; }} }}
     </style>""")

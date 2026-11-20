@@ -382,3 +382,15 @@ Source : `Audit_Bourse_a_lunettes/ameliorations/correctifs_code/` (un `.diff` et
 | Drapeau devant le pays : fiche (pays du siège donné par Yahoo, traduit, nouveau dans le sous-titre) et classement (pays de la bourse principale, devant le code). Images PNG de flagcdn.com (domaine public), rangées dans `static/` et servies par le site ; pas d'émoji (Windows n'affiche pas les drapeaux en émoji) | Principe : [M] 20/11/2026 ; source et images : [P] |
 | Logo de la société devant son nom, redessiné tout en jaune (le « G » de Google devient un « G » jaune). Source : service public d'images de Financial Modeling Prep, téléchargé par le serveur (le navigateur du visiteur ne le contacte pas), gardé une semaine en mémoire ; sans logo trouvé, la fiche s'affiche comme avant. Fond transparent : les parties presque blanches deviennent des trous ; fond plein : la couleur du bord est retirée | Principe : [M] 20/11/2026 ; source et méthode : [P] ; rendu vérifié sur 18 logos [R] |
 | Titre et sous-titre restés en Markdown échappé (pas de HTML brut avec un texte de Yahoo, règle de l'audit de sécurité du 19/10/2026) | [P] |
+
+Mêmes jour, seconde série (retours de Mathys sur le rendu) :
+
+| Choix | Nature |
+|---|---|
+| Logo (ou initiales) à droite du nom, à l'opposé du titre, et non plus devant | [M] 20/11/2026 |
+| Sans logo : initiales du nom en jaune, dans la police à points du site (3 lettres au plus ; formes juridiques et petits mots ignorés : « Empresas Lipigas S.A. » donne « EL ») | Principe : [M] 20/11/2026 ; règle des initiales : [P] |
+| Logo tout blanc sur fond transparent (prévu pour un fond sombre, Sprinklr) : toute la forme est gardée, au lieu de disparaître | [R] trouvé en testant 60 sociétés |
+| Numéros présentés « 1) », couleur crème du logo (#FFF9DB, mesurée sur `images/logo.png`), police des titres ; titres des composantes plus grands (22 px au lieu de 19) | [M] 20/11/2026 |
+| Tous les titres des pages (dont « Risque de faillite ») en crème du logo au lieu du blanc cassé du texte | [M] 20/11/2026 |
+| Titre de la partie prix sur la fiche : « L'action est-elle chère ? » (« Is the stock expensive? ») ; la page Méthode et le classement gardent « prix comparé au secteur » | [M] 20/11/2026 |
+| Avertissement du bas de page : texte centré, marges égales, cadre crème | [M] 20/11/2026 |

@@ -14,6 +14,8 @@ Fonctions sans Streamlit : testables avec pytest (tests/test_logos.py).
 """
 import base64          # image glissée dans la page (adresse « data: »)
 import io              # image lue et écrite en mémoire, sans fichier
+import re              # découpage du nom en mots (initiales)
+import unicodedata     # lettres sans accent (initiales)
 
 import numpy as np     # calculs sur tous les pixels à la fois
 import requests        # téléchargement du logo
@@ -40,7 +42,10 @@ def opacite_du_dessin(image):
     bord = np.concatenate([alpha[0], alpha[-1], alpha[:, 0], alpha[:, -1]])  # transparence des pixels du bord
     if np.median(bord) < 0.5:                                                 # bord surtout transparent : 1er cas
         blancheur = np.clip((rgb.min(axis=2) - 0.80) / 0.15, 0, 1)            # 0 sous 80 % de blanc, 1 au-dessus de 95 %
-        return alpha * (1 - blancheur)                                        # parties presque blanches : trous
+        troue = alpha * (1 - blancheur)                                       # parties presque blanches : trous
+        if (troue > 0.5).sum() < 0.1 * (alpha > 0.5).sum():                   # logo blanc (prévu pour un fond sombre,
+            return alpha                                                      # Sprinklr) : on garde toute la forme
+        return troue
     pixels_bord = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])    # couleurs du bord : le fond
     fond = np.median(pixels_bord, axis=0)                                     # couleur médiane du bord
     distance = np.sqrt(((rgb - fond) ** 2).sum(axis=2)) / np.sqrt(3)          # écart à la couleur du fond, de 0 à 1
@@ -81,6 +86,42 @@ def logo_jaune(octets, couleur):
 def adresse_data(png):
     """Octets PNG -> adresse « data:image/png;base64,... » à mettre dans une balise <img>."""
     return "data:image/png;base64," + base64.b64encode(png).decode("ascii")
+
+
+# --- Sans logo : les initiales du nom, en jaune [M] 20/11/2026 -----------------------------------------------------
+# Mots qui ne comptent pas pour les initiales : formes juridiques (Inc., S.A., Ltd...) et petits mots (de, of, y...).
+MOTS_IGNORES = {
+    "inc", "incorporated", "corp", "corporation", "co", "company", "companies", "ltd", "limited", "plc", "sa", "ag",
+    "nv", "se", "spa", "ab", "asa", "as", "oyj", "bhd", "berhad", "tbk", "pt", "sab", "cv", "kgaa", "gmbh", "llc", "lp",
+    "pcl", "anonima", "anonyme", "public", "holding", "holdings", "group", "the", "and", "of",
+    "y", "de", "del", "la", "le", "les", "et", "und", "du", "des", "da", "do", "di", "e",
+}
+INITIALES_MAX = 3      # au plus 3 lettres : « IIR » pour IRSA Inversiones y Representaciones
+
+
+def initiales(nom):
+    """« Empresas Lipigas S.A. » -> « EL » ; lettres et chiffres sans accent seulement (rien d'autre ne passe)."""
+    sans_accent = unicodedata.normalize("NFKD", str(nom or "")).encode("ascii", "ignore").decode("ascii")
+    sans_accent = sans_accent.replace(".", "")                                # « S.A. » -> « SA » (forme juridique)
+    mots = [m for m in re.split(r"[^A-Za-z0-9]+", sans_accent) if m]         # mots du nom, ponctuation retirée
+    utiles = [m for m in mots if m.lower() not in MOTS_IGNORES] or mots       # tout ignoré : on garde tous les mots
+    return "".join(m[0].upper() for m in utiles[:INITIALES_MAX])             # première lettre de chaque mot
+
+
+def initiales_svg(nom, couleur, police):
+    """Image SVG (adresse « data: ») des initiales dans la police à points du site (`police` : octets du fichier
+    woff2, glissés dans l'image), ou None si le nom ne donne aucune lettre."""
+    texte = initiales(nom)
+    if not texte:
+        return None
+    largeur = 62 * len(texte) + 8                                             # police à chasse fixe : 62 par lettre
+    fonte = base64.b64encode(police).decode("ascii")
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{largeur}" height="{HAUTEUR}" '
+           f'viewBox="0 0 {largeur} {HAUTEUR}"><style>@font-face{{font-family:P;'
+           f"src:url(data:font/woff2;base64,{fonte}) format('woff2');font-weight:900}}</style>"
+           f'<text x="50%" y="76" text-anchor="middle" font-family="P, monospace" font-weight="900" '
+           f'font-size="100" fill="{couleur}">{texte}</text></svg>')            # texte : lettres et chiffres seulement
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode("ascii")
 
 
 def telecharger_logo(symbole):

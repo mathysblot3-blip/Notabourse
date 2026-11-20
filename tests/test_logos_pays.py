@@ -79,3 +79,24 @@ def test_drapeaux_des_40_pays_du_classement():
     bloc = code.split("PAYS = {")[1].split("ZONES = {")[0]                    # dictionnaire des pays du classement
     for pays in re.findall(r'"([a-z]{2})": \(', bloc):
         assert a_un_drapeau(pays) and adresse_drapeau(pays), pays
+
+
+def test_initiales_sans_formes_juridiques():
+    """Sans logo, la fiche montre les initiales du nom [M] 20/11/2026 : formes juridiques et petits mots ignorés."""
+    from notabourse.logos import initiales, initiales_svg
+    assert initiales("Empresas Lipigas S.A.") == "EL"
+    assert initiales("IRSA Inversiones y Representaciones Sociedad Anónima") == "IIR"   # 3 lettres au plus
+    assert initiales("Linco Technology Co., Ltd.") == "LT"
+    assert initiales("Société Générale") == "SG"                              # accents retirés
+    assert initiales("<script>alert(1)</script>") == "SA1"                    # rien que des lettres et des chiffres
+    assert initiales("") == "" and initiales_svg("", JAUNE, b"") is None
+    assert initiales_svg("Empresas Lipigas S.A.", JAUNE, b"police").startswith("data:image/svg+xml;base64,")
+
+
+def test_logo_blanc_sur_fond_transparent_garde_sa_forme():
+    """Un logo tout blanc sur fond transparent (prévu pour un fond sombre, comme Sprinklr) ne disparaît pas."""
+    im = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+    for x in range(20, 80):
+        for y in range(30, 70):
+            im.putpixel((x, y), (255, 255, 255, 255))
+    assert logo_jaune(_png(im), JAUNE) is not None

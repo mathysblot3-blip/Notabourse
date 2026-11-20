@@ -17,7 +17,7 @@ from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
 from notabourse.limites import (FENETRE_GLOBALE, MAXIMUM_CALCULS_GLOBAL, MAXIMUM_RECHERCHES_GLOBAL, Compteur,
                                 MemoireEchecs, autoriser)
-from notabourse.logos import adresse_data, logo_jaune, telecharger_logo
+from notabourse.logos import adresse_data, initiales_svg, logo_jaune, telecharger_logo
 from notabourse.nuances import degrade_css, nuance
 from notabourse.pays import DOSSIER_DRAPEAUX, a_un_drapeau, pays_de
 from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phrases, rendre
@@ -107,6 +107,12 @@ def logo_de(symbole):
     octets = telecharger_logo(symbole)
     png = logo_jaune(octets, JAUNE) if octets else None
     return adresse_data(png) if png else None
+
+
+@st.cache_data(max_entries=500, show_spinner=False)
+def initiales_de(nom):
+    """Sans logo : initiales du nom en jaune, dans la police à points du site (image SVG) [M] 20/11/2026."""
+    return initiales_svg(nom, JAUNE, (SITE / "static" / "Doto-latin.woff2").read_bytes())
 
 
 @st.cache_data(show_spinner=False)
@@ -483,10 +489,10 @@ def pays_md(nom_yahoo, L):
 
 
 def titre_composante(numero, nom, note):
-    """« 1 Rentabilité » : numéro en jaune, nom dans la nuance de sa note (rouge bas, orange vers 50, vert haut),
-    comme les barres de la fiche [M] 20/11/2026. Sans note : couleur du texte courant."""
+    """« 1)  Rentabilité » : numéro crème dans la police des titres, nom dans la nuance de sa note (rouge bas, orange
+    vers 50, vert haut), comme les barres de la fiche [M] 20/11/2026. Sans note : couleur du texte courant."""
     couleur = TEXTE if note is None else nuance(note, COULEURS)
-    return (f'<p class="ba-composante"><span class="ba-num">{numero}</span>'
+    return (f'<p class="ba-composante"><span class="ba-num">{numero})</span>'
             f'<span style="color:{couleur}">{nom}</span></p>')
 
 
@@ -503,7 +509,8 @@ def afficher_fiche(f, T, L, bourse=None):
     P = phrases(f)                                                            # phrases simples de chaque partie
     secteur = T[f"secteur_{f['secteur']}"] + (f" ({T['sous_' + f['sous_secteur']]})" if f["groupe"] == "FIN" else "")
     # En-tête
-    st.container(key="fiche_titre").markdown(titre_md(f["nom"], logo_de(f["symbole"])))   # logo jaune + nom
+    image = logo_de(f["symbole"]) or initiales_de(f["nom"])                   # logo jaune, sinon initiales jaunes
+    st.container(key="fiche_titre").markdown(titre_md(f["nom"], image))       # nom, logo à droite (CSS)
     autres = indices_de(f["symbole"], f["nom"])                               # Nikkei 225, CAC 40... [M] 06/11/2026
     indices = " · " + md(", ".join(autres)) if autres else ""                 # à la suite de la capitalisation
     pays = pays_md(f.get("pays"), L)                                          # drapeau et pays du siège [M] 20/11
