@@ -391,5 +391,7 @@
   "courbe_menu": "Share price chart",
   "courbe_periode": "over 10 years",
   "courbe_periode_depuis": "since {date}",
-  "courbe_plus": "More details:"
+  "courbe_plus": "More details:",
+  "niveau_debutant": "beginner",
+  "niveau_experimente": "experienced"
 }

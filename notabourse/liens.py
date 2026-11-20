@@ -1,10 +1,10 @@
-"""Lien vers la page de la société sur TradingView, sous la courbe du cours [M] 20/11/2026.
+"""Liens vers la page de la société sur Yahoo Finance et TradingView, sous la courbe du cours [M] 20/11/2026.
 
 TradingView nomme une action « BOURSE-SYMBOLE » (EURONEXT-MC pour LVMH, NASDAQ-AAPL pour Apple). Yahoo, d'où viennent
 les données du site, donne un code de bourse (PAR, NMS...) et un symbole avec suffixe (MC.PA). Ce fichier traduit
 l'un en l'autre. Chaque bourse de la table a été vérifiée sur les pages publiques de TradingView le 20/11/2026 [R]
-(tests/test_liens.py garde les exemples vérifiés). Bourse absente de la table : lien vers Yahoo Finance, toujours
-juste puisque le symbole est le même. Le lien n'envoie rien tant que le visiteur ne clique pas.
+(tests/test_liens.py garde les exemples vérifiés). Bourse absente de la table : lien Yahoo Finance seul, toujours
+juste puisque le symbole est le même. Un lien n'envoie rien tant que le visiteur ne clique pas.
 Fonctions sans Streamlit ni réseau : testables avec pytest.
 """
 import re   # nettoyage du symbole
@@ -47,12 +47,16 @@ def symbole_tradingview(symbole, bourse):
     return f"{prefixe}-{s}"
 
 
-def lien_cours(symbole, bourse, langue):
-    """(adresse, nom du site) du lien sous la courbe : TradingView si la bourse est connue, sinon Yahoo Finance."""
+def liens_cours(symbole, bourse, langue):
+    """Liens sous la courbe [M] 20/11/2026 : liste de (adresse, nom du site, niveau). Deux sites pour qu'il en reste
+    un si l'autre est en panne : Yahoo Finance (« debutant » : page simple ; toujours juste, c'est la source des
+    données du site) puis TradingView (« experimente » : graphiques et outils techniques), si la bourse est connue.
+    Liste vide si le symbole contient un caractère inattendu."""
     lg = "fr" if langue == "fr" else "en"
+    if not symbole or not re.fullmatch(r"[A-Za-z0-9.\-^=]+", symbole):      # symbole de Yahoo seulement
+        return []
+    liens = [(URL_YAHOO[lg].format(symbole=symbole), "Yahoo Finance", "debutant")]
     code = symbole_tradingview(symbole, bourse)
-    if code:
-        return URL_TRADINGVIEW[lg].format(code=code), "TradingView"
-    if symbole and re.fullmatch(r"[A-Za-z0-9.\-^=]+", symbole):              # symbole de Yahoo seulement
-        return URL_YAHOO[lg].format(symbole=symbole), "Yahoo Finance"
-    return None, None
+    if code:                                                                  # bourse connue de la table
+        liens.append((URL_TRADINGVIEW[lg].format(code=code), "TradingView", "experimente"))
+    return liens

@@ -8,7 +8,7 @@ import pandas as pd
 
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
-from notabourse.courbe import cotee_recemment, preparer_courbe, resume   # noqa: E402
+from notabourse.courbe import cotee_recemment, preparer_courbe, resume, simplifier   # noqa: E402
 
 
 def _table(cours, debut="2016-11-21"):
@@ -39,3 +39,16 @@ def test_cotee_recemment():
     aujourd_hui = pd.Timestamp("2026-11-20")
     assert not cotee_recemment(_table([1] * 10, "2016-11-21"), aujourd_hui)  # 10 ans de cours
     assert cotee_recemment(_table([1] * 10, "2021-06-21"), aujourd_hui)      # cotée en 2021 (Sprinklr)
+
+
+def test_simplifier_un_point_tous_les_deux_mois():
+    t, _ = preparer_courbe(_table(list(range(1, 521))), "USD")             # 10 ans de cours hebdomadaires
+    s = simplifier(t)
+    assert 58 <= len(s) <= 63                                                 # environ 60 points (120 mois / 2)
+    assert s["cours"].iloc[0] == 1 and s["cours"].iloc[-1] == 520             # premier et dernier cours gardés
+    assert s["date"].is_monotonic_increasing
+
+
+def test_simplifier_historique_court_intact():
+    t, _ = preparer_courbe(_table(list(range(1, 101))), "USD")             # 2 ans : rien de retiré
+    assert len(simplifier(t)) == 100

@@ -1,4 +1,5 @@
 """Éléments communs aux pages du site : langue, textes, formats des nombres, pied de page."""
+import base64              # icône glissée dans le style (adresse « data: »)
 import json                # lecture des fichiers de textes
 from pathlib import Path   # chemins de fichiers
 
@@ -22,6 +23,13 @@ CREME_LOGO = "#FFF9DB"                                                        # 
 CREME_TITRES = "#F3E5C1"                                                      # même crème, un peu plus beige : titres,
                                                                               # numéros, cadre (le crème du logo
                                                                               # paraissait trop blanc) [M] 20/11/2026
+# Petite icône de cours (ligne qui monte, avec une flèche) devant « Courbe du cours » [M] 20/11/2026. Dessin SVG maison
+# utilisé comme pochoir (« mask ») : il prend la couleur jaune du titre. Décorative : rien n'est lu par les lecteurs
+# d'écran. (L'icône intégrée de Streamlit, essayée avant, ne s'affichait pas.)
+ICONE_COURBE = ("data:image/svg+xml;base64," + base64.b64encode(
+    b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.8" '
+    b'stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 18 9 11.5 13 15.5 21 7.5"/>'
+    b'<polyline points="14.5 7.5 21 7.5 21 14"/></svg>').decode("ascii"))
 B_EN_JAUNE = False   # titre : False = « B » sombre dans un carré jaune, puis « ourse à lunettes » en jaune, sur le fond
                      # sombre (calme, 8,8 pour 1) ; True = l'inverse, sur un bandeau jaune (plus de jaune à l'écran)
 
@@ -137,12 +145,16 @@ def style():
                                                                               différent de « Détail des calculs » */
     .st-key-courbe_menu [data-testid="stExpander"] summary p {{ font-family: 'Doto', monospace; font-weight: 900;
         font-size: 1.15rem; color: {JAUNE}; text-transform: uppercase; }}
+    .st-key-courbe_menu [data-testid="stExpander"] summary p::before {{ content: ""; display: inline-block;
+        width: 1.2em; height: 1.2em; margin-right: .45em; vertical-align: -.22em; background: {JAUNE};
+        -webkit-mask: url({ICONE_COURBE}) center / contain no-repeat;
+        mask: url({ICONE_COURBE}) center / contain no-repeat; }}               /* icône de cours, en jaune */
+    .st-key-courbe_menu [data-testid="stElementToolbar"] {{ display: none; }}   /* pas de boutons tableau,
+                                                                              téléchargement... sur la courbe */
     .ba-courbe-tete {{ display: flex; align-items: baseline; flex-wrap: wrap; gap: .2rem 1rem; }}
     .ba-courbe-prix {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 2rem; color: {CREME_TITRES}; }}
     .ba-courbe-var {{ font-weight: 700; font-size: 1.05rem; }}               /* +128 % en vert, −30 % en rouge */
     .ba-courbe-periode {{ font-weight: 400; color: {TEXTE}; }}
-    .ba-courbe-annees {{ display: flex; justify-content: space-between; font-size: .8rem; color: {TEXTE};
-        margin-top: -.6rem; }}                                                /* année de début, année de fin */
     .ba-lecteur-ecran {{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
         white-space: nowrap; margin: -1px; }}                                 /* lu par les lecteurs d'écran, invisible */
     @media (max-width: 380px) {{ [data-testid="stMarkdownContainer"] p.ba-composante,

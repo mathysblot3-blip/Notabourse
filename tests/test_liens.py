@@ -7,7 +7,7 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SITE))
-from notabourse.liens import lien_cours, symbole_tradingview   # noqa: E402
+from notabourse.liens import liens_cours, symbole_tradingview   # noqa: E402
 
 # (symbole Yahoo, code de bourse Yahoo, code TradingView vérifié)
 VERIFIES = [("AAPL", "NMS", "NASDAQ-AAPL"), ("BRK-B", "NYQ", "NYSE-BRK.B"), ("CBOE", "BTS", "CBOE-CBOE"),
@@ -27,17 +27,23 @@ def test_codes_verifies():
         assert symbole_tradingview(symbole, bourse) == attendu, symbole
 
 
-def test_lien_tradingview_dans_la_langue():
-    assert lien_cours("MC.PA", "PAR", "fr") == ("https://fr.tradingview.com/symbols/EURONEXT-MC/", "TradingView")
-    assert lien_cours("MC.PA", "PAR", "en") == ("https://www.tradingview.com/symbols/EURONEXT-MC/", "TradingView")
+def test_deux_liens_dans_la_langue():
+    """Yahoo Finance (débutant) puis TradingView (expérimenté), pages dans la langue du site."""
+    assert liens_cours("MC.PA", "PAR", "fr") == [
+        ("https://fr.finance.yahoo.com/quote/MC.PA/", "Yahoo Finance", "debutant"),
+        ("https://fr.tradingview.com/symbols/EURONEXT-MC/", "TradingView", "experimente")]
+    assert liens_cours("MC.PA", "PAR", "en")[1] == (
+        "https://www.tradingview.com/symbols/EURONEXT-MC/", "TradingView", "experimente")
 
 
-def test_bourse_inconnue_repli_sur_yahoo():
-    """Mexico (pages TradingView introuvables) et bourses hors de la table : lien Yahoo Finance, même symbole."""
-    assert lien_cours("WALMEX.MX", "MEX", "fr") == ("https://fr.finance.yahoo.com/quote/WALMEX.MX/", "Yahoo Finance")
-    assert lien_cours("1155.KL", "KLS", "en") == ("https://finance.yahoo.com/quote/1155.KL/", "Yahoo Finance")
+def test_bourse_inconnue_yahoo_seul():
+    """Mexico (pages TradingView introuvables) et bourses hors de la table : Yahoo Finance seul, même symbole."""
+    assert liens_cours("WALMEX.MX", "MEX", "fr") == [
+        ("https://fr.finance.yahoo.com/quote/WALMEX.MX/", "Yahoo Finance", "debutant")]
+    assert liens_cours("1155.KL", "KLS", "en") == [
+        ("https://finance.yahoo.com/quote/1155.KL/", "Yahoo Finance", "debutant")]
 
 
 def test_symbole_bizarre_aucun_lien():
-    assert lien_cours("AAPL)](javascript:x", "NMS", "fr") == (None, None)
-    assert lien_cours("", "NMS", "fr") == (None, None)
+    assert liens_cours("AAPL)](javascript:x", "NMS", "fr") == []
+    assert liens_cours("", "NMS", "fr") == []

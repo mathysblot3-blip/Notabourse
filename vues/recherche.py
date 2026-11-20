@@ -5,6 +5,7 @@ import logging                         # erreurs inattendues notées dans le jou
 import re                              # mots en gras du texte d'accueil
 import time                            # limite du nombre de calculs par visite
 
+import altair as alt                   # courbe du cours (point qui suit le curseur ; installé avec Streamlit)
 import pandas as pd                    # dates et tableaux
 import plotly.graph_objects as go      # jauge de la note
 import streamlit as st                 # interface web
@@ -13,8 +14,8 @@ from notabourse.calcul import charger_reference, noter_hors_indice, ratios_et_cr
 from notabourse.classement import charger_correspondance_yahoo
 from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
-from notabourse.courbe import cotee_recemment, preparer_courbe, resume, telecharger_cours
-from notabourse.liens import lien_cours
+from notabourse.courbe import cotee_recemment, preparer_courbe, resume, simplifier, telecharger_cours
+from notabourse.liens import liens_cours
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
@@ -27,7 +28,7 @@ from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phr
 from notabourse.prix import position_barre
 from notabourse.risque import position_risque, seulement_fonds_propres
 from notabourse.sources import DonneesIndisponibles, cotations, table_cik_sec
-from vues.commun import FILET, JAUNE, SITE, SURFACE, TEXTE, bandeau_titre, date, dollars, nombre, pct, textes
+from vues.commun import FILET, FOND, JAUNE, SITE, SURFACE, TEXTE, bandeau_titre, date, dollars, nombre, pct, textes
 
 COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444", None: "#4A4F5C"}   # réservées au garde-fou,
                                                                               # au prix comparé au secteur [M] 21/10
@@ -164,25 +165,39 @@ def jauge(note):
 
 
 def graphique_cours(table, L):
-    """Courbe minimaliste, façon application de courtier (Trade Republic) [M] 20/11/2026 : une ligne jaune épaisse,
-    ni axes ni quadrillage ; les outils techniques sont sur TradingView (lien sous la courbe). Survol : date et cours.
-    Ni zoom ni déplacement (gênants au doigt)."""
-    jour = "%d/%m/%Y" if L == "fr" else "%Y-%m-%d"                            # date au survol
-    fig = go.Figure(go.Scatter(x=table["date"], y=table["cours"], mode="lines", line={"color": JAUNE, "width": 3},
-                               hovertemplate=f"%{{x|{jour}}}<br>%{{y:,.2f}}<extra></extra>"))
-    fig.update_layout(height=220, margin={"l": 0, "r": 0, "t": 6, "b": 0}, showlegend=False, hovermode="x",
-                      paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                      separators=", " if L == "fr" else ".,",                 # 1 234,5 en français, 1,234.5 en anglais
-                      font={"color": TEXTE, "family": "Inter, sans-serif", "size": 13},
-                      hoverlabel={"bgcolor": SURFACE, "bordercolor": JAUNE, "font": {"color": TEXTE}})
-    fig.update_xaxes(visible=False, fixedrange=True)                          # aucun axe : la ligne seule
-    fig.update_yaxes(visible=False, fixedrange=True)
-    return fig
+    """Courbe du cours, façon application de courtier (Trade Republic) [M] 20/11/2026 : une ligne jaune épaisse,
+    grossière et continue (un point tous les 2 mois, reliés par une courbe arrondie), avec les échelles de temps
+    (années) et de valeur (cours) gardées [M]. Au survol, un point jaune se pose sur la courbe à l'endroit visé, avec
+    une ligne verticale fine, la date et le cours [M]. Altair plutôt que Plotly : Plotly ne sait pas dessiner ce point
+    au survol [R] 20/11/2026. Les outils techniques sont sur TradingView (lien sous la courbe)."""
+    t = simplifier(table)[["date", "cours"]]                                  # un point tous les 2 mois
+    fr = L == "fr"
+    jour = "%d/%m/%Y" if fr else "%Y-%m-%d"                                  # date au survol
+    survol = alt.selection_point(nearest=True, on="pointerover", clear="pointerout", fields=["date"],
+                                 empty=False)                                 # point de la courbe le plus proche
+    x = alt.X("date:T", title=None, axis=alt.Axis(format="%Y", labelAngle=0, grid=False, tickCount=6))   # années
+    y = alt.Y("cours:Q", title=None, scale=alt.Scale(zero=False),            # échelle serrée sur les cours
+              axis=alt.Axis(orient="right", tickCount=4, format=",~r", grid=True, gridDash=[2, 4]))
+    base = alt.Chart(t).encode(x=x, y=y)
+    ligne = base.mark_line(color=JAUNE, strokeWidth=3.5, interpolate="monotone")   # courbe arrondie
+    repere = base.mark_rule(color=FILET, strokeWidth=1).encode(y=alt.value(0), y2=alt.value(240)).transform_filter(
+        survol)                                                               # ligne verticale au survol
+    point = base.mark_circle(size=110, color=JAUNE, stroke=FOND, strokeWidth=2).encode(
+        opacity=alt.condition(survol, alt.value(1), alt.value(0)),            # visible seulement au survol
+        tooltip=[alt.Tooltip("date:T", title="Date", format=jour),
+                 alt.Tooltip("cours:Q", title="Cours" if fr else "Price", format=",.2f")]).add_params(survol)
+    nombres = alt.NumberLocale(decimal="," if fr else ".", thousands=" " if fr else ",", grouping=[3],
+                               currency=["", ""])                             # 1 234,56 en français
+    return (alt.layer(ligne, repere, point).properties(height=240)
+            .configure(background="transparent", locale=alt.Locale(number=nombres))
+            .configure_view(strokeWidth=0)                                    # pas de cadre autour
+            .configure_axis(labelColor=TEXTE, labelFont="Inter, sans-serif", labelFontSize=12, domain=False,
+                            ticks=False, gridColor=FILET, labelPadding=6))
 
 
 def afficher_courbe(f, T, L):
     """Contenu du menu « Courbe du cours » [M] 20/11/2026 : dernier cours en gros et variation (verte ou rouge),
-    courbe minimaliste, années de début et de fin, lien « Plus d'infos » vers TradingView, mise en garde.
+    courbe avec ses échelles, liens « Plus d'infos » (Yahoo Finance, TradingView), mise en garde.
     Rien ne casse si Yahoo ne répond pas."""
     try:
         table, devise = courbe_de(f["symbole"])
@@ -203,18 +218,17 @@ def afficher_courbe(f, T, L):
     st.html(f'<div class="ba-courbe-tete"><span class="ba-courbe-prix">{html.escape(prix(r["fin"]))}</span>'
             f'<span class="ba-courbe-var" style="color:{couleur}">{html.escape(variation)} '
             f'<span class="ba-courbe-periode">{html.escape(periode)}</span></span></div>')
-    st.plotly_chart(graphique_cours(table, L), width="stretch", config={"displayModeBar": False})
-    st.html(f'<div class="ba-courbe-annees"><span>{r["date_debut"].year}</span>'
-            f'<span>{r["date_fin"].year}</span></div>')                       # repères : début et fin
+    st.altair_chart(graphique_cours(table, L), width="stretch", theme=None)   # sans menu « ... » d'Altair
     # Description complète pour les lecteurs d'écran seulement (retirée de l'écran [M] 20/11/2026) : sans elle, la
     # courbe n'aurait aucun texte de remplacement (WCAG 1.1.1)
     st.html('<p class="ba-lecteur-ecran">' + html.escape(T["courbe_resume"].format(
         debut=prix(r["debut"]), date_debut=date(r["date_debut"], L), fin=prix(r["fin"]), date_fin=date(r["date_fin"], L),
         variation=variation, bas=prix(r["bas"]), date_bas=date(r["date_bas"], L),
         haut=prix(r["haut"]), date_haut=date(r["date_haut"], L))) + "</p>")
-    adresse, site = lien_cours(f["symbole"], f.get("bourse"), L)              # TradingView, sinon Yahoo [M] 20/11
-    if adresse:                                                               # adresse sûre : caractères contrôlés
-        st.markdown(f"{T['courbe_plus']} [{site}]({adresse})")                # s'ouvre dans un nouvel onglet
+    liens = liens_cours(f["symbole"], f.get("bourse"), L)                    # Yahoo, puis TradingView [M] 20/11
+    if liens:                                                                 # adresses sûres : caractères contrôlés
+        textes = [f"[{site}]({adresse}) ({T['niveau_' + niveau]})" for adresse, site, niveau in liens]
+        st.markdown(T["courbe_plus"] + " " + " · ".join(textes))             # nouvel onglet ; « · » entre les deux
     st.caption(T["courbe_mise_en_garde"])
 
 

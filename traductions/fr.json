@@ -391,5 +391,7 @@
   "courbe_menu": "Courbe du cours",
   "courbe_periode": "en 10 ans",
   "courbe_periode_depuis": "depuis le {date}",
-  "courbe_plus": "Plus d'infos :"
+  "courbe_plus": "Plus d'infos :",
+  "niveau_debutant": "débutant",
+  "niveau_experimente": "expérimenté"
 }
