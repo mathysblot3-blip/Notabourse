@@ -382,6 +382,9 @@ def afficher(tableau, cle, avec_score):
     ordre = (["rang", "nom"]                                                 # l'essentiel à gauche : visible
              + (["score_prix", "note", "facteur_txt"] if avec_score else ["note"])   # sans défiler sur téléphone
              + ["drapeau", "code_pays", "secteur_court"] + (COMPOSANTES if detail else []) + ["prix_txt", "capi"])
+    zone_bouton = st.container()                                              # place réservée AU-DESSUS du tableau :
+    # sous un tableau de 750 pixels, le bouton n'était pas visible après le clic et le lien paraissait cassé
+    # (signalé par Mathys le 20/11/2026)
     choix = st.dataframe(tableau[ordre], column_config=colonnes(avec_score), hide_index=True, width="stretch",
                          row_height=44, height=min(42 + 44 * len(tableau), 750),   # lignes plus hautes, plus lisibles
                          on_select="rerun", selection_mode="single-cell", key=cle)   # un clic sur une case
@@ -391,7 +394,8 @@ def afficher(tableau, cle, avec_score):
         choisie = tableau.iloc[int(ligne)]                                    # la société de la ligne choisie
         # Avant : le simple choix d'une case (ou une flèche du clavier) changeait de page. Maintenant, seul ce
         # bouton, que le visiteur déclenche exprès, ouvre la fiche : la sélection ne change plus rien d'elle-même.
-        if st.button(X["ouvrir"].format(nom=choisie["nom"]), key=cle + "_ouvrir"):
+        bouton = dict(key=cle + "_ouvrir", type="primary", icon=":material/arrow_forward:")   # jaune, bien visible
+        if zone_bouton.button(X["ouvrir"].format(nom=choisie["nom"]), **bouton):   # au-dessus du tableau
             st.session_state["ouvrir_symbole"] = choisie["symbole_fiche"]     # [M] 04/11/2026
             st.switch_page("vues/recherche.py")
 
