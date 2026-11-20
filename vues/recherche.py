@@ -12,6 +12,7 @@ from notabourse.calcul import charger_reference, noter_hors_indice, ratios_et_cr
 from notabourse.classement import charger_correspondance_yahoo
 from notabourse.compteur import compter_recherche
 from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
+from notabourse.courbe import cotee_recemment, preparer_courbe, resume, telecharger_cours
 from notabourse.fiche import fiche_hors_indice, fiche_membre
 from notabourse.formats import echapper, pct_signe
 from notabourse.indices import indices_de
@@ -109,6 +110,14 @@ def logo_de(symbole):
     return adresse_data(png) if png else None
 
 
+@st.cache_data(ttl=24 * 3600, max_entries=300, show_spinner=False)       # 24 heures en mémoire, bornée
+def courbe_de(symbole):
+    """Cours sur 10 ans prêts à tracer : (table, devise), ou (None, devise) si trop peu de cours [M] 20/11/2026.
+    Une panne de Yahoo lève une erreur, que Streamlit ne garde pas en mémoire : on réessaie à la visite suivante.
+    Seulement après un calcul de fiche, donc déjà soumis aux limites par visite et pour tout le site."""
+    return preparer_courbe(*telecharger_cours(symbole))
+
+
 @st.cache_data(max_entries=500, show_spinner=False)
 def initiales_de(nom):
     """Sans logo : initiales du nom en jaune, dans la police à points du site (image SVG) [M] 20/11/2026."""
@@ -150,6 +159,47 @@ def jauge(note):
     fig.update_layout(height=240, margin=dict(l=46, r=46, t=42, b=34), paper_bgcolor="rgba(0,0,0,0)",   # marges : 0, 50 et 100 entiers
                       font={"color": TEXTE, "family": "Inter, sans-serif"})
     return fig
+
+
+def graphique_cours(table, devise, L):
+    """Courbe jaune du cours (plotly), sur le fond de la page ; ni zoom ni déplacement (gênants au doigt)."""
+    jour = "%d/%m/%Y" if L == "fr" else "%Y-%m-%d"                            # date au survol
+    fig = go.Figure(go.Scatter(x=table["date"], y=table["cours"], mode="lines", line={"color": JAUNE, "width": 2},
+                               hovertemplate=f"%{{x|{jour}}}<br>%{{y:,.2f}} {devise}<extra></extra>"))
+    fig.update_layout(height=300, margin={"l": 8, "r": 8, "t": 10, "b": 8}, showlegend=False, hovermode="x",
+                      paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                      separators=", " if L == "fr" else ".,",                 # 1 234,5 en français, 1,234.5 en anglais
+                      font={"color": TEXTE, "family": "Inter, sans-serif", "size": 13},
+                      hoverlabel={"bgcolor": SURFACE, "bordercolor": JAUNE, "font": {"color": TEXTE}})
+    fig.update_xaxes(showgrid=False, fixedrange=True, linecolor=FILET)
+    fig.update_yaxes(gridcolor=FILET, fixedrange=True, zeroline=False, title={"text": devise, "font": {"size": 12}})
+    return fig
+
+
+def afficher_courbe(f, T, L):
+    """Section « Le cours sur 10 ans », en fin de fiche [M] 20/11/2026 : courbe, phrase qui la décrit (aussi pour
+    les lecteurs d'écran), mise en garde. Rien ne casse si Yahoo ne répond pas."""
+    st.subheader(T["courbe_titre"])
+    try:
+        table, devise = courbe_de(f["symbole"])
+    except Exception:                                                         # Yahoo muet : message simple
+        logging.exception("Courbe du cours impossible pour %s", f["symbole"])
+        table, devise = None, None
+    if table is None:
+        st.caption(T["courbe_indisponible"])
+        return
+    st.plotly_chart(graphique_cours(table, devise, L), width="stretch", config={"displayModeBar": False})
+    r = resume(table)
+    prix = lambda x: f"{nombre(x, L, 2)} {devise}"                       # 268,40 USD (espace insécable)
+    v = r["variation"]
+    variation = ("+" if round(100 * v) > 0 else "") + nombre(100 * v, L, 0) + (" %" if L == "fr" else "%")   # +1 150 %
+    st.markdown(md(T["courbe_resume"].format(
+        debut=prix(r["debut"]), date_debut=date(r["date_debut"], L), fin=prix(r["fin"]), date_fin=date(r["date_fin"], L),
+        variation=variation, bas=prix(r["bas"]), date_bas=date(r["date_bas"], L),
+        haut=prix(r["haut"]), date_haut=date(r["date_haut"], L))))
+    if cotee_recemment(table, pd.Timestamp.today()):
+        st.caption(T["courbe_depuis"].format(date=date(r["date_debut"], L)))
+    st.caption(T["courbe_mise_en_garde"])
 
 
 def texte_sur(fond):
@@ -540,13 +590,14 @@ def afficher_fiche(f, T, L, bourse=None):
     # Les quatre parties
     st.subheader(T["composantes"])
     for numero, c in enumerate(f["composantes"], start=1):                    # 1 à 4 [M] 20/11/2026
-        g1, g2 = st.columns([1, 3], vertical_alignment="center")
         libelle = T[c["nom"]]                                                 # « Rentabilité » : texte du site
-        g1.markdown(titre_composante(numero, libelle, c["note"]), unsafe_allow_html=True)   # (rien de Yahoo)
+        st.markdown(titre_composante(numero, libelle, c["note"]), unsafe_allow_html=True)   # (rien de Yahoo)
+        # Titre sur sa propre ligne, barre dessous : à côté, dans une colonne étroite, la police à points coupait
+        # « Rentabili-té » au milieu du mot (vu par Mathys le 20/11/2026)
         if c["note"] is None:
-            g2.caption(T["donnees_insuffisantes"])
+            st.caption(T["donnees_insuffisantes"])
         else:
-            g2.progress(c["note"] / 100, text=f"{nombre(c['note'], L, 0)} / 100")
+            st.progress(c["note"] / 100, text=f"{nombre(c['note'], L, 0)} / 100")
         st.markdown(texte_phrases(P[c["code"]], T, L))
         with st.expander(T["detail_chiffre"]):
             detail_composante(f, c, T, L, dp)
@@ -567,6 +618,7 @@ def afficher_fiche(f, T, L, bourse=None):
             st.markdown(f"**{T['chiffres_societe']}**" + "".join(f"\n- {md(rendre(p, T, L))}" for p in points))
         detail_sante(f, T, L, dp)
     afficher_prix(f, T, L)                                                    # prix comparé au secteur, à part
+    afficher_courbe(f, T, L)                                                  # cours sur 10 ans [M] 20/11/2026
 
 
 # --- Page -----------------------------------------------------------------------------------------------------------

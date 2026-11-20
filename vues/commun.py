@@ -19,6 +19,9 @@ TEXTE = "#ebe4cf"                                                             # 
 JAUNE = "#D8AE48"                                                             # jaune moutarde de la marque
 CREME_LOGO = "#FFF9DB"                                                        # crème du museau de l'ours du logo
                                                                               # (teinte dominante mesurée sur logo.png)
+CREME_TITRES = "#F3E5C1"                                                      # même crème, un peu plus beige : titres,
+                                                                              # numéros, cadre (le crème du logo
+                                                                              # paraissait trop blanc) [M] 20/11/2026
 B_EN_JAUNE = False   # titre : False = « B » sombre dans un carré jaune, puis « ourse à lunettes » en jaune, sur le fond
                      # sombre (calme, 8,8 pour 1) ; True = l'inverse, sur un bandeau jaune (plus de jaune à l'écran)
 
@@ -118,13 +121,17 @@ def style():
         outline: 1px solid {FILET}; }}                                        /* drapeau du pays, filet autour (le
                                                                               blanc du drapeau reste visible) */
     [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.6rem; font-weight: 900;
-        font-family: 'Doto', monospace; line-height: 1.2; }}                 /* police à points des titres [M] 20/11 ;
-                                                                              26 px : « grand texte » WCAG, contraste 3 */
-    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_LOGO};
+        font-family: 'Doto', monospace; line-height: 1.2; overflow-wrap: normal; word-break: normal; }}
+                                                                          /* police à points des titres [M] 20/11 ;
+                                                                              26 px : « grand texte » WCAG, contraste 3 ;
+                                                                              jamais coupé au milieu d'un mot */
+    @media (max-width: 380px) {{ [data-testid="stMarkdownContainer"] p.ba-composante,
+        .ba-num {{ font-size: 1.35rem !important; }} }}                       /* petit téléphone : tient sur une ligne */
+    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_TITRES};
                margin-right: .7rem; }}                                   /* « 1) » crème, police des titres [M] 20/11 */
     [data-testid="stMainBlockContainer"] h1, [data-testid="stMainBlockContainer"] h2,
-    [data-testid="stMainBlockContainer"] h3 {{ color: {CREME_LOGO}; }}       /* titres crème du logo [M] 20/11/2026 */
-    .st-key-pied_avertissement {{ border: 1px solid {CREME_LOGO} !important; padding: 1rem 1.2rem !important;
+    [data-testid="stMainBlockContainer"] h3 {{ color: {CREME_TITRES}; }}     /* titres crème beige [M] 20/11/2026 */
+    .st-key-pied_avertissement {{ border: 1px solid {CREME_TITRES} !important; padding: 1rem 1.2rem !important;
         margin-top: 2rem; text-align: center; }}                              /* avertissement centré dans un cadre
                                                                               crème [M] 20/11/2026 */
     .st-key-pied_avertissement [data-testid="stCaptionContainer"],
