@@ -385,10 +385,11 @@
   "lig_FFO": "Résultat courant par action (FFO)",
   "lig_REV": "Revenus",
   "lig_note_croissance": "Note de croissance",
-  "courbe_titre": "Le cours sur 10 ans",
   "courbe_resume": "Le cours est passé de {debut} le {date_debut} à {fin} le {date_fin}, soit {variation}. Plus bas : {bas} le {date_bas} ; plus haut : {haut} le {date_haut}.",
-  "courbe_depuis": "Cotée depuis moins de 10 ans : la courbe commence le {date}.",
   "courbe_mise_en_garde": "Cours seul, sans les dividendes versés. Les performances passées ne préjugent pas des performances futures.",
   "courbe_indisponible": "La courbe du cours n'est pas disponible pour le moment.",
-  "courbe_lien": "Voir le cours détaillé sur {site}"
+  "courbe_menu": "Courbe du cours",
+  "courbe_periode": "en 10 ans",
+  "courbe_periode_depuis": "depuis le {date}",
+  "courbe_plus": "Plus d'infos :"
 }

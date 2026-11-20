@@ -163,25 +163,27 @@ def jauge(note):
     return fig
 
 
-def graphique_cours(table, devise, L):
-    """Courbe jaune du cours (plotly), sur le fond de la page ; ni zoom ni déplacement (gênants au doigt)."""
+def graphique_cours(table, L):
+    """Courbe minimaliste, façon application de courtier (Trade Republic) [M] 20/11/2026 : une ligne jaune épaisse,
+    ni axes ni quadrillage ; les outils techniques sont sur TradingView (lien sous la courbe). Survol : date et cours.
+    Ni zoom ni déplacement (gênants au doigt)."""
     jour = "%d/%m/%Y" if L == "fr" else "%Y-%m-%d"                            # date au survol
-    fig = go.Figure(go.Scatter(x=table["date"], y=table["cours"], mode="lines", line={"color": JAUNE, "width": 2},
-                               hovertemplate=f"%{{x|{jour}}}<br>%{{y:,.2f}} {devise}<extra></extra>"))
-    fig.update_layout(height=300, margin={"l": 8, "r": 8, "t": 10, "b": 8}, showlegend=False, hovermode="x",
+    fig = go.Figure(go.Scatter(x=table["date"], y=table["cours"], mode="lines", line={"color": JAUNE, "width": 3},
+                               hovertemplate=f"%{{x|{jour}}}<br>%{{y:,.2f}}<extra></extra>"))
+    fig.update_layout(height=220, margin={"l": 0, "r": 0, "t": 6, "b": 0}, showlegend=False, hovermode="x",
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                       separators=", " if L == "fr" else ".,",                 # 1 234,5 en français, 1,234.5 en anglais
                       font={"color": TEXTE, "family": "Inter, sans-serif", "size": 13},
                       hoverlabel={"bgcolor": SURFACE, "bordercolor": JAUNE, "font": {"color": TEXTE}})
-    fig.update_xaxes(showgrid=False, fixedrange=True, linecolor=FILET)
-    fig.update_yaxes(gridcolor=FILET, fixedrange=True, zeroline=False, title={"text": devise, "font": {"size": 12}})
+    fig.update_xaxes(visible=False, fixedrange=True)                          # aucun axe : la ligne seule
+    fig.update_yaxes(visible=False, fixedrange=True)
     return fig
 
 
 def afficher_courbe(f, T, L):
-    """Section « Le cours sur 10 ans », en fin de fiche [M] 20/11/2026 : courbe, phrase qui la décrit (aussi pour
-    les lecteurs d'écran), mise en garde. Rien ne casse si Yahoo ne répond pas."""
-    st.subheader(T["courbe_titre"])
+    """Contenu du menu « Courbe du cours » [M] 20/11/2026 : dernier cours en gros et variation (verte ou rouge),
+    courbe minimaliste, années de début et de fin, lien « Plus d'infos » vers TradingView, mise en garde.
+    Rien ne casse si Yahoo ne répond pas."""
     try:
         table, devise = courbe_de(f["symbole"])
     except Exception:                                                         # Yahoo muet : message simple
@@ -190,22 +192,29 @@ def afficher_courbe(f, T, L):
     if table is None:
         st.caption(T["courbe_indisponible"])
         return
-    st.plotly_chart(graphique_cours(table, devise, L), width="stretch", config={"displayModeBar": False})
     r = resume(table)
-    prix = lambda x: f"{nombre(x, L, 2)} {devise}"                       # 268,40 USD (espace insécable)
+    prix = lambda x: f"{nombre(x, L, 2)} {devise}".strip()                # 268,40 USD (espace insécable)
     v = r["variation"]
     variation = ("+" if round(100 * v) > 0 else "") + nombre(100 * v, L, 0) + (" %" if L == "fr" else "%")   # +1 150 %
-    # Phrase retirée de l'écran [M] 20/11/2026, gardée pour les lecteurs d'écran seulement : sans elle, la courbe
-    # n'aurait aucun texte de remplacement (WCAG 1.1.1). Textes du site, nombres, dates et code de devise (3 lettres).
+    periode = (T["courbe_periode_depuis"].format(date=date(r["date_debut"], L))
+               if cotee_recemment(table, pd.Timestamp.today()) else T["courbe_periode"])   # « en 10 ans »
+    couleur = COULEURS["vert"] if v >= 0 else COULEURS["rouge"]
+    # En-tête : textes du site, nombres, dates et code de devise (3 lettres contrôlées) ; échappés par prudence
+    st.html(f'<div class="ba-courbe-tete"><span class="ba-courbe-prix">{html.escape(prix(r["fin"]))}</span>'
+            f'<span class="ba-courbe-var" style="color:{couleur}">{html.escape(variation)} '
+            f'<span class="ba-courbe-periode">{html.escape(periode)}</span></span></div>')
+    st.plotly_chart(graphique_cours(table, L), width="stretch", config={"displayModeBar": False})
+    st.html(f'<div class="ba-courbe-annees"><span>{r["date_debut"].year}</span>'
+            f'<span>{r["date_fin"].year}</span></div>')                       # repères : début et fin
+    # Description complète pour les lecteurs d'écran seulement (retirée de l'écran [M] 20/11/2026) : sans elle, la
+    # courbe n'aurait aucun texte de remplacement (WCAG 1.1.1)
     st.html('<p class="ba-lecteur-ecran">' + html.escape(T["courbe_resume"].format(
         debut=prix(r["debut"]), date_debut=date(r["date_debut"], L), fin=prix(r["fin"]), date_fin=date(r["date_fin"], L),
         variation=variation, bas=prix(r["bas"]), date_bas=date(r["date_bas"], L),
         haut=prix(r["haut"]), date_haut=date(r["date_haut"], L))) + "</p>")
     adresse, site = lien_cours(f["symbole"], f.get("bourse"), L)              # TradingView, sinon Yahoo [M] 20/11
     if adresse:                                                               # adresse sûre : caractères contrôlés
-        st.markdown(f"[{T['courbe_lien'].format(site=site)}]({adresse})")     # s'ouvre dans un nouvel onglet
-    if cotee_recemment(table, pd.Timestamp.today()):
-        st.caption(T["courbe_depuis"].format(date=date(r["date_debut"], L)))
+        st.markdown(f"{T['courbe_plus']} [{site}]({adresse})")                # s'ouvre dans un nouvel onglet
     st.caption(T["courbe_mise_en_garde"])
 
 
@@ -603,6 +612,11 @@ def afficher_fiche(f, T, L, bourse=None):
                 st.info(T["av_" + a])
         with st.expander(T["detail_note"]):
             detail_note(f, T, L, dp)
+    # Courbe du cours, repliée, avant les quatre parties [M] 20/11/2026 ; menu d'un autre style que « Détail des
+    # calculs » (cadre jaune, titre à points) pour ne pas les confondre
+    with st.container(key="courbe_menu"):
+        with st.expander(T["courbe_menu"]):
+            afficher_courbe(f, T, L)
     # Les quatre parties
     st.subheader(T["composantes"])
     for numero, c in enumerate(f["composantes"], start=1):                    # 1 à 4 [M] 20/11/2026
@@ -632,7 +646,6 @@ def afficher_fiche(f, T, L, bourse=None):
             st.markdown(f"**{T['chiffres_societe']}**" + "".join(f"\n- {md(rendre(p, T, L))}" for p in points))
         detail_sante(f, T, L, dp)
     afficher_prix(f, T, L)                                                    # prix comparé au secteur, à part
-    afficher_courbe(f, T, L)                                                  # cours sur 10 ans [M] 20/11/2026
 
 
 # --- Page -----------------------------------------------------------------------------------------------------------

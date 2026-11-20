@@ -132,6 +132,17 @@ def style():
     .ba-sur {{ font-size: 1rem; color: {TEXTE}; }}                            /* « / 100 » plus petit */
     .ba-composante-barre {{ height: 8px; background: {SURFACE}; margin: .4rem 0 .5rem; }}
     .ba-composante-barre > div {{ height: 100%; }}                            /* barre dans la couleur de la note */
+    .st-key-courbe_menu [data-testid="stExpander"] details {{ border: 2px solid {JAUNE} !important;
+        background: {SURFACE}; }}                                             /* menu « Courbe du cours » : cadre jaune,
+                                                                              différent de « Détail des calculs » */
+    .st-key-courbe_menu [data-testid="stExpander"] summary p {{ font-family: 'Doto', monospace; font-weight: 900;
+        font-size: 1.15rem; color: {JAUNE}; text-transform: uppercase; }}
+    .ba-courbe-tete {{ display: flex; align-items: baseline; flex-wrap: wrap; gap: .2rem 1rem; }}
+    .ba-courbe-prix {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 2rem; color: {CREME_TITRES}; }}
+    .ba-courbe-var {{ font-weight: 700; font-size: 1.05rem; }}               /* +128 % en vert, −30 % en rouge */
+    .ba-courbe-periode {{ font-weight: 400; color: {TEXTE}; }}
+    .ba-courbe-annees {{ display: flex; justify-content: space-between; font-size: .8rem; color: {TEXTE};
+        margin-top: -.6rem; }}                                                /* année de début, année de fin */
     .ba-lecteur-ecran {{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
         white-space: nowrap; margin: -1px; }}                                 /* lu par les lecteurs d'écran, invisible */
     @media (max-width: 380px) {{ [data-testid="stMarkdownContainer"] p.ba-composante,
