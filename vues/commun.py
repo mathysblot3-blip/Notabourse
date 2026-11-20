@@ -125,6 +125,13 @@ def style():
                                                                           /* police à points des titres [M] 20/11 ;
                                                                               26 px : « grand texte » WCAG, contraste 3 ;
                                                                               jamais coupé au milieu d'un mot */
+    .ba-composante-ligne {{ display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;
+        gap: .2rem 1rem; }}                                                   /* nom à gauche, note à droite [M] 20/11 */
+    [data-testid="stMarkdownContainer"] p.ba-composante-note {{ margin: 0; font-family: 'Doto', monospace;
+        font-weight: 900; font-size: 1.9rem; line-height: 1.1; white-space: nowrap; }}   /* note en gros, 30 px */
+    .ba-sur {{ font-size: 1rem; color: {TEXTE}; }}                            /* « / 100 » plus petit */
+    .ba-composante-barre {{ height: 8px; background: {SURFACE}; margin: .4rem 0 .5rem; }}
+    .ba-composante-barre > div {{ height: 100%; }}                            /* barre dans la couleur de la note */
     @media (max-width: 380px) {{ [data-testid="stMarkdownContainer"] p.ba-composante,
         .ba-num {{ font-size: 1.35rem !important; }} }}                       /* petit téléphone : tient sur une ligne */
     .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_TITRES};

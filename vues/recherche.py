@@ -538,12 +538,21 @@ def pays_md(nom_yahoo, L):
     return (f"![]({image}) " if image else "") + echapper(nom)               # nom de Yahoo (pays rare) : échappé
 
 
-def titre_composante(numero, nom, note):
-    """« 1)  Rentabilité » : numéro crème dans la police des titres, nom dans la nuance de sa note (rouge bas, orange
-    vers 50, vert haut), comme les barres de la fiche [M] 20/11/2026. Sans note : couleur du texte courant."""
+def titre_composante(numero, nom, note, L):
+    """Ligne d'une composante (option A choisie par Mathys le 20/11/2026) : « 1)  Rentabilité » à gauche, la note en
+    gros à droite (« 89 / 100 »), puis une barre fine ; nom, note et barre dans la nuance de la note (rouge bas,
+    orange vers 50, vert haut). Sans note : nom couleur du texte courant, ni chiffre ni barre. Textes du site et
+    nombres seulement (rien de Yahoo)."""
     couleur = TEXTE if note is None else nuance(note, COULEURS)
-    return (f'<p class="ba-composante"><span class="ba-num">{numero})</span>'
-            f'<span style="color:{couleur}">{nom}</span></p>')
+    titre = (f'<p class="ba-composante"><span class="ba-num">{numero})</span>'
+             f'<span style="color:{couleur}">{nom}</span></p>')
+    if note is None:
+        return f'<div class="ba-composante-ligne">{titre}</div>'
+    chiffre = (f'<p class="ba-composante-note" style="color:{couleur}">{nombre(note, L, 0)}'
+               f'<span class="ba-sur"> / 100</span></p>')                # « 89 / 100 », jamais coupé
+    barre = (f'<div class="ba-composante-barre" aria-hidden="true">'           # décorative : le chiffre suffit
+             f'<div style="width:{min(max(note, 0), 100):.1f}%;background:{couleur}"></div></div>')
+    return f'<div class="ba-composante-ligne">{titre}{chiffre}</div>{barre}'
 
 
 def badge(texte, couleur):
@@ -591,13 +600,11 @@ def afficher_fiche(f, T, L, bourse=None):
     st.subheader(T["composantes"])
     for numero, c in enumerate(f["composantes"], start=1):                    # 1 à 4 [M] 20/11/2026
         libelle = T[c["nom"]]                                                 # « Rentabilité » : texte du site
-        st.markdown(titre_composante(numero, libelle, c["note"]), unsafe_allow_html=True)   # (rien de Yahoo)
-        # Titre sur sa propre ligne, barre dessous : à côté, dans une colonne étroite, la police à points coupait
-        # « Rentabili-té » au milieu du mot (vu par Mathys le 20/11/2026)
+        st.markdown(titre_composante(numero, libelle, c["note"], L), unsafe_allow_html=True)   # (rien de Yahoo)
+        # Pas de colonnes : dans une colonne étroite, la police à points coupait « Rentabili-té » au milieu du mot
+        # (vu par Mathys le 20/11/2026) ; la note passe sous le nom seulement si la ligne est trop courte
         if c["note"] is None:
             st.caption(T["donnees_insuffisantes"])
-        else:
-            st.progress(c["note"] / 100, text=f"{nombre(c['note'], L, 0)} / 100")
         st.markdown(texte_phrases(P[c["code"]], T, L))
         with st.expander(T["detail_chiffre"]):
             detail_composante(f, c, T, L, dp)
