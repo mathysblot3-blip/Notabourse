@@ -197,7 +197,7 @@ def graphique_cours(table, L):
 
 def afficher_courbe(f, T, L):
     """Contenu du menu « Courbe du cours » [M] 20/11/2026 : dernier cours en gros et variation (verte ou rouge),
-    courbe avec ses échelles, liens « Plus d'infos » (Yahoo Finance, TradingView), mise en garde.
+    courbe avec ses échelles, liens « Plus d'infos » (Yahoo Finance, TradingView).
     Rien ne casse si Yahoo ne répond pas."""
     try:
         table, devise = courbe_de(f["symbole"])
@@ -229,7 +229,8 @@ def afficher_courbe(f, T, L):
     if liens:                                                                 # adresses sûres : caractères contrôlés
         textes = [f"[{site}]({adresse}) ({T['niveau_' + niveau]})" for adresse, site, niveau in liens]
         st.markdown(T["courbe_plus"] + " " + " · ".join(textes))             # nouvel onglet ; « · » entre les deux
-    st.caption(T["courbe_mise_en_garde"])
+    # Mise en garde « cours seul, performances passées » retirée sous la courbe [M] 20/11/2026 (le pied de page
+    # garde l'avertissement général du site)
 
 
 def texte_sur(fond):

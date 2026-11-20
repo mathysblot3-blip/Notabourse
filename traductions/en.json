@@ -386,7 +386,6 @@
   "lig_REV": "Revenue",
   "lig_note_croissance": "Growth score",
   "courbe_resume": "The share price went from {debut} on {date_debut} to {fin} on {date_fin}, a change of {variation}. Low: {bas} on {date_bas}; high: {haut} on {date_haut}.",
-  "courbe_mise_en_garde": "Share price only, dividends not included. Past performance is not a reliable indicator of future results.",
   "courbe_indisponible": "The share price chart is not available right now.",
   "courbe_menu": "Share price chart",
   "courbe_periode": "over 10 years",

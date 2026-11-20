@@ -386,7 +386,6 @@
   "lig_REV": "Revenus",
   "lig_note_croissance": "Note de croissance",
   "courbe_resume": "Le cours est passé de {debut} le {date_debut} à {fin} le {date_fin}, soit {variation}. Plus bas : {bas} le {date_bas} ; plus haut : {haut} le {date_haut}.",
-  "courbe_mise_en_garde": "Cours seul, sans les dividendes versés. Les performances passées ne préjugent pas des performances futures.",
   "courbe_indisponible": "La courbe du cours n'est pas disponible pour le moment.",
   "courbe_menu": "Courbe du cours",
   "courbe_periode": "en 10 ans",
