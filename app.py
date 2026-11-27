@@ -2,8 +2,8 @@
 
 Ce fichier ne fait que régler la page, la langue et la navigation entre les pages (cahier des charges §5) :
   - vues/recherche.py : recherche d'une société et fiche de sa note (page principale) ;
-  - vues/methode.py : la méthode, résumée ;
-  - vues/tests.py : backtesting, ce qu'aurait donné la note sur le passé (portefeuille simulé, en échantillon) ;
+  - vues/tests.py : méthode et résultats (résumé de la méthode, backtesting sur le passé avec un portefeuille
+    simulé, puis la méthode chapitre par chapitre dans des menus dépliants) ;
   - vues/sources.py : les articles et les données sur lesquels repose la méthode ;
   - vues/mentions.py : les mentions légales.
 """
@@ -24,7 +24,6 @@ T = textes()                                                                  # 
 pages = [st.Page("vues/recherche.py", title=T["page_recherche"], default=True),
          st.Page("vues/classement.py", title="Classement" if st.session_state.get("langue", "fr") == "fr"
                  else "Ranking"),                                             # PROTOTYPE local, valeurs fictives
-         st.Page("vues/methode.py", title=T["page_methode"]),
          st.Page("vues/tests.py", title=T["page_tests"]),
          st.Page("vues/sources.py", title=T["page_sources"]),
          st.Page("vues/mentions.py", title=T["page_mentions"])]   # sans émojis : menu numéroté 01 à 05 [M]

@@ -35,7 +35,7 @@ compte. Si tu as un compte GitHub, tu peux aussi passer par la
   images de Financial Modeling Prep, redessinées en jaune par le site. Les drapeaux viennent de flagcdn.com
   (domaine public). Ces images sont téléchargées par le serveur du site : votre navigateur ne contacte pas ces services.
 - Le code et une partie des textes ont été produits avec l'aide d'une intelligence artificielle (Claude Code,
-  Anthropic), puis relus et validés par moi, qui en assume la responsabilité (voir la page Méthode, partie 7).
+  Anthropic), puis relus et validés par moi, qui en assume la responsabilité (voir la page Méthode et résultats, partie 8).
 
 ### 4. Avertissement financier
 
@@ -44,14 +44,14 @@ compte. Si tu as un compte GitHub, tu peux aussi passer par la
   investissement.**
 - Je n'exerce aucune activité réglementée de conseil en investissement ou de service d'investissement.
 - Les résultats passés ne préjugent pas des résultats futurs ; la méthode n'a rien prouvé en réel (voir la page
-  Méthode). Les performances de la page Backtesting sont simulées, calculées après la mise au point de la formule, et ne
+  Méthode et résultats). Les performances de cette page sont simulées, calculées après la mise au point de la formule, et ne
   correspondent à aucun portefeuille réel.
 - Les données peuvent contenir des erreurs, des trous ou des retards ; chaque fiche indique la date de ses données.
   Je ne garantis ni leur exactitude ni la disponibilité du site, et je ne peux être tenu responsable des décisions
   prises à partir du site.
 - **Déclaration d'intérêts** : je peux détenir à titre personnel des actions notées par le site. Les notes sont
   calculées par une formule fixe, la même pour toutes les sociétés, sans aucune intervention de ma part.
-- La méthode complète est décrite dans la page Méthode, et le code de calcul est public sur GitHub.
+- La méthode complète est décrite dans la page Méthode et résultats, et le code de calcul est public sur GitHub.
 
 ### 5. Données personnelles et cookies
 

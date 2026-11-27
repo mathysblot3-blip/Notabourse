@@ -34,21 +34,21 @@ GitHub account, you can also use [the website's GitHub page](https://github.com/
   Modeling Prep, redrawn in yellow by the website. Flags come from flagcdn.com (public domain). These images are
   downloaded by the website's server: your browser does not contact these services.
 - The code and part of the texts were produced with the help of an artificial intelligence (Claude Code, Anthropic),
-  then reread and approved by me, and I take responsibility for them (see the Method page, part 7).
+  then reread and approved by me, and I take responsibility for them (see the Method and results page, part 8).
 
 ### 4. Financial disclaimer
 
 - The scores are general information, computed by a fixed formula, the same for every company. They take into account
   neither your situation, nor your goals, nor your risk appetite: **this is not investment advice.**
 - I carry out no regulated investment advice or investment service activity.
-- Past results do not predict future results; the method has proven nothing in real life (see the Method page). The
-  performance shown on the Backtesting page is simulated, computed after the formula was designed, and corresponds
+- Past results do not predict future results; the method has proven nothing in real life (see the Method and results page). The
+  performance shown on that page is simulated, computed after the formula was designed, and corresponds
   to no real portfolio.
 - Data may contain errors, gaps or delays; each company page shows the date of its data. I guarantee neither their
   accuracy nor the website's availability, and I cannot be held liable for decisions made using the website.
 - **Declaration of interests**: I may personally hold shares rated by the website. The scores are computed by a fixed
   formula, the same for every company, without any intervention on my part.
-- The full method is described on the Method page, and the calculation code is public on GitHub.
+- The full method is described on the Method and results page, and the calculation code is public on GitHub.
 
 ### 5. Personal data and cookies
 

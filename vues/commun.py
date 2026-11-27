@@ -70,8 +70,21 @@ def style():
         color: {TEXTE}; }}                                                    /* de la barre de recherche */
     [data-testid="stDialog"] [data-testid="InputInstructions"] {{ display: none; }}   /* pas d'indication en
                                                                               anglais (« Press Ctrl+Enter... ») */
-    [data-testid="stSidebarNavLink"][aria-current="page"] {{ background: {SURFACE}; border-left: 2px solid {JAUNE}; }}
-    [data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: {JAUNE}; font-weight: 600; }}
+    [data-testid="stSidebarNavItems"] li:nth-child(-n+2) [data-testid="stSidebarNavLink"] p {{ color: {JAUNE};
+        font-weight: 700; }}                                                  /* Recherche et Classement, les deux
+                                                                              pages principales, toujours en jaune
+                                                                              et gras [M] 27/11/2026 */
+    [data-testid="stSidebarNavItems"] li:nth-child(n+3) [data-testid="stSidebarNavLink"] p {{ opacity: .75; }}
+                                                                              /* les autres, plus discrètes */
+    [data-testid="stSidebarNavLink"][aria-current="page"] {{ background: {JAUNE}; }}   /* page ouverte : bloc
+                                                                              jaune plein, comme le « B » du titre,
+                                                                              pour ne pas la confondre avec les deux
+                                                                              pages en jaune [M] 27/11/2026 */
+    [data-testid="stSidebarNavLink"][aria-current="page"]:hover {{ background: {JAUNE}; }}   /* reste jaune au survol */
+    [data-testid="stSidebarNavItems"] li [data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: {FOND};
+        font-weight: 700; opacity: 1; }}                                      /* texte sombre sur le jaune (règle
+                                                                              plus précise que celles du dessus) */
+    [data-testid="stSidebarNavLink"][aria-current="page"]::before {{ color: {FOND}; }}   /* numéro sombre aussi */
     hr {{ border-color: {FILET} !important; opacity: 1; }}
     [data-testid="stHeaderActionElements"] {{ display: none; }}               /* pas de petit lien après les titres */
     [data-testid="stSidebarLogo"] {{ height: 7.5rem !important; width: auto;

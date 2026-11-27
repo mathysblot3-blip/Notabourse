@@ -29,9 +29,25 @@ def image_html(nom, langue, alt):
 GRAPHIQUE = re.compile(r"^\{\{graphique:(\w+)(:sans_avertissement)?\}\}$")   # ligne qui appelle une image
 
 st.title(T["page_tests"])
+
+# --- Méthode et backtesting réunis sur une page [M] 27/11/2026 ------------------------------------------------------
+# Le texte de la méthode (traductions/methode_fr.md, inchangé) est coupé à ses titres « ### ». Pour voir le premier
+# graphique sans faire défiler [M] 27/11/2026 : l'introduction et « En bref » vont dans un menu dépliant fermé en haut,
+# ainsi que le premier paragraphe du backtesting (comment le portefeuille simulé est construit) ; l'avertissement
+# « À lire avant les graphiques » reste visible. Les chapitres 1 à 9 vont en bas, chacun dans un menu dépliant fermé.
+methode = (SITE / "traductions" / f"methode_{L}.md").read_text(encoding="utf-8")   # texte complet de la méthode
+blocs = re.split(r"^### ", methode, flags=re.MULTILINE)                       # [introduction, "En bref\n...", "1. ..."]
+intro, en_bref, chapitres = blocs[0], blocs[1], blocs[2:]                     # les trois morceaux de la page
+titre_bref, _, corps_bref = en_bref.partition("\n")                           # « En bref » et ses points
+with st.expander(titre_bref.strip()):                                         # menu fermé : « En bref »
+    st.markdown((intro + "\n" + corps_bref).replace("$", "\\$"))              # introduction puis les points, inchangés
+
 texte = (SITE / "traductions" / f"tests_{L}.md").read_text(encoding="utf-8")  # page écrite en Markdown
+debut, _, suite = texte.partition("\n\n")                                     # 1er paragraphe, puis le reste
+with st.expander(T["titre_backtesting_principe"]):                            # menu fermé : comment le test est fait
+    st.markdown(debut.replace("$", "\\$"))                                    # paragraphe inchangé
 morceau = []                                                                  # texte en attente d'affichage
-for ligne in texte.splitlines() + [""]:
+for ligne in suite.splitlines() + [""]:
     g = GRAPHIQUE.match(ligne.strip())
     if g is None:
         morceau.append(ligne)
@@ -42,3 +58,10 @@ for ligne in texte.splitlines() + [""]:
     if not g.group(2):
         st.caption(T["avertissement_simule"])                                 # sous chaque graphique de performance
 st.markdown("\n".join(morceau).replace("$", "\\$"))                           # fin de la page
+
+# --- La méthode en détail : un menu dépliant par chapitre ----------------------------------------------------------
+st.header(T["titre_methode_detail"])
+for chapitre in chapitres:
+    titre, _, corps = chapitre.partition("\n")                                # 1re ligne = titre du chapitre
+    with st.expander(titre.strip()):                                          # fermé tant qu'on ne clique pas
+        st.markdown(corps.replace("$", "\\$"))                               # texte du chapitre, inchangé
