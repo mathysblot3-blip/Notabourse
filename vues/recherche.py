@@ -13,7 +13,7 @@ import streamlit as st                 # interface web
 from notabourse.calcul import charger_reference, noter_hors_indice, ratios_et_croissances
 from notabourse.classement import charger_correspondance_yahoo
 from notabourse.compteur import compter_recherche
-from notabourse.constantes import ECHELLE_ETOILES, PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
+from notabourse.constantes import PRIX_BON_MARCHE, PRIX_CHERE, SEUILS_GARDE_FOU, SEUILS_VIGILANCE
 from notabourse.courbe import cotee_recemment, preparer_courbe, resume, simplifier, telecharger_cours
 from notabourse.liens import liens_cours
 from notabourse.fiche import fiche_hors_indice, fiche_membre
@@ -28,7 +28,7 @@ from notabourse.phrases import couleur_affichage, couleur_moyenne_affichage, phr
 from notabourse.prix import position_barre
 from notabourse.risque import position_risque, seulement_fonds_propres
 from notabourse.sources import DonneesIndisponibles, cotations, table_cik_sec
-from vues.commun import FILET, FOND, JAUNE, SITE, SURFACE, TEXTE, bandeau_titre, date, dollars, nombre, pct, textes
+from vues.commun import CREME_TITRES, FILET, FOND, JAUNE, SITE, SURFACE, TEXTE, bandeau_titre, date, dollars, nombre, pct, textes
 
 COULEURS = {"vert": "#2E9E5B", "orange": "#E8912D", "rouge": "#D24444", None: "#4A4F5C"}   # réservées au garde-fou,
                                                                               # au prix comparé au secteur [M] 21/10
@@ -136,30 +136,19 @@ def drapeau_de(code):
 
 
 # --- Petits éléments d'affichage --------------------------------------------------------------------------------
-def etoiles_html(nb):
-    """Note sur 5 en cinq carrés jaunes remplis de 0 à 100 % (demi-cases comme les anciennes demi-étoiles), dans le
-    style anguleux du site [M] 20/10/2026 : un dégradé à bord net coupe le carré pile au bon endroit."""
-    morceaux = []
-    for i in range(5):
-        rempli = max(0.0, min(1.0, nb - i)) * 100                              # part remplie de cette case (0 à 100 %)
-        morceaux.append(
-            f'<svg width="30" height="30" viewBox="0 0 24 24" style="margin-right:6px">'
-            f'<defs><linearGradient id="case{i}">'                             # dégradé propre à cette case
-            f'<stop offset="{rempli}%" stop-color="{JAUNE}"/><stop offset="{rempli}%" stop-color="{SURFACE}"/>'
-            f'</linearGradient></defs><rect x="1" y="1" width="22" height="22" fill="url(#case{i})" '
-            f'stroke="{JAUNE}" stroke-width="1.5"/></svg>')                   # carré jaune, angles droits
-    return "".join(morceaux)
-
-
 def jauge(note):
-    """Jauge de 0 à 100 (plotly) : arc sombre rempli de jaune, comme un afficheur de cours ; chiffre en police à points."""
+    """Jauge de 0 à 100 (plotly) : arc sombre rempli de jaune, comme un afficheur de cours ; chiffre en Inter."""
+    # « 96 / 100 » : le plus grand chiffre de la fiche, 48 px (environ 20 % de moins que 64, sur la grille de 4 px) ;
+    # « / 100 » en 16 px [M] 27/11/2026. Inter demi-gras au lieu de la police à points, plus lisible [M] 27/11/2026
     fig = go.Figure(go.Indicator(mode="gauge+number", value=note,
-                                 number={"suffix": " / 100", "font": {"size": 28, "family": "Doto, monospace"}},
+                                 number={"suffix": "<span style='font-size:16px;font-weight:400'> / 100</span>",
+                                         "font": {"size": 48, "family": "Inter, sans-serif", "weight": 600,
+                                                  "color": CREME_TITRES}},
                                  gauge={"axis": {"range": [0, 100], "tickvals": [0, 50, 100], "tickcolor": TEXTE,
-                                                 "tickfont": {"size": 16, "color": TEXTE}},   # 0, 50, 100 lisibles
+                                                 "tickfont": {"size": 14, "color": TEXTE}},   # 0, 50, 100 lisibles
                                         "bar": {"color": JAUNE},
                                         "bgcolor": SURFACE, "borderwidth": 1, "bordercolor": FILET}))
-    fig.update_layout(height=240, margin=dict(l=46, r=46, t=42, b=34), paper_bgcolor="rgba(0,0,0,0)",   # marges : 0, 50 et 100 entiers
+    fig.update_layout(height=280, margin=dict(l=48, r=48, t=40, b=32), paper_bgcolor="rgba(0,0,0,0)",   # 0, 50 et 100 entiers
                       font={"color": TEXTE, "family": "Inter, sans-serif"})
     return fig
 
@@ -240,7 +229,7 @@ def texte_sur(fond):
 
 def pastille(texte, couleur):
     """Petit encadré coloré (voyant du garde-fou)."""
-    return (f'<div style="background:{COULEURS[couleur]};padding:10px 12px;margin-bottom:6px;'
+    return (f'<div style="background:{COULEURS[couleur]};padding:12px;margin-bottom:8px;'
             f'color:{texte_sur(COULEURS[couleur])}">{texte}</div>')
 
 
@@ -301,9 +290,7 @@ def detail_note(f, T, L, dp):
     st.markdown(T["calc_note_4"].format(n=k["nb_membres_notes"], note=nombre(n["sur_100"], L, 0)))
     if n["regle"] == "affichage":
         st.caption(T["calc_note_regle_affichage"])
-    st.markdown(T["calc_note_5"])
-    st.table(pd.DataFrame([{T["col_etoiles_note"]: str(minimum), T["col_etoiles"]: nombre(nb, L, 1)}
-                           for minimum, nb in ECHELLE_ETOILES]))
+    # Étape 5 « Étoiles » retirée avec la note sur 5 [M] 27/11/2026 (le calcul des étoiles reste dans notabourse/)
     if cp:
         st.markdown(f"**{T['comparaison']}**  \n" + T["rang"].format(rang=cp["rang"], nb=cp["nb"]) + "  \n" +
                     T["moyenne_secteur_note"].format(x=nombre(cp["moyenne_secteur"], L, 0), n=cp["nb_secteur"]))
@@ -412,7 +399,7 @@ def detail_sante(f, T, L, dp):
     cols = st.columns(len(gf["voyants"]) + 1)
     for col, v in zip(cols, gf["voyants"]):
         note = "" if v["note"] is None else f" · {nombre(v['note'], L, 2)}"
-        col.markdown(pastille(f"<b>{T['voyant_' + v['voyant']]}</b>{note}<br><small>{mesure_voyant(v, T, L)}</small>",
+        col.markdown(pastille(f"<b>{T['voyant_' + v['voyant']]}</b>{note}<br><span style='font-size:14px'>{mesure_voyant(v, T, L)}</span>",
                               couleur_affichage(v)), unsafe_allow_html=True)
     moy = "-" if gf["moyenne"] is None else nombre(gf["moyenne"], L, 2)
     cols[-1].markdown(pastille(f"<b>{T['moyenne_voyants']}</b><br>{moy}", couleur_moyenne_affichage(f)),
@@ -588,8 +575,27 @@ def titre_composante(numero, nom, note, L):
 
 def badge(texte, couleur):
     """Étiquette colorée (statut de santé financière)."""
-    return (f'<span style="background:{couleur};color:{texte_sur(couleur)};padding:3px 10px;font-size:0.9rem;'
+    return (f'<span style="background:{couleur};color:{texte_sur(couleur)};padding:4px 8px;font-size:14px;'
             f'font-weight:600">{texte}</span>')
+
+
+def composantes_en_bref(f, T, L):
+    """À gauche de la jauge [M] 27/11/2026 (proposition D parmi 4 images) : les quatre composantes, une par ligne, nom
+    à gauche, note à droite, barre fine dessous. Note et barre d'une seule couleur, la nuance de la note sur le dégradé
+    rouge, orange, vert, comme les barres des composantes plus bas [M] 27/11/2026. Textes du site et nombres seulement
+    (rien de Yahoo)."""
+    lignes = []
+    for c in f["composantes"]:
+        note = c["note"]
+        couleur = TEXTE if note is None else nuance(note, COULEURS)           # même nuance que plus bas
+        largeur = 0 if note is None else min(max(note, 0), 100)               # part remplie de la barre (%)
+        remplissage = f"background:{couleur}"                                 # couleur unie, selon la note
+        lignes.append(f'<div class="ba-mini"><span class="ba-mini-nom">{T[c["nom"]]}</span>'
+                      f'<span class="ba-mini-note" style="color:{couleur}">'
+                      f'{"-" if note is None else nombre(note, L, 0)}</span>'
+                      f'<div class="ba-mini-barre" aria-hidden="true">'                # décorative : le chiffre suffit
+                      f'<div style="width:{largeur:.1f}%;{remplissage}"></div></div></div>')
+    st.html("".join(lignes))
 
 
 def afficher_fiche(f, T, L, bourse=None):
@@ -610,17 +616,22 @@ def afficher_fiche(f, T, L, bourse=None):
         f"{md(dollars(f['capitalisation_usd'], L))}{indices}  \n"
         f"{T['membre'] if f['membre'] else T['hors_indice']}")                # S&P 500 : à la ligne
     if f["garde_fou"]["exclue"]:                                              # bandeau « exclue », raisons dans Santé
-        st.markdown(f'<div style="border:2px solid {VIOLET};padding:8px 14px;margin:4px 0 10px">'
+        st.markdown(f'<div style="border:1px solid {VIOLET};padding:8px 16px;margin:8px 0 12px">'
                     f'<b>{T["av_exclue"]}</b></div>', unsafe_allow_html=True)
     # Note
     n = f["note"]
     if n["sur_100"] is None:
         st.info(T["pas_de_note"])
     else:
-        c1, c2 = st.columns([1, 1.2], vertical_alignment="center")          # étoiles | jauge en demi-cercle [M]
-        c1.markdown(etoiles_html(n["etoiles"]), unsafe_allow_html=True)
-        c1.caption(f"{nombre(n['etoiles'], L, 1)} / 5 · {T['note_m']}{dp}{nombre(n['M'], L, 2)}", help=T["aide_note_m"])
-        c2.plotly_chart(jauge(n["sur_100"]), width="stretch", config={"displayModeBar": False})
+        # Jauge sur la moitié droite, les quatre composantes en bref à gauche [M] 27/11/2026 (maquette unslop, choisie
+        # parmi 4 images). Note sur 5 et carrés retirés : doublon de la note sur 100 [M] 27/11/2026
+        ecart = nombre(n["M"], L, 2)                                          # 1,86 (« − » déjà mis si négatif)
+        texte_ecart = f"{T['note_m']}{dp}{'+' if n['M'] > 0 else ''}{ecart}"  # « Écart au groupe : +1,86 »
+        gauche, droite = st.columns(2, vertical_alignment="center", gap="large")
+        droite.plotly_chart(jauge(n["sur_100"]), width="stretch", config={"displayModeBar": False})
+        with gauche:
+            composantes_en_bref(f, T, L)
+        st.caption(texte_ecart, help=T["aide_note_m"])                        # +1,86
         st.markdown(texte_phrases(P["note"], T, L))
         for a in f["avertissements"]:
             if a in ("partielle", "cotee_recente"):
@@ -634,16 +645,20 @@ def afficher_fiche(f, T, L, bourse=None):
             afficher_courbe(f, T, L)
     # Les quatre parties
     st.subheader(T["composantes"])
-    for numero, c in enumerate(f["composantes"], start=1):                    # 1 à 4 [M] 20/11/2026
-        libelle = T[c["nom"]]                                                 # « Rentabilité » : texte du site
-        st.markdown(titre_composante(numero, libelle, c["note"], L), unsafe_allow_html=True)   # (rien de Yahoo)
-        # Pas de colonnes : dans une colonne étroite, la police à points coupait « Rentabili-té » au milieu du mot
-        # (vu par Mathys le 20/11/2026) ; la note passe sous le nom seulement si la ligne est trop courte
-        if c["note"] is None:
-            st.caption(T["donnees_insuffisantes"])
-        st.markdown(texte_phrases(P[c["code"]], T, L))
-        with st.expander(T["detail_chiffre"]):
-            detail_composante(f, c, T, L, dp)
+    # Un bloc par composante [P] 27/11/2026 (maquette unslop) : 48 px entre deux composantes, 12 px à l'intérieur (CSS
+    # .st-key-composantes dans vues/commun.py) ; affichage seulement
+    with st.container(key="composantes"):
+        for numero, c in enumerate(f["composantes"], start=1):                # 1 à 4 [M] 20/11/2026
+            with st.container(key=f"composante_{numero}"):
+                libelle = T[c["nom"]]                                         # « Rentabilité » : texte du site
+                st.markdown(titre_composante(numero, libelle, c["note"], L), unsafe_allow_html=True)   # (rien de Yahoo)
+                # Pas de colonnes : dans une colonne étroite, la police à points coupait « Rentabili-té » au milieu du
+                # mot (vu par Mathys le 20/11/2026) ; la note passe sous le nom seulement si la ligne est trop courte
+                if c["note"] is None:
+                    st.caption(T["donnees_insuffisantes"])
+                st.markdown(texte_phrases(P[c["code"]], T, L))
+                with st.expander(T["detail_chiffre"]):
+                    detail_composante(f, c, T, L, dp)
     # Santé financière
     S = P["sante"]
     st.subheader(T["garde_fou"])
@@ -676,7 +691,8 @@ texte = st.text_input(T["champ_recherche"], placeholder=T["exemple_recherche"], 
 st.session_state["accueil_vide"] = not texte.strip()                          # pied de page plus bas sur l'accueil vide
 if not texte.strip():                                                         # ce que fait le site [M] 20/10/2026 :
     presentation = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", T["presentation"])   # plus gros, centré entre la barre
-    st.html(f'<div class="ba-presentation"><p>{presentation}</p></div>')      # et l'avertissement (textes du site)
+    paragraphes = "".join(f"<p>{x}</p>" for x in presentation.split("\n\n"))   # ligne vide avant la
+    st.html(f'<div class="ba-presentation"><div>{paragraphes}</div></div>')   # dernière phrase [M] 27/11
 if texte.strip():
     echecs = compteurs()["echecs"]
     if echecs.recent(texte.strip(), time.time()):                             # échec récent : on ne relance pas Yahoo

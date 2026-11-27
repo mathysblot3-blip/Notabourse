@@ -416,3 +416,33 @@ Mêmes jour, seconde série (retours de Mathys sur le rendu) :
 | Pages Méthode et Backtesting réunies en une page « Méthode et résultats » (« Method and results ») : introduction et « En bref » visibles en haut, puis le backtesting tel quel, puis « La méthode en détail » : un menu dépliant fermé par chapitre (1 à 9) ; texte de la méthode inchangé ; pas de document à télécharger ; renvois des mentions légales mis à jour (le Rôle de l'IA est la partie 8, pas 7) | Fusion, menus, pas de téléchargement : [M] 27/11/2026 ; ordre des parties : [P] |
 | Menu : la page ouverte s'affiche en bloc jaune plein, texte et numéro sombres (comme le « B » du titre), et non plus en texte jaune : sinon on la confondait avec Recherche et Classement, toujours en jaune | Problème vu par Mathys : [M] 27/11/2026 ; solution : [P] |
 | Page Méthode et résultats plus courte en haut, pour voir le premier graphique sans faire défiler : introduction et « En bref » dans un menu dépliant fermé ; 1er paragraphe du backtesting (construction du portefeuille simulé) dans un menu « Backtesting : comment ce test est fait » ; « À lire avant les graphiques » (en échantillon) laissé visible ; aucun texte modifié | Principe : [M] 27/11/2026 ; avertissement laissé visible : [P] |
+
+## 29. Retouche « unslop » (27/11/2026, essayée dans la copie maquette_unslop/site_alt, puis reportée ici)
+
+Retouche de présentation, sans toucher au calcul de la note (formule C8). Direction donnée par Mathys : posé, exact, un
+peu malicieux ; le tableau d'affichage de la Bourse la nuit ; moments forts = la note de la fiche et la courbe du cours.
+
+| Choix | Nature |
+|---|---|
+| Espacements sur une grille de 4 px (8, 12, 16, 24, 32, 48 ; 72 et 120 pour les hauteurs fixes) à la place des valeurs en rem au hasard (`vues/commun.py`, `vues/recherche.py`, `vues/classement.py`) | [P] |
+| 6 tailles de texte : 12, 14, 16, 20, 32, 64 px ; titres h1 64, h2 et h3 32 (20 et 32 sur téléphone) dans `.streamlit/config.toml` ; Inter en 400 et 600 seulement (gras ramené de 700 à 600) | Échelle : [M] 27/11/2026 ; détail : [P] |
+| Un seul style de cadre (filet gris de 1 px) : bord gauche jaune retiré du cadre des filtres du classement et de l'encadré « valeur peu fiable » ; bandeau « exclue » en filet violet de 1 px (au lieu de 2) ; curseur des barres entouré d'un liseré (`outline`) au lieu d'une ombre | [P] |
+| Numéros du menu de la couleur de leur nom : jaune pour Recherche et Classement, crème atténué pour les autres ; « ? » de « Questions ? » atténué | [P] |
+| Bande des quatre mots de l'accueil immobile, une seule fois, en casse normale, police à points jaune ; passe à la ligne sur écran étroit au lieu d'être coupée | Immobile et casse : [P] ; style : [M] 27/11/2026 |
+| « Filtrer » du classement en Inter demi-gras, casse normale (n'est plus en police à points ni en majuscules) | [P] |
+| Paragraphes limités à 38 em (environ 75 caractères par ligne) sur toutes les pages ; tableaux et pied de page gardent toute la largeur | [P] ; mesuré : 57 à 79 caractères par ligne à 1 440 px [T] |
+| Menus dépliants (« Détail des calculs », chapitres de la méthode...) : une ligne sous un filet au lieu d'un cadre ; « Courbe du cours » garde son cadre jaune [M] | [P] |
+| Fiche : jauge seule en haut sur toute la largeur, « 96 / 100 » en 64 px (le plus grand chiffre de la fiche, « / 100 » en 20 px) ; dessous, sur une ligne, carrés de 20 px et « 5,0 / 5 · Note M » en légende | Disposition : [M] 27/11/2026 ; tailles : [P] |
+| Fiche : sur téléphone, « 96 » en 32 px (en 64 px il débordait sur l'arc de la jauge) | [T] 27/11/2026 |
+| Fiche : le grand bandeau du titre se réduit à une ligne de 20 px, bande masquée (règle CSS `body:has(.st-key-fiche_titre)`) | Taille : [M] 27/11/2026 |
+| Fiche : 48 px entre deux composantes, 12 px à l'intérieur (un bloc `st.container` par composante, clés `composantes` et `composante_N`) ; barre de la composante avec 16 px en bas pour compenser la marge de -16 px que Streamlit met sous chaque texte (elle touchait la phrase) | [P] ; chevauchement : [T] |
+| Phrases en « ! » terminées par un point, en français et en anglais (`note_6`, `rent_exceptionnelle`, `rent_5`, `croiss_forte`, `dyn_suite_pos_reg`, `msg_limite`) | [P] |
+| Classement (code d'affichage) : capitalisation en texte au format de la langue (« 99,8 » ; « 99.8 » en anglais), « n.d. » (« n/a ») au lieu de « None » ; écart de prix au même format que la fiche (« −76 % », « +86% » en anglais) ; nombres de sociétés avec séparateur de milliers ; « aucun filtre », « 1 filtre actif », « 3 filtres actifs » au lieu de « filtre(s) actif(s) ». Conséquence : un clic sur l'en-tête « Capi. » trie le texte, pas le nombre (le tri par capitalisation reste dans « Plus d'options ») | [P] |
+| Test `test_visuel.py::test_titres_des_composantes_lisibles` : 20 px au lieu de 26 px, toujours du « grand texte » WCAG (police à points en 900, gras dès 18,7 px) | [P] |
+| Accueil : une ligne vide (30 px, la hauteur d'une ligne) avant la dernière phrase du texte de présentation (« Tape le nom... »), en français et en anglais ; un paragraphe HTML par morceau de texte | [M] 27/11/2026 |
+| Fiche : note sur 5 et carrés jaunes retirés (doublon de la note sur 100), étape « 5. Étoiles » retirée du détail ; le calcul des étoiles reste dans notabourse/ | [M] 27/11/2026 |
+| Note M renommée « Écart au groupe » (« Gap to its group ») sur la fiche, avec son signe (« +1,86 ») ; « (note M) » gardé dans le détail du calcul et l'aide, pour faire le lien avec la page Méthode, inchangée | Renommer : [M] 27/11/2026 ; nom : [P] |
+| Fiche : jauge sur la moitié droite, les quatre composantes en bref à gauche (nom, note dans sa nuance, barre fine), choisie parmi 4 propositions en images (A cours et petite courbe, B cours sur 3 périodes, C résumé de la note, D composantes) ; écart au groupe et phrase de la note dessous ; sur téléphone, composantes puis jauge | [M] 27/11/2026 |
+| Barres des composantes en bref d'une couleur unie, la nuance de la note (rouge bas, orange vers 50, vert haut), comme les barres des composantes plus bas ; un essai en dégradé rouge-orange-vert a été écarté | [M] 27/11/2026 |
+| Jauge : « 96 / 100 » en Inter demi-gras (« / 100 » en Inter normal) au lieu de la police à points, jugée bizarre pour ce chiffre | [M] 27/11/2026 |
+| Jauge : « 96 » en 48 px (au lieu de 64, environ 20 % de moins, sur la grille de 4 px ; septième taille du site, réservée à ce chiffre) et « / 100 » en 16 px | [M] 27/11/2026 |

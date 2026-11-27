@@ -22,7 +22,8 @@ blueTextColor = "#ebe4cf"             #   texte crème dessus
 font = "Inter, sans-serif"            # texte courant (police hébergée avec le site, voir [[theme.fontFaces]])
 headingFont = "Doto, monospace"       # titres à points (idem)
 headingFontWeights = [900, 900, 900, 900, 900, 900]   # points serrés : lisibles en petit
-headingFontSizes = ["4.2rem", "2.6rem", "1.8rem", "1.4rem", "1.2rem", "1rem"]   # grands titres, comme une affiche
+headingFontSizes = ["64px", "32px", "32px", "20px", "16px", "14px"]   # grands titres, comme une affiche ; tailles
+                                      # prises dans l'échelle du site (12, 14, 16, 20, 32, 64 px) [P] 27/11/2026
 
 # Polices hébergées avec le site (dossier static/) plutôt que chez Google Fonts : le navigateur du visiteur ne contacte
 # plus Google [M] 21/10/2026. Fichiers woff2 de Google Fonts (alphabet latin), licence SIL Open Font License.

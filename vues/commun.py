@@ -44,152 +44,211 @@ def logo():
 
 
 def style():
-    """Feuille de style ajoutée à chaque page : filets au-dessus des sections, menu numéroté 01 à 04 (à la place des
-    émojis), bandeau du titre et bande défilante. Aucune ombre, aucun angle arrondi."""
+    """Feuille de style ajoutée à chaque page : filets au-dessus des sections, menu numéroté (à la place des émojis),
+    bandeau du titre et bande des quatre mots. Aucune ombre, aucun angle arrondi.
+
+    Retouche « unslop » [P] 27/11/2026 (maquette) :
+      - espacements sur une grille de 4 px (8, 12, 16, 24, 32, 48 ; 72 et 120 pour les hauteurs fixes) ;
+      - 6 tailles de texte seulement [M] : 12, 14, 16, 20, 32 et 64 px ;
+      - Inter en 400 et 600, la police à points (Doto) pour les titres et les chiffres clés seulement ;
+      - un seul style de cadre (filet gris de 1 px) ; le jaune reste au titre, à la page ouverte, à la recherche, à la
+        note et à la courbe ;
+      - rien ne bouge en boucle."""
     st.html(f"""<style>
     h1, h2, h3 {{ line-height: 1.05; letter-spacing: 0; }}
-    [data-testid="stMainBlockContainer"] {{ padding-top: 4.5rem; }}         /* moins de vide en haut, mais sous
-                                                                              l'en-tête de Streamlit (60 px) */
-    [data-testid="stMainBlockContainer"] h3 {{ border-top: 1px solid {FILET}; padding-top: .8rem; margin-top: 1.8rem; }}
+    b, strong {{ font-weight: 600; }}                                         /* Inter : 400 et 600 seulement */
+    [data-testid="stMainBlockContainer"] {{ padding-top: 4.5rem; }}          /* 72 px, sous l'en-tête de Streamlit (60 px) */
+    [data-testid="stMainBlockContainer"] h3 {{ border-top: 1px solid {FILET}; padding-top: 12px; margin-top: 32px; }}
+    /* Téléphone : titres plus petits, mais toujours dans les 6 tailles */
+    @media (max-width: 640px) {{
+        [data-testid="stMainBlockContainer"] h1 {{ font-size: 32px; }}
+        [data-testid="stMainBlockContainer"] h2,
+        [data-testid="stMainBlockContainer"] h3 {{ font-size: 20px; }} }}
+    /* Paragraphes : environ 75 caractères par ligne au plus (38 em), les tableaux gardent toute la largeur */
+    [data-testid="stMainBlockContainer"] [data-testid="stMarkdownContainer"] > p,
+    [data-testid="stMainBlockContainer"] [data-testid="stMarkdownContainer"] > ul,
+    [data-testid="stMainBlockContainer"] [data-testid="stMarkdownContainer"] > ol,
+    [data-testid="stMainBlockContainer"] [data-testid="stCaptionContainer"] > p {{ max-width: 38em; }}
+
+    /* --- Menu de gauche --- */
     [data-testid="stSidebarNavItems"] {{ counter-reset: rubrique; }}
     [data-testid="stSidebarNavLink"]::before {{ counter-increment: rubrique; content: counter(rubrique, decimal-leading-zero);
-        font-family: 'Doto', monospace; font-weight: 900; color: {JAUNE}; margin-right: .7rem; }}
-    .st-key-bouton_questions button {{ background: transparent; border: 0; padding: 0 8px; min-height: 32px; }}
-    .st-key-bouton_questions button > div {{ justify-content: flex-start; }}  /* « Questions ? » aligné comme les
-                                                                              entrées du menu */
-    .st-key-bouton_questions button p {{ font-size: 14px; color: {TEXTE}; }}
-    .st-key-bouton_questions button p::before {{ content: "?"; display: inline-block; width: 40px;
-        font-family: 'Doto', monospace; font-weight: 900; font-size: 16px; color: {JAUNE}; }}   /* « ? » à points
-                                                                              à la place du numéro */
-    .st-key-bouton_questions button:hover {{ background: {SURFACE}; }}
-    [data-testid="stDialog"] [data-testid="stTextInput"] {{ margin: 0; }}       /* fenêtre « Questions ? » : champ
-                                                                              e-mail discret, pas le gros cadre */
-    [data-testid="stDialog"] [data-testid="stTextInputRootElement"] {{ border: 1px solid {FILET} !important; }}
-    [data-testid="stDialog"] [data-testid="stTextInput"] input {{ font-size: .9rem; padding: .4rem .6rem; }}
-    [data-testid="stDialog"] [data-testid="stTextInput"] label p {{ font-size: .875rem; font-weight: 400;
-        color: {TEXTE}; }}                                                    /* de la barre de recherche */
-    [data-testid="stDialog"] [data-testid="InputInstructions"] {{ display: none; }}   /* pas d'indication en
-                                                                              anglais (« Press Ctrl+Enter... ») */
+        font-family: 'Doto', monospace; font-weight: 900; color: {TEXTE}; opacity: .75; margin-right: 12px; }}
+    [data-testid="stSidebarNavItems"] li:nth-child(-n+2) [data-testid="stSidebarNavLink"]::before {{ color: {JAUNE};
+        opacity: 1; }}                                                        /* numéro de la couleur de son nom */
     [data-testid="stSidebarNavItems"] li:nth-child(-n+2) [data-testid="stSidebarNavLink"] p {{ color: {JAUNE};
-        font-weight: 700; }}                                                  /* Recherche et Classement, les deux
+        font-weight: 600; }}                                                  /* Recherche et Classement, les deux
                                                                               pages principales, toujours en jaune
                                                                               et gras [M] 27/11/2026 */
     [data-testid="stSidebarNavItems"] li:nth-child(n+3) [data-testid="stSidebarNavLink"] p {{ opacity: .75; }}
                                                                               /* les autres, plus discrètes */
     [data-testid="stSidebarNavLink"][aria-current="page"] {{ background: {JAUNE}; }}   /* page ouverte : bloc
-                                                                              jaune plein, comme le « B » du titre,
-                                                                              pour ne pas la confondre avec les deux
-                                                                              pages en jaune [M] 27/11/2026 */
+                                                                              jaune plein [M] 27/11/2026 */
     [data-testid="stSidebarNavLink"][aria-current="page"]:hover {{ background: {JAUNE}; }}   /* reste jaune au survol */
     [data-testid="stSidebarNavItems"] li [data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: {FOND};
-        font-weight: 700; opacity: 1; }}                                      /* texte sombre sur le jaune (règle
-                                                                              plus précise que celles du dessus) */
-    [data-testid="stSidebarNavLink"][aria-current="page"]::before {{ color: {FOND}; }}   /* numéro sombre aussi */
-    hr {{ border-color: {FILET} !important; opacity: 1; }}
-    [data-testid="stHeaderActionElements"] {{ display: none; }}               /* pas de petit lien après les titres */
-    [data-testid="stSidebarLogo"] {{ height: 7.5rem !important; width: auto;
-        max-width: 100%; }}                                         /* logo de Mathys bien visible */
-    [data-testid="stSidebarHeader"] {{ height: auto; min-height: 9rem; padding-top: .9rem; position: relative;
+        font-weight: 600; opacity: 1; }}                                      /* texte sombre sur le jaune */
+    [data-testid="stSidebarNavItems"] li [data-testid="stSidebarNavLink"][aria-current="page"]::before {{
+        color: {FOND}; opacity: 1; }}                                         /* numéro sombre aussi */
+    .st-key-bouton_questions button {{ background: transparent; border: 0; padding: 0 8px; min-height: 32px; }}
+    .st-key-bouton_questions button > div {{ justify-content: flex-start; }}  /* « Questions ? » aligné comme les
+                                                                              entrées du menu */
+    .st-key-bouton_questions button p {{ font-size: 14px; color: {TEXTE}; }}
+    .st-key-bouton_questions button p::before {{ content: "?"; display: inline-block; width: 40px;
+        font-family: 'Doto', monospace; font-weight: 900; font-size: 14px; color: {TEXTE}; opacity: .75; }}
+                                                                              /* « ? » à la place du numéro */
+    .st-key-bouton_questions button:hover {{ background: {SURFACE}; }}
+    [data-testid="stSidebarLogo"] {{ height: 120px !important; width: auto; max-width: 100%; }}   /* logo bien visible */
+    [data-testid="stSidebarHeader"] {{ height: auto; min-height: 144px; padding-top: 16px; position: relative;
         align-items: flex-start; }}                                 /* place pour le logo, rien de coupé */
     [data-testid="stSidebarHeader"] > :first-child {{ flex: 1; display: flex; justify-content: center; }}   /* logo seul
                                                                               (accueil) ou dans son lien (autres pages) */
-    [data-testid="stSidebarCollapseButton"] {{ position: absolute; top: .6rem; right: .4rem; }}   /* logo centré
+    [data-testid="stSidebarCollapseButton"] {{ position: absolute; top: 8px; right: 8px; }}   /* logo centré
                                                                               sur la largeur du menu */
-    [data-testid="stHeaderLogo"] {{ height: 2.9rem !important; width: auto; }}   /* menu replié : tient dans l'en-tête */
-    .ba-presentation {{ min-height: 7.2rem; padding-top: .55rem; box-sizing: border-box; display: flex;
+    [data-testid="stHeaderLogo"] {{ height: 48px !important; width: auto; }}   /* menu replié : tient dans l'en-tête */
+
+    /* --- Fenêtre « Questions ? » --- */
+    [data-testid="stDialog"] [data-testid="stTextInput"] {{ margin: 0; }}       /* champ e-mail discret, pas le gros
+                                                                              cadre de la recherche */
+    [data-testid="stDialog"] [data-testid="stTextInputRootElement"] {{ border: 1px solid {FILET} !important; }}
+    [data-testid="stDialog"] [data-testid="stTextInput"] input {{ font-size: 14px; padding: 8px 12px; }}
+    [data-testid="stDialog"] [data-testid="stTextInput"] label p {{ font-size: 14px; font-weight: 400;
+        color: {TEXTE}; }}
+    [data-testid="stDialog"] [data-testid="InputInstructions"] {{ display: none; }}   /* pas d'indication en
+                                                                              anglais (« Press Ctrl+Enter... ») */
+    hr {{ border-color: {FILET} !important; opacity: 1; }}
+    [data-testid="stHeaderActionElements"] {{ display: none; }}               /* pas de petit lien après les titres */
+
+    /* --- Menus dépliants : une ligne sous un filet, plus une pile de cadres [P] 27/11/2026 --- */
+    [data-testid="stExpander"] details {{ border: 0 !important; border-top: 1px solid {FILET} !important;
+        background: transparent; }}
+    [data-testid="stExpander"] summary {{ padding: 12px 0; }}
+    [data-testid="stExpanderDetails"] {{ padding: 0 0 16px; }}
+
+    /* --- Accueil : titre, bande des quatre mots, présentation, recherche --- */
+    .ba-bandeau {{ display: block; padding: 12px 16px; border: 1px solid {FILET}; margin: 0;
+                   font-family: 'Doto', monospace; font-weight: 700; line-height: 1.05; font-size: 64px; }}
+    .ba-b {{ display: inline-block; padding: 0 .08em; margin-right: .06em; }}   /* « B » dans son carré */
+    .ba-bande {{ overflow: hidden; white-space: nowrap; background: {SURFACE}; color: {JAUNE}; border: 1px solid {FILET};
+                 border-top: 0; font-family: 'Doto', monospace; font-weight: 800; font-size: 20px; line-height: 1.2;
+                 padding: 8px 16px; margin-bottom: 8px; }}                    /* immobile, en casse normale [P] */
+    /* Écran plus étroit : le titre tient sur une ligne, la bande passe à la ligne au lieu d'être coupée */
+    @media (max-width: 1200px) {{ .ba-bandeau {{ font-size: 32px; padding: 8px 12px; }}
+        .ba-bande {{ font-size: 16px; white-space: normal; }} }}
+    body:has(.st-key-fiche_titre) .ba-bandeau {{ font-size: 20px; padding: 8px 12px; }}   /* fiche : titre réduit à
+                                                                              une ligne, la société remonte [P] */
+    body:has(.st-key-fiche_titre) .ba-bande {{ display: none; }}
+    .ba-presentation {{ min-height: 112px; padding-top: 8px; box-sizing: border-box; display: flex;
                         align-items: center; }}                          /* texte au milieu, entre la
                                                                               barre et l'avertissement */
-    .ba-presentation p {{ font-size: 1.2rem; line-height: 1.55; margin: 0; }}   /* plus gros que le reste */
-    [data-testid="stTextInput"] label p {{ font-size: 1.05rem; font-weight: 600; color: {JAUNE}; }}
-    [data-testid="stTextInput"] {{ margin: 1.6rem 0 1.4rem; }}                /* recherche isolée : de l'air autour */
+    .ba-presentation p {{ font-size: 20px; line-height: 1.5; margin: 0; max-width: 38em; }}
+    .ba-presentation p + p {{ margin-top: 1.5em; }}                         /* une ligne vide (30 px) avant la
+                                                                              dernière phrase [M] 27/11/2026 */
+    [data-testid="stTextInput"] label p {{ font-size: 16px; font-weight: 600; color: {JAUNE}; }}
+    [data-testid="stTextInput"] {{ margin: 24px 0; }}                         /* recherche isolée : de l'air autour */
     [data-testid="stTextInputRootElement"] {{ border: 3px solid {JAUNE} !important; height: auto !important; }}
-    [data-testid="stTextInput"] input {{ font-size: 1.1rem; padding: .5rem .8rem; }}   /* taille moyenne, bord épais */
-    @media (max-width: 640px) {{ [data-testid="stTextInput"] input {{ font-size: .95rem; padding: .45rem .6rem; }} }}
+    [data-testid="stTextInput"] input {{ font-size: 20px; padding: 8px 12px; }}   /* bord épais [M] */
+    @media (max-width: 640px) {{ [data-testid="stTextInput"] input {{ font-size: 16px; padding: 8px; }} }}
     @media (max-width: 480px) {{                                              /* téléphone : tableaux resserrés pour */
         [data-testid="stMarkdownContainer"] table th, [data-testid="stMarkdownContainer"] table td {{
-            font-size: .85rem; padding: .4rem .45rem; }}                      /* tenir sans défiler de côté (pages) */
+            font-size: 14px; padding: 8px; }}                                 /* tenir sans défiler de côté (pages) */
         [data-testid="stTableStyledTable"] th, [data-testid="stTableStyledTable"] td {{
-            font-size: .75rem; padding: .3rem .22rem; }} }}                   /* et sur la fiche */
-    .ba-bandeau {{ display: block; padding: .22em .3em .18em; border: 1px solid {FILET}; margin: 0;
-                   font-family: 'Doto', monospace; font-weight: 700; line-height: 1.05;
-                   font-size: clamp(2rem, 5.6vw, 6rem); }}
-    .ba-b {{ display: inline-block; padding: 0 .08em; margin-right: .06em; }}
-    .ba-bande {{ overflow: hidden; white-space: nowrap; background: {SURFACE}; color: {JAUNE}; border: 1px solid {FILET};
-                 border-top: 0; font-family: 'Doto', monospace; font-weight: 800; font-size: 1.15rem;
-                 padding: .45rem 0; text-transform: uppercase; margin-bottom: .6rem; }}
-    .ba-bande span {{ display: inline-block; padding-left: .8rem; animation: ba-defile 45s linear infinite; }}
-    .ba-prix {{ position: relative; margin: .4rem 0 1rem; padding-top: 2.3rem; }}   /* barre du prix comparé au
-                                                                              secteur : chère à gauche, bon marché à droite */
+            font-size: 12px; padding: 4px; }} }}                              /* et sur la fiche */
+
+    /* --- Fiche : barres du risque et du prix --- */
+    .ba-prix {{ position: relative; margin: 8px 0 16px; padding-top: 36px; }}   /* chère à gauche, bon marché à droite */
     .ba-prix-valeur {{ position: absolute; top: 0; line-height: 1.2; transform: translateX(-50%); font-family: 'Doto', monospace;
-                       font-weight: 800; font-size: 1.05rem; color: {TEXTE}; white-space: nowrap; }}
-    .ba-prix-barre {{ position: relative; height: 18px; border: 1px solid {FILET}; }}
+                       font-weight: 800; font-size: 20px; color: {TEXTE}; white-space: nowrap; }}
+    .ba-prix-barre {{ position: relative; height: 16px; border: 1px solid {FILET}; }}
     .ba-prix-seuil {{ position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: {FOND};
                       opacity: .55; }}                                        /* seuils +25 % et -20 % */
-    .ba-prix-curseur {{ position: absolute; top: -7px; bottom: -7px; width: 6px; margin-left: -3px; background: {TEXTE};
-                        box-shadow: 0 0 0 2px {FOND}; }}                      /* la société */
-    .ba-prix-zones {{ display: flex; margin-top: .45rem; font-size: .8rem; color: {TEXTE}; }}
+    .ba-prix-curseur {{ position: absolute; top: -8px; bottom: -8px; width: 6px; margin-left: -3px; background: {TEXTE};
+                        outline: 2px solid {FOND}; }}                         /* la société (liseré, pas une ombre) */
+    .ba-prix-zones {{ display: flex; margin-top: 8px; font-size: 14px; color: {TEXTE}; }}
     .ba-prix-zones span {{ text-align: center; opacity: .7; }}
-    .ba-prix-zones .ba-prix-actif {{ opacity: 1; font-weight: 700; }}       /* zone où se trouve la société */
-    .ba-prix-seuils {{ position: relative; height: 1.1rem; font-size: .75rem; opacity: .75; }}
-    .ba-prix.ba-barre-simple {{ padding-top: .7rem; }}                       /* barre sans chiffre (risque) */
-    .ba-prix-avertissement {{ border: 1px solid {FILET}; border-left: 3px solid {JAUNE}; padding: .5rem .8rem;
-                              margin: .2rem 0 .6rem; font-size: .9rem; }}       /* estimation : valeur peu fiable */
+    .ba-prix-zones .ba-prix-actif {{ opacity: 1; font-weight: 600; }}       /* zone où se trouve la société */
+    .ba-prix-seuils {{ position: relative; height: 20px; font-size: 12px; opacity: .75; }}
+    .ba-prix.ba-barre-simple {{ padding-top: 12px; }}                        /* barre sans chiffre (risque) */
+    .ba-prix-avertissement {{ border: 1px solid {FILET}; padding: 8px 12px; margin: 8px 0 12px;
+                              font-size: 14px; max-width: 38em; }}            /* estimation : valeur peu fiable */
     .ba-prix-seuils span {{ position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }}
+
+    /* --- Fiche : en-tête, note, composantes --- */
     .st-key-fiche_titre h2 img {{ float: right; height: 1.15em; width: auto; max-width: 4em; object-fit: contain;
-        margin: 0 0 .2em .6em; }}                                             /* fiche : nom à gauche, logo jaune (ou
+        margin: 0 0 4px 12px; }}                                              /* nom à gauche, logo jaune (ou
                                                                               initiales) à droite [M] 20/11/2026 */
-    .st-key-fiche_sous_titre img {{ height: .95em; width: auto; vertical-align: -0.12em; margin-right: .3em;
+    .st-key-fiche_sous_titre img {{ height: .95em; width: auto; vertical-align: -0.12em; margin-right: 4px;
         outline: 1px solid {FILET}; }}                                        /* drapeau du pays, filet autour (le
                                                                               blanc du drapeau reste visible) */
-    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 1.6rem; font-weight: 900;
+    @media (max-width: 640px) {{ [data-testid="stPlotlyChart"] .number {{ font-size: 32px !important; }} }}
+                                                                              /* téléphone : « 96 » en 32 px, sinon il
+                                                                              déborde sur l'arc de la jauge, plus petite */
+    .st-key-composantes {{ gap: 48px; }}                                      /* entre deux composantes : 48 px */
+    [class*="st-key-composante_"] {{ gap: 12px; }}                           /* dans une composante : 12 px */
+    [data-testid="stMarkdownContainer"] p.ba-composante {{ margin: 0; font-size: 20px; font-weight: 900;
         font-family: 'Doto', monospace; line-height: 1.2; overflow-wrap: normal; word-break: normal; }}
-                                                                          /* police à points des titres [M] 20/11 ;
-                                                                              26 px : « grand texte » WCAG, contraste 3 ;
+                                                                          /* 20 px en police à points (900) : « grand
+                                                                              texte » WCAG (gras dès 18,7 px), contraste 3 ;
                                                                               jamais coupé au milieu d'un mot */
     .ba-composante-ligne {{ display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;
-        gap: .2rem 1rem; }}                                                   /* nom à gauche, note à droite [M] 20/11 */
+        gap: 4px 16px; }}                                                     /* nom à gauche, note à droite [M] 20/11 */
     [data-testid="stMarkdownContainer"] p.ba-composante-note {{ margin: 0; font-family: 'Doto', monospace;
-        font-weight: 900; font-size: 1.9rem; line-height: 1.1; white-space: nowrap; }}   /* note en gros, 30 px */
-    .ba-sur {{ font-size: 1rem; color: {TEXTE}; }}                            /* « / 100 » plus petit */
-    .ba-composante-barre {{ height: 8px; background: {SURFACE}; margin: .4rem 0 .5rem; }}
+        font-weight: 900; font-size: 32px; line-height: 1.1; white-space: nowrap; }}   /* note de la composante */
+    .ba-sur {{ font-size: 14px; color: {TEXTE}; }}                            /* « / 100 » plus petit */
+    .ba-composante-barre {{ height: 8px; background: {SURFACE}; margin: 8px 0 16px; }}   /* 16 px en bas : compense
+                                                                              la marge de -16 px que Streamlit met sous
+                                                                              chaque texte ; il reste les 12 px du bloc */
+    .ba-composante-ligne:last-child {{ margin-bottom: 16px; }}               /* idem sans note (pas de barre) */
     .ba-composante-barre > div {{ height: 100%; }}                            /* barre dans la couleur de la note */
+    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 20px; color: {CREME_TITRES};
+               margin-right: 12px; }}                                     /* « 1) » crème, police des titres [M] 20/11 */
+
+    /* --- Fiche : les quatre composantes en bref, à gauche de la jauge [M] 27/11/2026 --- */
+    .ba-mini {{ display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 12px;
+        margin-bottom: 12px; }}                                               /* une composante par ligne */
+    .ba-mini-nom {{ font-size: 16px; }}
+    .ba-mini-note {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 20px; }}
+    .ba-mini-barre {{ grid-column: 1 / -1; height: 4px; background: {SURFACE}; }}
+    .ba-mini-barre > div {{ height: 100%; }}
+
+    /* --- Fiche : courbe du cours (cadre jaune [M]) --- */
     .st-key-courbe_menu [data-testid="stExpander"] details {{ border: 2px solid {JAUNE} !important;
         background: {SURFACE}; }}                                             /* menu « Courbe du cours » : cadre jaune,
                                                                               différent de « Détail des calculs » */
+    .st-key-courbe_menu [data-testid="stExpander"] summary {{ padding: 12px 16px; }}
+    .st-key-courbe_menu [data-testid="stExpanderDetails"] {{ padding: 0 16px 16px; }}
     .st-key-courbe_menu [data-testid="stExpander"] summary p {{ font-family: 'Doto', monospace; font-weight: 900;
-        font-size: 1.15rem; color: {JAUNE}; text-transform: uppercase; }}
+        font-size: 20px; color: {JAUNE}; text-transform: uppercase; }}       /* en majuscules [M] */
     .st-key-courbe_menu [data-testid="stExpander"] summary p::before {{ content: ""; display: inline-block;
-        width: 1.2em; height: 1.2em; margin-right: .45em; vertical-align: -.22em; background: {JAUNE};
+        width: 1.2em; height: 1.2em; margin-right: 8px; vertical-align: -.22em; background: {JAUNE};
         -webkit-mask: url({ICONE_COURBE}) center / contain no-repeat;
         mask: url({ICONE_COURBE}) center / contain no-repeat; }}               /* icône de cours, en jaune */
     .st-key-courbe_menu [data-testid="stElementToolbar"] {{ display: none; }}   /* pas de boutons tableau,
                                                                               téléchargement... sur la courbe */
-    .ba-courbe-tete {{ display: flex; align-items: baseline; flex-wrap: wrap; gap: .2rem 1rem; }}
-    .ba-courbe-prix {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 2rem; color: {CREME_TITRES}; }}
-    .ba-courbe-var {{ font-weight: 700; font-size: 1.05rem; }}               /* +128 % en vert, −30 % en rouge */
+    .ba-courbe-tete {{ display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 16px; }}
+    .ba-courbe-prix {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 32px; color: {CREME_TITRES}; }}
+    .ba-courbe-var {{ font-weight: 600; font-size: 16px; }}                  /* +128 % en vert, −30 % en rouge */
     .ba-courbe-periode {{ font-weight: 400; color: {TEXTE}; }}
     .ba-lecteur-ecran {{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
         white-space: nowrap; margin: -1px; }}                                 /* lu par les lecteurs d'écran, invisible */
-    @media (max-width: 380px) {{ [data-testid="stMarkdownContainer"] p.ba-composante,
-        .ba-num {{ font-size: 1.35rem !important; }} }}                       /* petit téléphone : tient sur une ligne */
-    .ba-num {{ font-family: 'Doto', monospace; font-weight: 900; font-size: 1.6rem; color: {CREME_TITRES};
-               margin-right: .7rem; }}                                   /* « 1) » crème, police des titres [M] 20/11 */
+
+    /* --- Titres et pied de page --- */
     [data-testid="stMainBlockContainer"] h1, [data-testid="stMainBlockContainer"] h2,
     [data-testid="stMainBlockContainer"] h3 {{ color: {CREME_TITRES}; }}     /* titres crème beige [M] 20/11/2026 */
-    .st-key-pied_avertissement {{ border: 1px solid {CREME_TITRES} !important; padding: 1rem 1.2rem !important;
-        margin-top: 2rem; text-align: center; }}                              /* avertissement centré dans un cadre
+    .st-key-pied_avertissement {{ border: 1px solid {CREME_TITRES} !important; padding: 16px 24px !important;
+        margin-top: 48px; text-align: center; }}                              /* avertissement centré dans un cadre
                                                                               crème [M] 20/11/2026 */
     .st-key-pied_avertissement [data-testid="stCaptionContainer"],
-    .st-key-pied_avertissement p {{ margin: 0 !important; padding: 0; text-align: center; }}   /* centré, aucune
+    .st-key-pied_avertissement p {{ margin: 0 auto !important; padding: 0; text-align: center; }}   /* centré, aucune
                                                                               marge en trop en bas */
-    @keyframes ba-defile {{ from {{ transform: translateX(0); }} to {{ transform: translateX(-50%); }} }}
-    @media (prefers-reduced-motion: reduce) {{ .ba-bande span {{ animation: none; }} }}
+    .st-key-pied_avertissement [data-testid="stCaptionContainer"] > p {{ max-width: none; }}   /* une phrase par
+                                                                              ligne, comme avant (pas de coupure) */
     </style>""")
 
 
 def bandeau_titre(T):
     """Titre de la page d'accueil : « B » d'une couleur, « ourse à lunettes » de l'autre (B_EN_JAUNE), puis une bande
-    défilante avec les noms des quatre composantes, comme un bandeau de cours de bourse. Textes du site seulement."""
+    avec les noms des quatre composantes, comme un panneau de cours de bourse. Immobile et en casse normale [P]
+    27/11/2026 (elle défilait en boucle, en majuscules). Textes du site seulement."""
     fond, b_fond, b_lettre, reste = ((JAUNE, FOND, JAUNE, FOND) if B_EN_JAUNE else (FOND, JAUNE, FOND, JAUNE))
     titre = T["titre"]                                                        # « Bourse à lunettes »
     mots = " · ".join(T[k] for k in ("rentabilite", "croissance", "bilan", "dynamique"))
@@ -197,8 +256,7 @@ def bandeau_titre(T):
             f'<span class="ba-b" style="background:{b_fond};color:{b_lettre}">{titre[0]}</span>'
             f'<span style="color:{CREME_LOGO}">{titre[1:5]}</span>'           # « ours » en crème : le jeu de mots
             f'<span style="color:{reste}">{titre[5:]}</span></h1>'
-            f'<div class="ba-bande" aria-hidden="true"><span>{(mots + " · ") * 8}</span></div>')   # 2 moitiés égales :
-                                                                              # le défilement boucle sans saut
+            f'<div class="ba-bande" aria-hidden="true">{mots}</div>')         # les 4 mots, une seule fois
 
 
 @st.cache_data

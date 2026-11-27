@@ -90,4 +90,6 @@ def test_titres_des_composantes_lisibles():
     for note in range(0, 101):
         assert _contraste(nuance(note, couleurs), "#15140f") >= 3, note       # lisible sur le fond charbon
     code = (SITE / "vues" / "commun.py").read_text(encoding="utf-8")
-    assert "p.ba-composante {{ margin: 0; font-size: 1.6rem; font-weight: 900" in code   # 26 px en gras
+    assert "p.ba-composante {{ margin: 0; font-size: 20px; font-weight: 900" in code   # 20 px en gras (900) :
+                                                                              # grand texte dès 18,7 px en gras
+                                                                              # (maquette unslop [P] 27/11/2026)

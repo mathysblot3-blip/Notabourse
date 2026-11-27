@@ -21,6 +21,7 @@ import streamlit as st  # interface web
 from notabourse.constantes import PRIX_BON_MARCHE, PRIX_CHERE   # seuils du site
 from notabourse.indices import INDICES, indices_de                # Nikkei 225, CAC 40...
 from notabourse.pays import adresse_drapeau                       # petit drapeau servi par le site
+from notabourse.formats import nombre as fmt_nombre, pct_signe   # 1 234,5 en français (affichage) [P] 27/11
 from vues.commun import FILET, JAUNE, SITE, SURFACE, textes
 
 # --- Textes du prototype (passeront dans traductions/fr.json et en.json une fois la page validée) -------------------
@@ -214,7 +215,8 @@ TXT["fr"].update({
                     "moins chère) ; plancher {bas} (au moins {plus} % plus chère).",
     "mise_a_jour": "{n} sociétés notées. Chacune est relue environ une fois par semaine ; dernière lecture le {date}.",
     "indisponible": "Le classement n'est pas disponible pour le moment. Réessayez un peu plus tard.", "filtrer": "Filtrer", "recherche": "Rechercher une société",
-    "ouvrir": "Ouvrir la fiche : {nom}", "plus": "Plus d'options", "effacer": "Effacer les filtres", "actifs": "{n} sociétés · {k} filtre(s) actif(s)",
+    "ouvrir": "Ouvrir la fiche : {nom}", "plus": "Plus d'options", "effacer": "Effacer les filtres", "actifs": "{n} sociétés · {k}", "actifs_0": "aucun filtre", "actifs_1": "1 filtre actif",
+    "actifs_n": "{k} filtres actifs", "nd": "n.d.",                     # forme correcte selon le nombre [P] 27/11
     "taille_grande": "Grandes", "taille_moyenne": "Moyennes", "taille_petite": "Petites",
     "aide_taille": "Capitalisation : grandes plus de 10 Md$, moyennes 2 à 10 Md$, petites moins de 2 Md$.",
     "tri": "Trier les meilleures notes par",
@@ -236,7 +238,8 @@ TXT["en"].update({
                     "cheaper); floor {bas} (at least {plus}% more expensive).",
     "mise_a_jour": "{n} companies scored. Each one is reread about once a week; last read on {date}.",
     "indisponible": "The ranking is not available right now. Please try again a little later.", "filtrer": "Filter", "recherche": "Search for a company",
-    "ouvrir": "Open the page: {nom}", "plus": "More options", "effacer": "Clear filters", "actifs": "{n} companies · {k} active filter(s)",
+    "ouvrir": "Open the page: {nom}", "plus": "More options", "effacer": "Clear filters", "actifs": "{n} companies · {k}", "actifs_0": "no filter", "actifs_1": "1 active filter",
+    "actifs_n": "{k} active filters", "nd": "n/a",
     "taille_grande": "Large", "taille_moyenne": "Mid", "taille_petite": "Small",
     "aide_taille": "Market cap: large over $10bn, mid $2bn to $10bn, small under $2bn.",
     "tri": "Sort the best scores by",
@@ -265,12 +268,10 @@ X = TXT[L]                                                                    # 
 i_lg = 0 if L == "fr" else 1                                                  # colonne du nom de pays et de zone
 
 st.html(f"""<style>
-.st-key-cl_filtres {{ background: {SURFACE}; border-left: 3px solid {JAUNE} !important; }}   /* zone des filtres :
-                                                       toujours visible, différente des « détails » repliables */
-.st-key-cl_filtres_titre p {{ font-family: 'Doto', monospace; font-weight: 900; color: {JAUNE}; font-size: 1.15rem;
-    margin: 0; text-transform: uppercase; }}
-@media (max-width: 480px) {{ [data-testid="stMainBlockContainer"] h1 {{ font-size: 2.6rem; }} }}   /* titre sur une
-                                                       ligne sur téléphone */
+.st-key-cl_filtres {{ background: {SURFACE}; }}                          /* zone des filtres : toujours visible ;
+                                                       filet gris de 1 px seul, plus de bord jaune [P] 27/11/2026 */
+.st-key-cl_filtres_titre p {{ font-weight: 600; font-size: 16px; margin: 0; }}   /* « Filtrer » : un libellé, en Inter
+                                                       et en casse normale (ni police à points, ni majuscules) [P] */
 </style>""")
 st.title(X["titre"])
 try:
@@ -284,13 +285,15 @@ if brut is None:
     st.stop()
 t = preparer(brut)
 lues = brut.loc[~brut["membre"].fillna(False).astype(bool), "date_lecture"]
-st.caption(X["mise_a_jour"].format(n=len(t), date=pd.Timestamp(lues.max() if lues.notna().any()
+st.caption(X["mise_a_jour"].format(n=fmt_nombre(len(t), L, 0), date=pd.Timestamp(lues.max() if lues.notna().any()
                                                                 else brut["date_lecture"].max()).strftime("%d/%m/%Y")))
 t["prix"] = t["ratio_prix"].map(categorie_prix)                               # catégorie de prix
 t["taille"] = t["capi"].map(taille)
 t["ecart_prix"] = (t["ratio_prix"] - 1) * 100                                 # +25 = 25 % plus chère que le secteur
-t["prix_txt"] = [X["en_perte"] if perte else ("-" if pd.isna(e) else f"{e:+.0f} %")   # texte affiché
+t["prix_txt"] = [X["en_perte"] if perte else ("-" if pd.isna(e) else pct_signe(e / 100, L, 0))   # +86 % ou +86%
                  for e, perte in zip(t["ecart_prix"], t["perte"].fillna(False))]
+t["capi_txt"] = [X["nd"] if pd.isna(c) else fmt_nombre(c, L, 1) for c in t["capi"]]   # 99,8 ; n.d. au lieu de
+                                                                              # « None » [P] 27/11/2026
 t["code_pays"] = t["pays"].str.upper()                                       # FR, US, JP... (codes ISO)
 DRAPEAUX = {p: adresse_drapeau(p) for p in PAYS}                              # une adresse par pays [M] 20/11/2026
 t["drapeau"] = t["pays"].map(DRAPEAUX)                                        # image affichée devant le code
@@ -299,7 +302,7 @@ t["secteur_court"] = t["secteur"].map(lambda s: SECTEURS_COURTS[s][i_lg])
 # --- Filtres : un cadre toujours visible, les plus utiles en premier ----------------------------------------------
 TRIS = {"note": X["col_note"], **{k: T[k] for k in COMPOSANTES}, "ecart_prix": X["col_prix"], "capi": X["col_capi"]}
 with st.container(border=True, key="cl_filtres"):
-    st.container(key="cl_filtres_titre").markdown(X["filtrer"])               # titre « FILTRER »
+    st.container(key="cl_filtres_titre").markdown(X["filtrer"])               # titre « Filtrer »
     a, b = st.columns(2)                                                      # 4 menus déroulants, 2 par ligne
     zones = a.multiselect(X["zone"], sorted(ZONES, key=lambda z: sans_accent(ZONES[z][i_lg])),   # de A à Z
                           format_func=lambda z: ZONES[z][i_lg], key="cl_zones", filter_mode=None, placeholder=X["toutes"])
@@ -350,7 +353,8 @@ if completes:
     f = f[f["nb_composantes"] == 4]
 actifs = sum(bool(v) for v in (zones, pays, secteurs, tailles, indice != "tout", ecartees,
                                 completes, accessibles))                                   # nombre de filtres choisis
-h.markdown(X["actifs"].format(n=len(f), k=actifs))
+k_txt = X["actifs_0"] if actifs == 0 else (X["actifs_1"] if actifs == 1 else X["actifs_n"].format(k=actifs))
+h.markdown(X["actifs"].format(n=fmt_nombre(len(f), L, 0), k=k_txt))       # « 7 076 sociétés · aucun filtre »
 
 
 # --- Tableau commun aux deux onglets ------------------------------------------------------------------------------
@@ -363,7 +367,7 @@ def colonnes(avec_score):
          "secteur_court": st.column_config.TextColumn(X["col_secteur"], width=125),
          "note": st.column_config.ProgressColumn(X["col_note"], min_value=0, max_value=100, format="%d", width=110),
          "prix_txt": st.column_config.TextColumn(X["col_prix"], help=X["aide_prix"], width=95),
-         "capi": st.column_config.NumberColumn(X["col_capi"], format="%.1f", width=95)}
+         "capi_txt": st.column_config.TextColumn(X["col_capi"], width=95, alignment="right")}   # texte : 99,8
     c.update({k: st.column_config.NumberColumn(T[k], width=85) for k in COMPOSANTES})
     if avec_score:
         c["facteur_txt"] = st.column_config.TextColumn(X["col_facteur"], help=X["aide_facteur"], width=90)
@@ -381,7 +385,7 @@ def afficher(tableau, cle, avec_score):
         tableau = tableau.head(int(nombre or 50))
     ordre = (["rang", "nom"]                                                 # l'essentiel à gauche : visible
              + (["score_prix", "note", "facteur_txt"] if avec_score else ["note"])   # sans défiler sur téléphone
-             + ["drapeau", "code_pays", "secteur_court"] + (COMPOSANTES if detail else []) + ["prix_txt", "capi"])
+             + ["drapeau", "code_pays", "secteur_court"] + (COMPOSANTES if detail else []) + ["prix_txt", "capi_txt"])
     choix = st.dataframe(tableau[ordre], column_config=colonnes(avec_score), hide_index=True, width="stretch",
                          row_height=44, height=min(42 + 44 * len(tableau), 750),   # lignes plus hautes, plus lisibles
                          on_select="rerun", selection_mode="single-cell", key=cle)   # un clic sur une case
